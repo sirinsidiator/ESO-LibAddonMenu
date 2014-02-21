@@ -1,0 +1,8 @@
+## APIVersion: 100000
+## Title: LibAddonMenu-1.0
+## Version: 1.0 r1
+## Author: Seerah
+## Notes: A library to aid in the creation of option panels.
+
+LibStub\LibStub.lua
+LibAddonMenu-1.0\LibAddonMenu-1.0.lua
