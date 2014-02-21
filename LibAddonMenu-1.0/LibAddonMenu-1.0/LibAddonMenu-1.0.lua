@@ -1,9 +1,9 @@
-local MAJOR, MINOR = "LibAddonMenu-1.0", 1
+local MAJOR, MINOR = "LibAddonMenu-1.0", 2
 local lam, oldminor = LibStub:NewLibrary(MAJOR, MINOR)
 if not lam then return end	--the same or newer version of this lib is already loaded into memory 
 
 --UPVALUES--
-lam.lastAddedControl = nil
+lam.lastAddedControl = {}
 local lastAddedControl = lam.lastAddedControl
 local wm = GetWindowManager()
 local strformat = string.format
@@ -34,9 +34,9 @@ function lam:CreateControlPanel(controlPanelID, controlPanelName)
 end
 
 function lam:AddHeader(panelID, controlName, text)
-	local header = wm:CreateControlFromVirtual(controlName, optionsWindow, lastAddedControl and "ZO_Options_SectionTitle_WithDivider" or "ZO_Options_SectionTitle")
-	if lastAddedControl then
-		header:SetAnchor(TOPLEFT, lastAddedControl, BOTTOMLEFT, 0, 15)
+	local header = wm:CreateControlFromVirtual(controlName, optionsWindow, lastAddedControl[panelID] and "ZO_Options_SectionTitle_WithDivider" or "ZO_Options_SectionTitle")
+	if lastAddedControl[panelID] then
+		header:SetAnchor(TOPLEFT, lastAddedControl[panelID], BOTTOMLEFT, 0, 15)
 	else
 		header:SetAnchor(TOPLEFT)
 	end
@@ -46,7 +46,7 @@ function lam:AddHeader(panelID, controlName, text)
 	
 	ZO_OptionsWindow_InitializeControl(header)
 	
-	lastAddedControl = header
+	lastAddedControl[panelID] = header
 end
 
 
@@ -56,7 +56,7 @@ end
 
 function lam:AddSlider(panelID, controlName, text, tooltip, minValue, maxValue, step, getFunc, setFunc, warning, warningText)
 	local slider = wm:CreateControlFromVirtual(controlName, optionsWindow, "ZO_Options_Slider")
-	slider:SetAnchor(TOPLEFT, lastAddedControl, BOTTOMLEFT, 0, 6)
+	slider:SetAnchor(TOPLEFT, lastAddedControl[panelID], BOTTOMLEFT, 0, 6)
 	slider.controlType = OPTIONS_SLIDER
 	slider.system = SETTING_TYPE_UI
 	slider.panel = panelID
@@ -92,12 +92,12 @@ function lam:AddSlider(panelID, controlName, text, tooltip, minValue, maxValue, 
 	
 	ZO_OptionsWindow_InitializeControl(slider)
 	
-	lastAddedControl = slider
+	lastAddedControl[panelID] = slider
 end
 
 function lam:AddDropdown(panelID, controlName, text, tooltip, validChoices, getFunc, setFunc, warning, warningText)
 	local dropdown = wm:CreateControlFromVirtual(controlName, optionsWindow, "ZO_Options_Dropdown")
-	dropdown:SetAnchor(TOPLEFT, lastAddedControl, BOTTOMLEFT, 0, 6)
+	dropdown:SetAnchor(TOPLEFT, lastAddedControl[panelID], BOTTOMLEFT, 0, 6)
 	dropdown.controlType = OPTIONS_DROPDOWN
 	dropdown.system = SETTING_TYPE_UI
 	dropdown.panel = panelID
@@ -126,12 +126,12 @@ function lam:AddDropdown(panelID, controlName, text, tooltip, validChoices, getF
 	
 	ZO_OptionsWindow_InitializeControl(dropdown)
 	
-	lastAddedControl = dropdown	
+	lastAddedControl[panelID] = dropdown	
 end
 
 function lam:AddCheckbox(panelID, controlName, text, tooltip, getFunc, setFunc, warning, warningText)
 	local checkbox = wm:CreateControlFromVirtual(controlName, optionsWindow, "ZO_Options_Checkbox")
-	checkbox:SetAnchor(TOPLEFT, lastAddedControl, BOTTOMLEFT, 0, 6)
+	checkbox:SetAnchor(TOPLEFT, lastAddedControl[panelID], BOTTOMLEFT, 0, 6)
 	checkbox.controlType = OPTIONS_CHECKBOX
 	checkbox.system = SETTING_TYPE_UI
 	checkbox.settingId = _G[strformat("SETTING_%s", controlName)]
@@ -155,13 +155,13 @@ function lam:AddCheckbox(panelID, controlName, text, tooltip, getFunc, setFunc, 
 	
 	ZO_OptionsWindow_InitializeControl(checkbox)
 	
-	lastAddedControl = checkbox
+	lastAddedControl[panelID] = checkbox
 end
 
 function lam:AddColorPicker(panelID, controlName, text, tooltip, getFunc, setFunc, warning, warningText)
 	local colorpicker = wm:CreateTopLevelWindow(controlName)
 	colorpicker:SetParent(optionsWindow)
-	colorpicker:SetAnchor(TOPLEFT, lastAddedControl, BOTTOMLEFT, 0, 10)
+	colorpicker:SetAnchor(TOPLEFT, lastAddedControl[panelID], BOTTOMLEFT, 0, 10)
 	colorpicker:SetResizeToFitDescendents(true)
 	colorpicker:SetWidth(510)
 	colorpicker:SetMouseEnabled(true)
@@ -223,13 +223,13 @@ function lam:AddColorPicker(panelID, controlName, text, tooltip, getFunc, setFun
 	
 	ZO_OptionsWindow_InitializeControl(colorpicker)
 	
-	lastAddedControl = colorpicker
+	lastAddedControl[panelID] = colorpicker
 end
 
 function lam:AddEditBox(panelID, controlName, text, tooltip, isMultiLine, getFunc, setFunc, warning, warningText)
 	local editbox = wm:CreateTopLevelWindow(controlName)
 	editbox:SetParent(optionsWindow)
-	editbox:SetAnchor(TOPLEFT, lastAddedControl, BOTTOMLEFT, 0, 10)
+	editbox:SetAnchor(TOPLEFT, lastAddedControl[panelID], BOTTOMLEFT, 0, 10)
 	editbox:SetResizeToFitDescendents(true)
 	editbox:SetWidth(510)
 	editbox:SetMouseEnabled(true)
@@ -264,13 +264,13 @@ function lam:AddEditBox(panelID, controlName, text, tooltip, isMultiLine, getFun
 
 	ZO_OptionsWindow_InitializeControl(editbox)
 	
-	lastAddedControl = editbox
+	lastAddedControl[panelID] = editbox
 end
 
 function lam:AddButton(panelID, controlName, text, tooltip, onClick, warning, warningText)
 	local button = wm:CreateTopLevelWindow(controlName)
 	button:SetParent(optionsWindow)
-	button:SetAnchor(TOPLEFT, lastAddedControl, BOTTOMLEFT, 0, 6)
+	button:SetAnchor(TOPLEFT, lastAddedControl[panelID], BOTTOMLEFT, 0, 6)
 	button:SetDimensions(510, 28)
 	button:SetMouseEnabled(true)
 	
@@ -296,7 +296,7 @@ function lam:AddButton(panelID, controlName, text, tooltip, onClick, warning, wa
 	
 	ZO_OptionsWindow_InitializeControl(button)
 
-	lastAddedControl = button
+	lastAddedControl[panelID] = button
 end
 
 
