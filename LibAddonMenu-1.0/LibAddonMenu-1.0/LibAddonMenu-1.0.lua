@@ -1,4 +1,4 @@
-local MAJOR, MINOR = "LibAddonMenu-1.0", 2
+local MAJOR, MINOR = "LibAddonMenu-1.0", 3
 local lam, oldminor = LibStub:NewLibrary(MAJOR, MINOR)
 if not lam then return end	--the same or newer version of this lib is already loaded into memory 
 
@@ -206,7 +206,7 @@ function lam:AddColorPicker(panelID, controlName, text, tooltip, getFunc, setFun
 			colorpicker:SetHandler("OnMouseUp", function(self, btn, upInside)
 					if upInside then
 						local r, g, b, a = getFunc()
-						ZO_ColorPicker:Show(ColorPickerCallback, r, g, b, a, text)
+						COLOR_PICKER:Show(ColorPickerCallback, r, g, b, a, text)
 					end
 				end)
 		end
