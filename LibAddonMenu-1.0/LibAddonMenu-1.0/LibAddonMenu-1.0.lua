@@ -1,4 +1,4 @@
-local MAJOR, MINOR = "LibAddonMenu-1.0", 3
+local MAJOR, MINOR = "LibAddonMenu-1.0", 4
 local lam, oldminor = LibStub:NewLibrary(MAJOR, MINOR)
 if not lam then return end	--the same or newer version of this lib is already loaded into memory 
 
@@ -11,6 +11,7 @@ local tostring = tostring
 local round = zo_round
 local optionsWindow = ZO_OptionsWindowSettingsScrollChild
 
+--maybe return the controls from the creation functions?
 
 function lam:CreateControlPanel(controlPanelID, controlPanelName)
 	local panelID
@@ -282,7 +283,7 @@ function lam:AddButton(panelID, controlName, text, tooltip, onClick, warning, wa
 	btn:SetHandler("OnClicked", onClick)
 	
 	button.controlType = OPTIONS_CUSTOM
-	button.customSetupFunction = function() end
+	button.customSetupFunction = function() end	--move handlers into this function? (since I created a function...)
 	button.panel = panelID
 	btn.tooltipText = tooltip
 	btn:SetHandler("OnMouseEnter", ZO_Options_OnMouseEnter)
@@ -299,10 +300,47 @@ function lam:AddButton(panelID, controlName, text, tooltip, onClick, warning, wa
 	lastAddedControl[panelID] = button
 end
 
+function lam:AddDescription(panelID, controlName, text, titleText)
+	local textBox = wm:CreateTopLevelWindow(controlName)
+	textBox:SetParent(optionsWindow)
+	textBox:SetAnchor(TOPLEFT, lastAddedControl[panelID], BOTTOMLEFT, 0, 10)
+	textBox:SetResizeToFitDescendents(true)
+	textBox:SetWidth(510)
+	
+	if titleText then
+		textBox.title = wm:CreateControl(controlName.."Title", textBox, CT_LABEL)
+		local title = textBox.title
+		title:SetWidth(510)
+		title:SetAnchor(TOPLEFT, textBox, TOPLEFT)
+		title:SetFont("ZoFontWinH4")
+		title:SetText(headerText)
+	end
+	
+	textBox.desc = wm:CreateControl(controlName.."Text", textBox, CT_LABEL)
+	local desc = textBox.desc
+	desc:SetWidth(510)
+	if titleText then
+		desc:SetAnchor(TOPLEFT, textBox.title, BOTTOMLEFT)
+	else
+		desc:SetAnchor(TOPLEFT)
+	end
+	desc:SetVerticalAlignment(TEXT_ALIGN_TOP)
+	desc:SetFont("ZoFontGame")
+	desc:SetText(text)
+	
+	textBox.controlType = OPTIONS_CUSTOM
+	textBox.panel = panelID
+	
+	ZO_OptionsWindow_InitializeControl(textBox)
+
+	lastAddedControl[panelID] = textBox
+end
+
 
 --test controls--
---[[local controlPanelID = lam:CreateControlPanel("ZAM_ADDONS_OPTIONS", "ZAM Addons")
+--[[local controlPanelID = lam:CreateControlPanel("ZAM_ADDON_OPTIONS", "ZAM Addons")
 lam:AddHeader(controlPanelID, "ZAM_Addons_TESTADDON", "TEST ADDON")
+lam:AddDescription(controlPanelID, "ZAM_Addons_TESTDESC", "This is a test description.", "Header")
 lam:AddSlider(controlPanelID, "ZAM_TESTSLIDER", "Test slider", "Adjust the slider.", 1, 10, 1, function() return 7 end, function(value) end, true, "needs UI reload")
 lam:AddDropdown(controlPanelID, "ZAM_TESTDROPDOWN", "Test Dropdown", "Pick something!", {"thing 1", "thing 2", "thing 3"}, function() return "thing 2" end, function(self,valueString) print(valueString) end)
 local checkbox1 = true
