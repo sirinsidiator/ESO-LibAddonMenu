@@ -1,4 +1,4 @@
-local MAJOR, MINOR = "LibAddonMenu-1.0", 4
+local MAJOR, MINOR = "LibAddonMenu-1.0", 5
 local lam, oldminor = LibStub:NewLibrary(MAJOR, MINOR)
 if not lam then return end	--the same or newer version of this lib is already loaded into memory 
 
@@ -48,6 +48,8 @@ function lam:AddHeader(panelID, controlName, text)
 	ZO_OptionsWindow_InitializeControl(header)
 	
 	lastAddedControl[panelID] = header
+	
+	return header
 end
 
 
@@ -94,6 +96,8 @@ function lam:AddSlider(panelID, controlName, text, tooltip, minValue, maxValue, 
 	ZO_OptionsWindow_InitializeControl(slider)
 	
 	lastAddedControl[panelID] = slider
+	
+	return slider
 end
 
 function lam:AddDropdown(panelID, controlName, text, tooltip, validChoices, getFunc, setFunc, warning, warningText)
@@ -127,7 +131,9 @@ function lam:AddDropdown(panelID, controlName, text, tooltip, validChoices, getF
 	
 	ZO_OptionsWindow_InitializeControl(dropdown)
 	
-	lastAddedControl[panelID] = dropdown	
+	lastAddedControl[panelID] = dropdown
+
+	return dropdown
 end
 
 function lam:AddCheckbox(panelID, controlName, text, tooltip, getFunc, setFunc, warning, warningText)
@@ -157,6 +163,8 @@ function lam:AddCheckbox(panelID, controlName, text, tooltip, getFunc, setFunc, 
 	ZO_OptionsWindow_InitializeControl(checkbox)
 	
 	lastAddedControl[panelID] = checkbox
+	
+	return checkbox
 end
 
 function lam:AddColorPicker(panelID, controlName, text, tooltip, getFunc, setFunc, warning, warningText)
@@ -225,6 +233,8 @@ function lam:AddColorPicker(panelID, controlName, text, tooltip, getFunc, setFun
 	ZO_OptionsWindow_InitializeControl(colorpicker)
 	
 	lastAddedControl[panelID] = colorpicker
+	
+	return colorpicker
 end
 
 function lam:AddEditBox(panelID, controlName, text, tooltip, isMultiLine, getFunc, setFunc, warning, warningText)
@@ -266,6 +276,8 @@ function lam:AddEditBox(panelID, controlName, text, tooltip, isMultiLine, getFun
 	ZO_OptionsWindow_InitializeControl(editbox)
 	
 	lastAddedControl[panelID] = editbox
+	
+	return editbox
 end
 
 function lam:AddButton(panelID, controlName, text, tooltip, onClick, warning, warningText)
@@ -298,6 +310,8 @@ function lam:AddButton(panelID, controlName, text, tooltip, onClick, warning, wa
 	ZO_OptionsWindow_InitializeControl(button)
 
 	lastAddedControl[panelID] = button
+	
+	return button
 end
 
 function lam:AddDescription(panelID, controlName, text, titleText)
@@ -334,10 +348,12 @@ function lam:AddDescription(panelID, controlName, text, titleText)
 	ZO_OptionsWindow_InitializeControl(textBox)
 
 	lastAddedControl[panelID] = textBox
+	
+	return textBox
 end
 
 
---test controls--
+--test controls & examples--
 --[[local controlPanelID = lam:CreateControlPanel("ZAM_ADDON_OPTIONS", "ZAM Addons")
 lam:AddHeader(controlPanelID, "ZAM_Addons_TESTADDON", "TEST ADDON")
 lam:AddDescription(controlPanelID, "ZAM_Addons_TESTDESC", "This is a test description.", "Header")
