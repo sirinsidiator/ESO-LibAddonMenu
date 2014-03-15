@@ -1,4 +1,4 @@
-local MAJOR, MINOR = "LibAddonMenu-1.0", 5
+local MAJOR, MINOR = "LibAddonMenu-1.0", 6
 local lam, oldminor = LibStub:NewLibrary(MAJOR, MINOR)
 if not lam then return end	--the same or newer version of this lib is already loaded into memory 
 
@@ -327,7 +327,7 @@ function lam:AddDescription(panelID, controlName, text, titleText)
 		title:SetWidth(510)
 		title:SetAnchor(TOPLEFT, textBox, TOPLEFT)
 		title:SetFont("ZoFontWinH4")
-		title:SetText(headerText)
+		title:SetText(titleText)
 	end
 	
 	textBox.desc = wm:CreateControl(controlName.."Text", textBox, CT_LABEL)
