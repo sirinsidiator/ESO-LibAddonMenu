@@ -1,4 +1,4 @@
-local MAJOR, MINOR = "LibAddonMenu-1.0", 6
+local MAJOR, MINOR = "LibAddonMenu-1.0", 7
 local lam, oldminor = LibStub:NewLibrary(MAJOR, MINOR)
 if not lam then return end	--the same or newer version of this lib is already loaded into memory 
 
@@ -10,8 +10,8 @@ local strformat = string.format
 local tostring = tostring
 local round = zo_round
 local optionsWindow = ZO_OptionsWindowSettingsScrollChild
+local openSubMenu
 
---maybe return the controls from the creation functions?
 
 function lam:CreateControlPanel(controlPanelID, controlPanelName)
 	local panelID
@@ -25,27 +25,39 @@ function lam:CreateControlPanel(controlPanelID, controlPanelName)
 
 	--disables Defaults button because we don't need it, but keybind still works :/ ...
 	panelID = _G[controlPanelID]
-	ZO_PreHook("ZO_OptionsWindow_ChangePanels", function(panel)
-			local enable = (panel ~=  panelID)
-			ZO_OptionsWindowResetToDefaultButton:SetEnabled(enable)
-			ZO_OptionsWindowResetToDefaultButton:SetKeybindEnabled(enable)
-		end)
 	
 	return panelID
 end
 
 function lam:AddHeader(panelID, controlName, text)
-	local header = wm:CreateControlFromVirtual(controlName, optionsWindow, lastAddedControl[panelID] and "ZO_Options_SectionTitle_WithDivider" or "ZO_Options_SectionTitle")
+	local isSubMenu = type(panelID) == "userdata"
+	--local header = wm:CreateControlFromVirtual(controlName, optionsWindow, lastAddedControl[panelID] and "ZO_Options_SectionTitle_WithDivider" or "ZO_Options_SectionTitle")
+	local header = wm:CreateControlFromVirtual(controlName, isSubMenu and panelID or optionsWindow, lastAddedControl[panelID] and "ZO_Options_SectionTitle_WithDivider" or "ZO_Options_SectionTitle")
 	if lastAddedControl[panelID] then
 		header:SetAnchor(TOPLEFT, lastAddedControl[panelID], BOTTOMLEFT, 0, 15)
 	else
 		header:SetAnchor(TOPLEFT)
+		if not isSubMenu then
+			header:SetHandler("OnShow", function()
+				ZO_OptionsWindowResetToDefaultButton:SetEnabled(false)
+				ZO_OptionsWindowResetToDefaultButton:SetKeybindEnabled(false)
+				ZO_OptionsWindowResetToDefaultButton:SetHidden(true)
+				--ZO_OptionsWindowResetToDefaultButton:SetAlpha(0)
+			end)
+			header:SetHandler("OnHide", function()
+				ZO_OptionsWindowResetToDefaultButton:SetEnabled(true)
+				ZO_OptionsWindowResetToDefaultButton:SetKeybindEnabled(true)
+				ZO_OptionsWindowResetToDefaultButton:SetHidden(false)
+				--ZO_OptionsWindowResetToDefaultButton:SetAlpha(1)
+			end)
+		end
 	end
 	header.controlType = OPTIONS_SECTION_TITLE
-	header.panel = panelID
+	header.panel = isSubMenu and panelID.panel or panelID
 	header.text = text
 	
 	ZO_OptionsWindow_InitializeControl(header)
+	if isSubMenu then header:SetParent(panelID) end
 	
 	lastAddedControl[panelID] = header
 	
@@ -58,11 +70,12 @@ end
 --find alternatives to handler hooks
 
 function lam:AddSlider(panelID, controlName, text, tooltip, minValue, maxValue, step, getFunc, setFunc, warning, warningText)
-	local slider = wm:CreateControlFromVirtual(controlName, optionsWindow, "ZO_Options_Slider")
+	local isSubMenu = type(panelID) == "userdata"
+	local slider = wm:CreateControlFromVirtual(controlName, isSubMenu and panelID or optionsWindow, "ZO_Options_Slider")
 	slider:SetAnchor(TOPLEFT, lastAddedControl[panelID], BOTTOMLEFT, 0, 6)
 	slider.controlType = OPTIONS_SLIDER
 	slider.system = SETTING_TYPE_UI
-	slider.panel = panelID
+	slider.panel = isSubMenu and panelID.panel or panelID
 	slider.text = text
 	slider.tooltipText = tooltip
 	slider.showValue = true
@@ -94,6 +107,7 @@ function lam:AddSlider(panelID, controlName, text, tooltip, minValue, maxValue, 
 	end
 	
 	ZO_OptionsWindow_InitializeControl(slider)
+	if isSubMenu then slider:SetParent(panelID) end
 	
 	lastAddedControl[panelID] = slider
 	
@@ -101,11 +115,12 @@ function lam:AddSlider(panelID, controlName, text, tooltip, minValue, maxValue, 
 end
 
 function lam:AddDropdown(panelID, controlName, text, tooltip, validChoices, getFunc, setFunc, warning, warningText)
-	local dropdown = wm:CreateControlFromVirtual(controlName, optionsWindow, "ZO_Options_Dropdown")
+	local isSubMenu = type(panelID) == "userdata"
+	local dropdown = wm:CreateControlFromVirtual(controlName, isSubMenu and panelID or optionsWindow, "ZO_Options_Dropdown")
 	dropdown:SetAnchor(TOPLEFT, lastAddedControl[panelID], BOTTOMLEFT, 0, 6)
 	dropdown.controlType = OPTIONS_DROPDOWN
 	dropdown.system = SETTING_TYPE_UI
-	dropdown.panel = panelID
+	dropdown.panel = isSubMenu and panelID.panel or panelID
 	dropdown.text = text
 	dropdown.tooltipText = tooltip
 	dropdown.valid = validChoices
@@ -130,6 +145,7 @@ function lam:AddDropdown(panelID, controlName, text, tooltip, validChoices, getF
 	end
 	
 	ZO_OptionsWindow_InitializeControl(dropdown)
+	if isSubMenu then dropdown:SetParent(panelID) end
 	
 	lastAddedControl[panelID] = dropdown
 
@@ -137,12 +153,13 @@ function lam:AddDropdown(panelID, controlName, text, tooltip, validChoices, getF
 end
 
 function lam:AddCheckbox(panelID, controlName, text, tooltip, getFunc, setFunc, warning, warningText)
-	local checkbox = wm:CreateControlFromVirtual(controlName, optionsWindow, "ZO_Options_Checkbox")
+	local isSubMenu = type(panelID) == "userdata"
+	local checkbox = wm:CreateControlFromVirtual(controlName, isSubMenu and panelID or optionsWindow, "ZO_Options_Checkbox")
 	checkbox:SetAnchor(TOPLEFT, lastAddedControl[panelID], BOTTOMLEFT, 0, 6)
 	checkbox.controlType = OPTIONS_CHECKBOX
 	checkbox.system = SETTING_TYPE_UI
 	checkbox.settingId = _G[strformat("SETTING_%s", controlName)]
-	checkbox.panel = panelID
+	checkbox.panel = isSubMenu and panelID.panel or panelID
 	checkbox.text = text
 	checkbox.tooltipText = tooltip
 	
@@ -161,6 +178,7 @@ function lam:AddCheckbox(panelID, controlName, text, tooltip, getFunc, setFunc, 
 	end
 	
 	ZO_OptionsWindow_InitializeControl(checkbox)
+	if isSubMenu then checkbox:SetParent(panelID) end
 	
 	lastAddedControl[panelID] = checkbox
 	
@@ -168,9 +186,10 @@ function lam:AddCheckbox(panelID, controlName, text, tooltip, getFunc, setFunc, 
 end
 
 function lam:AddColorPicker(panelID, controlName, text, tooltip, getFunc, setFunc, warning, warningText)
+	local isSubMenu = type(panelID) == "userdata"
 	local colorpicker = wm:CreateTopLevelWindow(controlName)
-	colorpicker:SetParent(optionsWindow)
 	colorpicker:SetAnchor(TOPLEFT, lastAddedControl[panelID], BOTTOMLEFT, 0, 10)
+	colorpicker:SetParent(isSubMenu and panelID or optionsWindow)
 	colorpicker:SetResizeToFitDescendents(true)
 	colorpicker:SetWidth(510)
 	colorpicker:SetMouseEnabled(true)
@@ -219,7 +238,7 @@ function lam:AddColorPicker(panelID, controlName, text, tooltip, getFunc, setFun
 					end
 				end)
 		end
-	colorpicker.panel = panelID
+	colorpicker.panel = isSubMenu and panelID.panel or panelID
 	colorpicker.tooltipText = tooltip
 	colorpicker:SetHandler("OnMouseEnter", ZO_Options_OnMouseEnter)
 	colorpicker:SetHandler("OnMouseExit", ZO_Options_OnMouseExit)
@@ -231,6 +250,7 @@ function lam:AddColorPicker(panelID, controlName, text, tooltip, getFunc, setFun
 	end
 	
 	ZO_OptionsWindow_InitializeControl(colorpicker)
+	if isSubMenu then colorpicker:SetParent(panelID) end
 	
 	lastAddedControl[panelID] = colorpicker
 	
@@ -238,8 +258,8 @@ function lam:AddColorPicker(panelID, controlName, text, tooltip, getFunc, setFun
 end
 
 function lam:AddEditBox(panelID, controlName, text, tooltip, isMultiLine, getFunc, setFunc, warning, warningText)
+	local isSubMenu = type(panelID) == "userdata"
 	local editbox = wm:CreateTopLevelWindow(controlName)
-	editbox:SetParent(optionsWindow)
 	editbox:SetAnchor(TOPLEFT, lastAddedControl[panelID], BOTTOMLEFT, 0, 10)
 	editbox:SetResizeToFitDescendents(true)
 	editbox:SetWidth(510)
@@ -260,9 +280,10 @@ function lam:AddEditBox(panelID, controlName, text, tooltip, isMultiLine, getFun
 	editbox.edit = wm:CreateControlFromVirtual(controlName.."Edit", bg, isMultiLine and "ZO_DefaultEditMultiLineForBackdrop" or "ZO_DefaultEditForBackdrop")
 	editbox.edit:SetText(getFunc())
 	editbox.edit:SetHandler("OnFocusLost", function(self) setFunc(self:GetText()) end)
+	editbox.edit:SetHandler("OnEscape", function(self) self:LoseFocus() end)
+	editbox.edit:SetMaxInputChars(1040)
 	
-	
-	editbox.panel = panelID
+	editbox.panel = isSubMenu and panelID.panel or panelID
 	editbox.tooltipText = tooltip
 	editbox:SetHandler("OnMouseEnter", ZO_Options_OnMouseEnter)
 	editbox:SetHandler("OnMouseExit", ZO_Options_OnMouseExit)
@@ -274,6 +295,7 @@ function lam:AddEditBox(panelID, controlName, text, tooltip, isMultiLine, getFun
 	end
 
 	ZO_OptionsWindow_InitializeControl(editbox)
+	editbox:SetParent(isSubMenu and panelID or optionsWindow)
 	
 	lastAddedControl[panelID] = editbox
 	
@@ -281,8 +303,8 @@ function lam:AddEditBox(panelID, controlName, text, tooltip, isMultiLine, getFun
 end
 
 function lam:AddButton(panelID, controlName, text, tooltip, onClick, warning, warningText)
+	local isSubMenu = type(panelID) == "userdata"
 	local button = wm:CreateTopLevelWindow(controlName)
-	button:SetParent(optionsWindow)
 	button:SetAnchor(TOPLEFT, lastAddedControl[panelID], BOTTOMLEFT, 0, 6)
 	button:SetDimensions(510, 28)
 	button:SetMouseEnabled(true)
@@ -296,7 +318,7 @@ function lam:AddButton(panelID, controlName, text, tooltip, onClick, warning, wa
 	
 	button.controlType = OPTIONS_CUSTOM
 	button.customSetupFunction = function() end	--move handlers into this function? (since I created a function...)
-	button.panel = panelID
+	button.panel = isSubMenu and panelID.panel or panelID
 	btn.tooltipText = tooltip
 	btn:SetHandler("OnMouseEnter", ZO_Options_OnMouseEnter)
 	btn:SetHandler("OnMouseExit", ZO_Options_OnMouseExit)
@@ -308,6 +330,7 @@ function lam:AddButton(panelID, controlName, text, tooltip, onClick, warning, wa
 	end
 	
 	ZO_OptionsWindow_InitializeControl(button)
+	button:SetParent(isSubMenu and panelID or optionsWindow)
 
 	lastAddedControl[panelID] = button
 	
@@ -315,8 +338,8 @@ function lam:AddButton(panelID, controlName, text, tooltip, onClick, warning, wa
 end
 
 function lam:AddDescription(panelID, controlName, text, titleText)
+	local isSubMenu = type(panelID) == "userdata"
 	local textBox = wm:CreateTopLevelWindow(controlName)
-	textBox:SetParent(optionsWindow)
 	textBox:SetAnchor(TOPLEFT, lastAddedControl[panelID], BOTTOMLEFT, 0, 10)
 	textBox:SetResizeToFitDescendents(true)
 	textBox:SetWidth(510)
@@ -343,20 +366,109 @@ function lam:AddDescription(panelID, controlName, text, titleText)
 	desc:SetText(text)
 	
 	textBox.controlType = OPTIONS_CUSTOM
-	textBox.panel = panelID
+	textBox.panel = isSubMenu and panelID.panel or panelID
 	
 	ZO_OptionsWindow_InitializeControl(textBox)
+	textBox:SetParent(isSubMenu and panelID or optionsWindow)
 
 	lastAddedControl[panelID] = textBox
 	
 	return textBox
 end
 
+--window doesn't hide when escape is pressed
+--color-picker is hidden for some reason
+function lam:AddSubMenu(panelID, controlName, text, tooltip)
+	local menubtn = wm:CreateTopLevelWindow(controlName)
+	menubtn:SetParent(optionsWindow)
+	menubtn:SetAnchor(TOPLEFT, lastAddedControl[panelID], BOTTOMLEFT, 0, 6)
+	menubtn:SetDimensions(510, 28)
+	menubtn:SetMouseEnabled(true)
+	
+	menubtn.label = wm:CreateControl(controlName.."Text", menubtn, CT_LABEL)
+	local label = menubtn.label
+	label:SetAnchor(TOPLEFT, textBox, TOPLEFT)
+	label:SetDimensions(300, 28)
+	label:SetFont("ZoFontWinH4")
+	label:SetText(text)
+	
+	menubtn.btn = wm:CreateControlFromVirtual(controlName.."Button", menubtn, "ZO_DefaultButton")
+	local btn = menubtn.btn
+	btn:SetAnchor(TOPRIGHT)
+	btn:SetWidth(200)
+	btn:SetText(GetString("SI_GAMECAMERAACTIONTYPE", 13).." |t32:32:esoui\\art\\crafting\\smithing_rightarrow_up.dds|t")
+	--btn:SetText("Open -->")
+	
+	menubtn.window = wm:CreateTopLevelWindow(controlName.."Window")
+	local window = menubtn.window
+	--window:SetParent(menubtn)
+	window:SetAnchor(TOPLEFT, menubtn, TOPRIGHT)
+	window:SetDimensions(555, 300)
+	window:SetClampedToScreen(true)
+	window:SetClampedToScreenInsets(-5, -20, 5, 5)
+	window.bg = wm:CreateControlFromVirtual(controlName.."WindowBG", window, "ZO_DefaultBackdrop")
+	window:SetHidden(true)
+	
+	window.settings = wm:CreateControlFromVirtual(controlName.."WindowSettings", window, "ZO_ScrollContainer")
+	local settings = window.settings
+	settings:SetAnchor(TOPLEFT, window, TOPLEFT, 10, 10)
+	settings:SetAnchor(BOTTOMRIGHT, window, BOTTOMRIGHT, -5, -5)
+	local scroll = settings:GetNamedChild("ScrollChild")
+	scroll.panel = panelID
+	
+	btn:SetHandler("OnClicked", function()
+			if window:IsHidden() then	--if this submenu isn't open yet, then...
+				if openSubMenu then openSubMenu:SetHidden(true) end	--if a submenu was already open, then close it
+				window:SetHidden(false)	--show this submenu
+				openSubMenu = window	--this submenu is now our open menu
+			else
+				window:SetHidden(true)
+				openSubMenu = nil	--no more open submenus
+			end
+		end)
+	menubtn:SetHandler("OnHide", function()
+			if openSubMenu then
+				openSubMenu:SetHidden(true)
+			end
+		end)
+	ZO_OptionsWindow:SetHandler("OnHide", function()
+			if openSubMenu then
+				openSubMenu:SetHidden(true)
+			end
+		end)
+	
+	menubtn.controlType = OPTIONS_CUSTOM
+	menubtn.customSetupFunction = function() end	--move handlers into this function? (since I created a function...)
+	menubtn.panel = panelID
+	btn.tooltipText = tooltip
+	btn:SetHandler("OnMouseEnter", ZO_Options_OnMouseEnter)
+	btn:SetHandler("OnMouseExit", ZO_Options_OnMouseExit)
+		
+	ZO_OptionsWindow_InitializeControl(menubtn)
+
+	lastAddedControl[panelID] = menubtn
+	
+	lam:AddHeader(scroll, controlName.."MenuHeader", text)	--create the header for our menu
+	
+	return scroll
+end
+
+
 
 --test controls & examples--
---[[local controlPanelID = lam:CreateControlPanel("ZAM_ADDON_OPTIONS", "ZAM Addons")
+--[[local controlPanelID = lam:CreateControlPanel("ZAM_TEST_ADDON_OPTIONS", "ZAM Test")
 lam:AddHeader(controlPanelID, "ZAM_Addons_TESTADDON", "TEST ADDON")
 lam:AddDescription(controlPanelID, "ZAM_Addons_TESTDESC", "This is a test description.", "Header")
+local window = lam:AddSubMenu(controlPanelID, "ZAM_Addons_TESTMENU", "Click for more options.", "This is some tooltip text.")
+lam:AddHeader(window, "ZAM_Addons_TESTMENU_HEADER", "Header")
+lam:AddSlider(window, "ZAM_Addons_TESTMENU_SLIDER", "Test slider", "Adjust the slider.", 1, 10, 1, function() return 7 end, function(value) end, true, "needs UI reload")
+lam:AddHeader(window, "ZAM_Addons_TESTMENU_HEADER2", "Header 2")
+lam:AddColorPicker(window, "ZAM_Addons_TESTMENU_COLORPICKER", "Test color picker", "What's your favorite color?", function() return 1, 1, 0 end, function(r,g,b) print(r,g,b) end)
+local window2 = lam:AddSubMenu(controlPanelID, "ZAM_Addons_TESTMENU2", "Click for more options.", "This is some tooltip text.")
+lam:AddHeader(window2, "ZAM_Addons_TESTMENU2_HEADER", "Header")
+lam:AddSlider(window2, "ZAM_Addons_TESTMENU2_SLIDER", "Test slider", "Adjust the slider.", 1, 10, 1, function() return 7 end, function(value) end, true, "needs UI reload")
+lam:AddHeader(window2, "ZAM_Addons_TESTMENU2_HEADER2", "Header 2")
+lam:AddColorPicker(window2, "ZAM_Addons_TESTMENU2_COLORPICKER", "Test color picker", "What's your favorite color?", function() return 1, 1, 0 end, function(r,g,b) print(r,g,b) end)
 lam:AddSlider(controlPanelID, "ZAM_TESTSLIDER", "Test slider", "Adjust the slider.", 1, 10, 1, function() return 7 end, function(value) end, true, "needs UI reload")
 lam:AddDropdown(controlPanelID, "ZAM_TESTDROPDOWN", "Test Dropdown", "Pick something!", {"thing 1", "thing 2", "thing 3"}, function() return "thing 2" end, function(self,valueString) print(valueString) end)
 local checkbox1 = true
