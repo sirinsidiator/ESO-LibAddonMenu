@@ -1,4 +1,4 @@
-local MAJOR, MINOR = "LibAddonMenu-1.0", 7
+local MAJOR, MINOR = "LibAddonMenu-1.0", 8
 local lam, oldminor = LibStub:NewLibrary(MAJOR, MINOR)
 if not lam then return end	--the same or newer version of this lib is already loaded into memory 
 
@@ -403,16 +403,17 @@ function lam:AddSubMenu(panelID, controlName, text, tooltip)
 	local window = menubtn.window
 	--window:SetParent(menubtn)
 	window:SetAnchor(TOPLEFT, menubtn, TOPRIGHT)
-	window:SetDimensions(555, 300)
+	window:SetDimensions(565, 300)
 	window:SetClampedToScreen(true)
 	window:SetClampedToScreenInsets(-5, -20, 5, 5)
+	window:SetDrawLayer(DL_OVERLAY)
 	window.bg = wm:CreateControlFromVirtual(controlName.."WindowBG", window, "ZO_DefaultBackdrop")
 	window:SetHidden(true)
 	
 	window.settings = wm:CreateControlFromVirtual(controlName.."WindowSettings", window, "ZO_ScrollContainer")
 	local settings = window.settings
 	settings:SetAnchor(TOPLEFT, window, TOPLEFT, 10, 10)
-	settings:SetAnchor(BOTTOMRIGHT, window, BOTTOMRIGHT, -5, -5)
+	settings:SetAnchor(BOTTOMRIGHT, window, BOTTOMRIGHT, -3, -3)
 	local scroll = settings:GetNamedChild("ScrollChild")
 	scroll.panel = panelID
 	
