@@ -23,7 +23,6 @@ function lam:CreateControlPanel(controlPanelID, controlPanelName)
 	
 	ZO_OptionsWindow_AddUserPanel(controlPanelID, controlPanelName)
 
-	--disables Defaults button because we don't need it, but keybind still works :/ ...
 	panelID = _G[controlPanelID]
 	
 	return panelID
@@ -471,7 +470,7 @@ lam:AddSlider(window2, "ZAM_Addons_TESTMENU2_SLIDER", "Test slider", "Adjust the
 lam:AddHeader(window2, "ZAM_Addons_TESTMENU2_HEADER2", "Header 2")
 lam:AddColorPicker(window2, "ZAM_Addons_TESTMENU2_COLORPICKER", "Test color picker", "What's your favorite color?", function() return 1, 1, 0 end, function(r,g,b) print(r,g,b) end)
 lam:AddSlider(controlPanelID, "ZAM_TESTSLIDER", "Test slider", "Adjust the slider.", 1, 10, 1, function() return 7 end, function(value) end, true, "needs UI reload")
-lam:AddDropdown(controlPanelID, "ZAM_TESTDROPDOWN", "Test Dropdown", "Pick something!", {"thing 1", "thing 2", "thing 3"}, function() return "thing 2" end, function(self,valueString) print(valueString) end)
+lam:AddDropdown(controlPanelID, "ZAM_TESTDROPDOWN", "Test Dropdown", "Pick something!", {"thing 1", "thing 2", "thing 3"}, function() return "thing 2" end, function(valueString) print(valueString) end)
 local checkbox1 = true
 lam:AddCheckbox(controlPanelID, "ZAM_TESTCHECKBOX", "Test Checkbox", "On or off?", function() return checkbox1 end, function(value) checkbox1 = not checkbox1 print(value, checkbox1) end)
 lam:AddColorPicker(controlPanelID, "ZAM_TESTCOLORPICKER", "Test color picker", "What's your favorite color?", function() return 1, 1, 0 end, function(r,g,b) print(r,g,b) end)
@@ -482,5 +481,5 @@ lam:AddCheckbox(controlPanelID, "ZAM_TESTCHECKBOX2", "Test Checkbox 2", "On or o
 lam:AddButton(controlPanelID, "ZAM_TESTBUTTON", "Test Button", "Click me", function() print("hi") end, true, "oh noez!")
 lam:AddEditBox(controlPanelID, "ZAM_TESTEDITBOX2", "Test Edit Box 2", "This is a tooltip!", true, function() return "hi" end, function(text) print(text) end, true, "warning text")
 lam:AddSlider(controlPanelID, "ZAM_TESTSLIDER2", "Test slider 2", "Adjust the slider.", 50, 100, 10, function() return 80 end, function(value) end)
-lam:AddDropdown(controlPanelID, "ZAM_TESTDROPDOWN2", "Test Dropdown 2", "Pick something!", {"thing 4", "thing 5", "thing 6"}, function() return "thing 6" end, function(self,valueString) print(valueString) end)
+lam:AddDropdown(controlPanelID, "ZAM_TESTDROPDOWN2", "Test Dropdown 2", "Pick something!", {"thing 4", "thing 5", "thing 6"}, function() return "thing 6" end, function(valueString) print(valueString) end)
 ]]--
