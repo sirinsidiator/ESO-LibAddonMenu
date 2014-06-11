@@ -1,0 +1,23 @@
+## APIVersion: 100004
+## Title: LibAddonMenu-2.0
+## Version: 2.0 r2
+## Author: Seerah
+## Description: A library to aid in the creation of option panels.
+
+
+LibStub\LibStub.lua
+
+LibAddonMenu-2.0\LibAddonMenu-2.0.lua
+
+LibAddonMenu-2.0\controls\panel.lua
+LibAddonMenu-2.0\controls\submenu.lua
+LibAddonMenu-2.0\controls\button.lua
+LibAddonMenu-2.0\controls\checkbox.lua
+LibAddonMenu-2.0\controls\colorpicker.lua
+LibAddonMenu-2.0\controls\custom.lua
+LibAddonMenu-2.0\controls\description.lua
+LibAddonMenu-2.0\controls\dropdown.lua
+LibAddonMenu-2.0\controls\editbox.lua
+LibAddonMenu-2.0\controls\header.lua
+LibAddonMenu-2.0\controls\slider.lua
+LibAddonMenu-2.0\controls\texture.lua
