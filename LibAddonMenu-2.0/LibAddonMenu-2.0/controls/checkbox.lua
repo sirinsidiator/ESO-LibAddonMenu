@@ -12,7 +12,7 @@
 }	]]
 
 
-local widgetVersion = 2
+local widgetVersion = 3
 local LAM = LibStub("LibAddonMenu-2.0")
 if not LAM:RegisterWidget("checkbox", widgetVersion) then return end
 
@@ -45,9 +45,7 @@ local function UpdateDisabled(control)
 	control.isDisabled = disable
 end
 
-local function ToggleCheckbox(control)
-	PlaySound(SOUNDS.DEFAULT_CLICK)
-	
+local function ToggleCheckbox(control)	
 	if control.value then
 		control.label:SetColor(ZO_DEFAULT_ENABLED_COLOR:UnpackRGBA())
 		control.checkbox:SetText(control.checkedText)
@@ -114,6 +112,7 @@ function LAMCreateControl.checkbox(parent, checkboxData, controlName)
 	control:SetHandler("OnMouseExit", OnMouseExit)
 	control:SetHandler("OnMouseUp", function(control)
 			if control.isDisabled then return end
+			PlaySound(SOUNDS.DEFAULT_CLICK)
 			control.value = not control.value
 			control:UpdateValue(false, control.value)
 		end)
