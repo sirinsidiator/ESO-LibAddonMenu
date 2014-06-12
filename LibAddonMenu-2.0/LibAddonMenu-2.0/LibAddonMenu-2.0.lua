@@ -7,7 +7,7 @@
 
 
 --Register LAM with LibStub
-local MAJOR, MINOR = "LibAddonMenu-2.0", 3
+local MAJOR, MINOR = "LibAddonMenu-2.0", 4
 local lam, oldminor = LibStub:NewLibrary(MAJOR, MINOR)
 if not lam then return end	--the same or newer version of this lib is already loaded into memory 
 
@@ -250,9 +250,8 @@ end
 --creates the right-hand menu in LAM's panel
 local function CreateAddonList()
 	local list
-	if not LAMAddonPanelsMenu then	--check if an earlier loaded copy of LAM created it already
-		list = wm:CreateControlFromVirtual("LAMAddonPanelsMenu", optionsWindow, "ZO_ScrollContainer")
-	end
+	--check if an earlier loaded copy of LAM created it already
+	list = LAMAddonPanelsMenu or wm:CreateControlFromVirtual("LAMAddonPanelsMenu", optionsWindow, "ZO_ScrollContainer")
 	list:ClearAnchors()
 	list:SetAnchor(TOPLEFT)
 	list:SetHeight(675)
