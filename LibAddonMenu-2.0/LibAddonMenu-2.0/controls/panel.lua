@@ -24,13 +24,13 @@ local function RefreshPanel(control)
 	
 	for i = 1, #panelControls do
 		local updateControl = panelControls[i]
-		if  updateControl == control then return end
-		
-		if updateControl.UpdateValue then
-			updateControl:UpdateValue()
-		end
-		if updateControl.UpdateDisabled then
-			updateControl:UpdateDisabled()
+		if  updateControl ~= control then		
+			if updateControl.UpdateValue then
+				updateControl:UpdateValue()
+			end
+			if updateControl.UpdateDisabled then
+				updateControl:UpdateDisabled()
+			end
 		end
 	end
 end
@@ -48,6 +48,8 @@ local function ForceDefaults(panel)
 	if panel.data.resetFunc then
 		panel.data.resetFunc()
 	end
+	
+	cm:FireCallbacks("LAM-RefreshPanel", panel)
 end
 ESO_Dialogs["LAM_DEFAULTS"] = {
 	title = {

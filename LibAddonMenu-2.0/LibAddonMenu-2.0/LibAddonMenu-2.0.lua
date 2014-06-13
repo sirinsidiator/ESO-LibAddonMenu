@@ -247,7 +247,7 @@ end
 
 
 --INTERNAL FUNCTION
---creates the right-hand menu in LAM's panel
+--creates the left-hand menu in LAM's panel
 local function CreateAddonList()
 	local list
 	--check if an earlier loaded copy of LAM created it already
