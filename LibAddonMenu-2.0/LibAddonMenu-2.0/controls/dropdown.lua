@@ -3,6 +3,7 @@
 	name = "My Dropdown",
 	tooltip = "Dropdown's tooltip text.",
 	choices = {"table", "of", "choices"},
+	sort = "name-up", --or "name-down", "numeric-up", "numeric-down" (optional) - if not provided, list will not be sorted
 	getFunc = function() return db.var end,
 	setFunc = function(var) db.var = var doStuff() end,
 	width = "full",	--or "half" (optional)
@@ -13,7 +14,7 @@
 }	]]
 
 
-local widgetVersion = 2
+local widgetVersion = 3
 local LAM = LibStub("LibAddonMenu-2.0")
 if not LAM:RegisterWidget("dropdown", widgetVersion) then return end
 
@@ -67,8 +68,18 @@ local function UpdateChoices(control, choices)
 	for i = 1, #choices do
 		local entry = control.dropdown:CreateItemEntry(choices[i], DropdownCallback)
 		entry.control = control
-		control.dropdown:AddItem(entry)	--second arg to alphabetize or no? (no = ZO_COMBOBOX_SUPRESS_UPDATE)
+		control.dropdown:AddItem(entry, not control.data.sort and ZO_COMBOBOX_SUPRESS_UPDATE)	--if sort type/order isn't specified, then don't sort
 	end
+end
+
+local function GrabSortingInfo(sortInfo)
+	local t, i = {}, 1
+	for info in string.gmatch(sortInfo, "([^%-]+)") do
+		t[i] = info
+		i = i + 1
+	end
+
+	return t
 end
 
 
@@ -95,7 +106,12 @@ function LAMCreateControl.dropdown(parent, dropdownData, controlName)
 	combobox:SetHandler("OnMouseExit", function() ZO_Options_OnMouseExit(control) end)
 	control.dropdown = ZO_ComboBox_ObjectFromContainer(combobox)
 	local dropdown = control.dropdown
-
+	if dropdownData.sort then
+		local sortInfo = GrabSortingInfo(dropdownData.sort)
+		local sortType, sortOrder = sortInfo[1], sortInfo[2]
+		dropdown:SetSortOrder(sortOrder == "up" and ZO_SORT_ORDER_UP or ZO_SORT_ORDER_DOWN, sortType == "name" and ZO_SORT_BY_NAME or ZO_SORT_BY_NAME_NUMERIC)
+	end
+	
 	local isHalfWidth = dropdownData.width == "half"
 	if isHalfWidth then
 		control:SetDimensions(250, 55)

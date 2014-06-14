@@ -7,7 +7,7 @@
 
 
 --Register LAM with LibStub
-local MAJOR, MINOR = "LibAddonMenu-2.0", 5
+local MAJOR, MINOR = "LibAddonMenu-2.0", 6
 local lam, oldminor = LibStub:NewLibrary(MAJOR, MINOR)
 if not lam then return end	--the same or newer version of this lib is already loaded into memory 
 
@@ -125,6 +125,7 @@ local function CreateOptionsControls(panel)
 	end
 	
 	optionsCreated[addonID] = true
+	cm:FireCallbacks("LAM-PanelControlsCreated", panel)
 end
 
 
@@ -215,14 +216,18 @@ end
 --INTERNAL FUNCTION
 --creates LAM's Addon Settings panel
 local function CreateAddonSettingsPanel()
-	local controlPanelID = "LAM_ADDON_SETTINGS_PANEL"
-	local controlPanelName = "Addon Settings"
+	if not LAMSettingsPanelCreated then
+		local controlPanelID = "LAM_ADDON_SETTINGS_PANEL"
+		local controlPanelNames = {en = "Addon Settings", fr = "Réglages d'Extension", de = "Erweiterungseinstellungen"}
 
-	ZO_OptionsWindow_AddUserPanel(controlPanelID, controlPanelName)
+		ZO_OptionsWindow_AddUserPanel(controlPanelID, controlPanelNames[GetCVar("Language.2")])
 
-	lam.panelID = _G[controlPanelID]
-	
-	ZO_PreHook("ZO_OptionsWindow_ChangePanels", HandlePanelSwitching)
+		lam.panelID = _G[controlPanelID]
+		
+		ZO_PreHook("ZO_OptionsWindow_ChangePanels", HandlePanelSwitching)
+		
+		LAMSettingsPanelCreated = true
+	end
 end
 
 
