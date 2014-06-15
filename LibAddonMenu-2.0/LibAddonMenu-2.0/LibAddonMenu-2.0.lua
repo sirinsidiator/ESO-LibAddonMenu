@@ -7,7 +7,7 @@
 
 
 --Register LAM with LibStub
-local MAJOR, MINOR = "LibAddonMenu-2.0", 6
+local MAJOR, MINOR = "LibAddonMenu-2.0", 7
 local lam, oldminor = LibStub:NewLibrary(MAJOR, MINOR)
 if not lam then return end	--the same or newer version of this lib is already loaded into memory 
 
@@ -218,7 +218,7 @@ end
 local function CreateAddonSettingsPanel()
 	if not LAMSettingsPanelCreated then
 		local controlPanelID = "LAM_ADDON_SETTINGS_PANEL"
-		local controlPanelNames = {en = "Addon Settings", fr = "Réglages d'Extension", de = "Erweiterungseinstellungen"}
+		local controlPanelNames = {en = "Addon Settings", fr = "Extensions", de = "Erweiterungen"}
 
 		ZO_OptionsWindow_AddUserPanel(controlPanelID, controlPanelNames[GetCVar("Language.2")])
 

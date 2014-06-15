@@ -12,7 +12,7 @@
 }	]]
 
 
-local widgetVersion = 3
+local widgetVersion = 4
 local LAM = LibStub("LibAddonMenu-2.0")
 if not LAM:RegisterWidget("checkbox", widgetVersion) then return end
 
@@ -37,7 +37,7 @@ local function UpdateDisabled(control)
 		disable = control.data.disabled
 	end
 	
-	control.label:SetColor((disable and ZO_DEFAULT_DISABLED_COLOR or ZO_DEFAULT_ENABLED_COLOR):UnpackRGBA())
+	control.label:SetColor((disable and ZO_DEFAULT_DISABLED_COLOR or control.value and ZO_DEFAULT_ENABLED_COLOR or ZO_DEFAULT_DISABLED_COLOR):UnpackRGBA())
 	control.checkbox:SetColor((disable and ZO_DEFAULT_DISABLED_COLOR or ZO_NORMAL_TEXT):UnpackRGBA())
 	--control:SetMouseEnabled(not disable)
 	--control:SetMouseEnabled(true)
