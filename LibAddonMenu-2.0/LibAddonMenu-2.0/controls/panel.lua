@@ -11,7 +11,7 @@
 }	]]
 
 
-local widgetVersion = 4
+local widgetVersion = 5
 local LAM = LibStub("LibAddonMenu-2.0")
 if not LAM:RegisterWidget("panel", widgetVersion) then return end
 
@@ -78,7 +78,7 @@ function LAMCreateControl.panel(parent, panelData, controlName)
 	control.bg = wm:CreateControl(nil, control, CT_BACKDROP)
 	local bg = control.bg
 	bg:SetAnchorFill()
-	bg:SetEdgeTexture("EsoUI\\Art\\Tooltips\\UI-Border.dds", 128, 16)
+	bg:SetEdgeTexture("EsoUI\\Art\\miscellaneous\\borderedinsettransparent_edgefile.dds", 128, 16)
 	bg:SetCenterColor(0, 0, 0, 0)
 	
 	control.label = wm:CreateControlFromVirtual(nil, control, "ZO_Options_SectionTitleLabel")

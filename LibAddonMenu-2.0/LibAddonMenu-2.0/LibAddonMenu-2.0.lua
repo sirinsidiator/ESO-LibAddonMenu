@@ -7,7 +7,7 @@
 
 
 --Register LAM with LibStub
-local MAJOR, MINOR = "LibAddonMenu-2.0", 7
+local MAJOR, MINOR = "LibAddonMenu-2.0", 8
 local lam, oldminor = LibStub:NewLibrary(MAJOR, MINOR)
 if not lam then return end	--the same or newer version of this lib is already loaded into memory 
 
@@ -265,7 +265,7 @@ local function CreateAddonList()
 	list.bg = list.bg or wm:CreateControl(nil, list, CT_BACKDROP)
 	local bg = list.bg
 	bg:SetAnchorFill()	--offsets of 8?
-	bg:SetEdgeTexture("EsoUI\\Art\\Tooltips\\UI-Border.dds", 128, 16)
+	bg:SetEdgeTexture("EsoUI\\Art\\miscellaneous\\borderedinsettransparent_edgefile.dds", 128, 16)
 	bg:SetCenterColor(0, 0, 0, 0)
 
 	local generatedButtons

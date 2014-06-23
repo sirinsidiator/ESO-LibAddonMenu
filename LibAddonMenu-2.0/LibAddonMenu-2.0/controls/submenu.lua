@@ -6,7 +6,7 @@
 	reference = "MyAddonSubmenu"	--(optional) unique global reference to control
 }	]]
 
-local widgetVersion = 2
+local widgetVersion = 3
 local LAM = LibStub("LibAddonMenu-2.0")
 if not LAM:RegisterWidget("submenu", widgetVersion) then return end
 
@@ -49,7 +49,7 @@ function LAMCreateControl.submenu(parent, submenuData, controlName)
 	local scroll = control.scroll
 	scroll:SetParent(control)
 	scroll:SetAnchor(TOPLEFT, label, BOTTOMLEFT, 0, 10)
-	scroll:SetDimensionConstraints(525, 0, 525, 1500)
+	scroll:SetDimensionConstraints(525, 0, 525, 2500)
 
 	control.bg = wm:CreateControl(nil, label, CT_BACKDROP)
 	local bg = control.bg
