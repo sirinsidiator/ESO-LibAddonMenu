@@ -13,7 +13,7 @@
 }	]]
 
 
-local widgetVersion = 3
+local widgetVersion = 4
 local LAM = LibStub("LibAddonMenu-2.0")
 if not LAM:RegisterWidget("editbox", widgetVersion) then return end
 
@@ -61,7 +61,7 @@ end
 
 function LAMCreateControl.editbox(parent, editboxData, controlName)
 	local control = wm:CreateTopLevelWindow(controlName or editboxData.reference)
-	control:SetParent(parent.scroll)
+	control:SetParent(parent.scroll or parent)
 	control:SetMouseEnabled(true)
 	control:SetResizeToFitDescendents(true)
 	control.tooltipText = editboxData.tooltip

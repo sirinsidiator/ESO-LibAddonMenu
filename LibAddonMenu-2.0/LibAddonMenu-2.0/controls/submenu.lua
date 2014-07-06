@@ -6,7 +6,7 @@
 	reference = "MyAddonSubmenu"	--(optional) unique global reference to control
 }	]]
 
-local widgetVersion = 3
+local widgetVersion = 4
 local LAM = LibStub("LibAddonMenu-2.0")
 if not LAM:RegisterWidget("submenu", widgetVersion) then return end
 
@@ -14,8 +14,8 @@ local wm = WINDOW_MANAGER
 local am = ANIMATION_MANAGER
 
 
-local function AnimateSubmenu(label)
-	local control = label:GetParent()
+local function AnimateSubmenu(clicked)
+	local control = clicked:GetParent()
 	control.open = not control.open
 	
 	if control.open then
@@ -28,7 +28,7 @@ end
 
 function LAMCreateControl.submenu(parent, submenuData, controlName)
 	local control = wm:CreateTopLevelWindow(controlName or submenuData.reference)
-	control:SetParent(parent.scroll)
+	control:SetParent(parent.scroll or parent)
 	control.panel = parent
 	control:SetDimensions(523, 40)
 	
@@ -89,6 +89,16 @@ function LAMCreateControl.submenu(parent, submenuData, controlName)
 				scroll:SetHeight(0)
 			end
 		end)
+	
+	--small strip at the bottom of the submenu that you can click to close it
+	control.btmToggle = wm:CreateControl(nil, control, CT_TEXTURE)
+	local btmToggle = control.btmToggle
+	btmToggle:SetMouseEnabled(true)
+	btmToggle:SetAnchor(BOTTOMLEFT, control.scroll, BOTTOMLEFT)
+	btmToggle:SetAnchor(BOTTOMRIGHT, control.scroll, BOTTOMRIGHT)
+	btmToggle:SetHeight(15)
+	btmToggle:SetAlpha(0)
+	btmToggle:SetHandler("OnMouseUp", AnimateSubmenu)
 	
 	control.data = submenuData
 	

@@ -7,7 +7,7 @@
 }	]]
 
 
-local widgetVersion = 2
+local widgetVersion = 3
 local LAM = LibStub("LibAddonMenu-2.0")
 if not LAM:RegisterWidget("description", widgetVersion) then return end
 
@@ -16,7 +16,7 @@ local wm = WINDOW_MANAGER
 function LAMCreateControl.description(parent, descriptionData, controlName)
 	local control = wm:CreateTopLevelWindow(controlName or descriptionData.reference)
 	control:SetResizeToFitDescendents(true)
-	control:SetParent(parent.scroll)
+	control:SetParent(parent.scroll or parent)
 	local isHalfWidth = descriptionData.width == "half"
 	if isHalfWidth then
 		control:SetDimensionConstraints(250, 55, 250, 100)

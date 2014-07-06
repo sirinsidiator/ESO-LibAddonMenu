@@ -6,7 +6,7 @@
 }	]]
 
 
-local widgetVersion = 2
+local widgetVersion = 3
 local LAM = LibStub("LibAddonMenu-2.0")
 if not LAM:RegisterWidget("header", widgetVersion) then return end
 
@@ -14,7 +14,7 @@ local wm = WINDOW_MANAGER
 
 function LAMCreateControl.header(parent, headerData, controlName)
 	local control = wm:CreateTopLevelWindow(controlName or headerData.reference)
-	control:SetParent(parent.scroll)
+	control:SetParent(parent.scroll or parent)
 	local isHalfWidth = headerData.width == "half"
 	control:SetDimensions(isHalfWidth and 250 or 510, 30)
 	

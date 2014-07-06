@@ -12,7 +12,7 @@
 }	]]
 
 
-local widgetVersion = 2
+local widgetVersion = 3
 local LAM = LibStub("LibAddonMenu-2.0")
 if not LAM:RegisterWidget("colorpicker", widgetVersion) then return end
 
@@ -59,7 +59,7 @@ end
 
 function LAMCreateControl.colorpicker(parent, colorpickerData, controlName)
 	local control = wm:CreateTopLevelWindow(controlName or colorpickerData.reference)
-	control:SetParent(parent.scroll)
+	control:SetParent(parent.scroll or parent)
 	control:SetMouseEnabled(true)
 	control.tooltipText = colorpickerData.tooltip
 	control:SetHandler("OnMouseEnter", ZO_Options_OnMouseEnter)

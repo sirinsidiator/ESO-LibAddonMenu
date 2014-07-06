@@ -10,7 +10,7 @@
 
 --add texture coords support?
 
-local widgetVersion = 2
+local widgetVersion = 3
 local LAM = LibStub("LibAddonMenu-2.0")
 if not LAM:RegisterWidget("texture", widgetVersion) then return end
 
@@ -19,7 +19,7 @@ local wm = WINDOW_MANAGER
 function LAMCreateControl.texture(parent, textureData, controlName)
 	local control = wm:CreateTopLevelWindow(controlName or textureData.reference)
 	control:SetResizeToFitDescendents(true)
-	control:SetParent(parent.scroll)
+	control:SetParent(parent.scroll or parent)
 	
 	local isHalfWidth = textureData.width == "half"
 	if isHalfWidth then

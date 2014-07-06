@@ -11,7 +11,7 @@
 }	]]
 
 
-local widgetVersion = 2
+local widgetVersion = 3
 local LAM = LibStub("LibAddonMenu-2.0")
 if not LAM:RegisterWidget("button", widgetVersion) then return end
 
@@ -34,7 +34,7 @@ end
 --controlName is optional
 function LAMCreateControl.button(parent, buttonData, controlName)
 	local control = wm:CreateTopLevelWindow(controlName or buttonData.reference)
-	control:SetParent(parent.scroll)
+	control:SetParent(parent.scroll or parent)
 	
 	local isHalfWidth = buttonData.width == "half"
 	control:SetDimensions(isHalfWidth and 250 or 510, isHalfWidth and 55 or 28)

@@ -14,7 +14,7 @@
 }	]]
 
 
-local widgetVersion = 3
+local widgetVersion = 4
 local LAM = LibStub("LibAddonMenu-2.0")
 if not LAM:RegisterWidget("dropdown", widgetVersion) then return end
 
@@ -86,7 +86,7 @@ end
 local comboboxCount = 1
 function LAMCreateControl.dropdown(parent, dropdownData, controlName)
 	local control = wm:CreateTopLevelWindow(controlName or dropdownData.reference)
-	control:SetParent(parent.scroll)
+	control:SetParent(parent.scroll or parent)
 	control:SetMouseEnabled(true)
 	control.tooltipText = dropdownData.tooltip
 	control:SetHandler("OnMouseEnter", ZO_Options_OnMouseEnter)
