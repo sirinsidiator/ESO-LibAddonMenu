@@ -3,7 +3,7 @@
 -- LibStub developed for World of Warcraft by above members of the WowAce community.
 -- Ported to Elder Scrolls Online by Seerah
 
-local LIBSTUB_MAJOR, LIBSTUB_MINOR = "LibStub", 1  -- NEVER MAKE THIS AN SVN REVISION! IT NEEDS TO BE USABLE IN ALL REPOS!
+local LIBSTUB_MAJOR, LIBSTUB_MINOR = "LibStub", 2  -- NEVER MAKE THIS AN SVN REVISION! IT NEEDS TO BE USABLE IN ALL REPOS!
 local LibStub = _G[LIBSTUB_MAJOR]
 
 local strformat = string.format
@@ -24,7 +24,7 @@ if not LibStub or LibStub.minor < LIBSTUB_MINOR then
 	
 	function LibStub:GetLibrary(major, silent)
 		if not self.libs[major] and not silent then
-			error(("Cannot find a library instance of %q."):strformat(tostring(major)), 2)
+			error(strformat("Cannot find a library instance of %q.", tostring(major)), 2)
 		end
 		return self.libs[major], self.minors[major]
 	end
