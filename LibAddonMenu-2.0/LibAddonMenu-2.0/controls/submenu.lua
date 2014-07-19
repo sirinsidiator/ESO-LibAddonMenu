@@ -6,13 +6,20 @@
 	reference = "MyAddonSubmenu"	--(optional) unique global reference to control
 }	]]
 
-local widgetVersion = 4
+local widgetVersion = 5
 local LAM = LibStub("LibAddonMenu-2.0")
 if not LAM:RegisterWidget("submenu", widgetVersion) then return end
 
 local wm = WINDOW_MANAGER
 local am = ANIMATION_MANAGER
 
+
+local function UpdateValue(control)
+	control.label:SetText(control.data.name)
+	if control.data.tooltip then
+		control.label.tooltipText = control.data.tooltip
+	end
+end
 
 local function AnimateSubmenu(clicked)
 	local control = clicked:GetParent()
@@ -101,6 +108,12 @@ function LAMCreateControl.submenu(parent, submenuData, controlName)
 	btmToggle:SetHandler("OnMouseUp", AnimateSubmenu)
 	
 	control.data = submenuData
+	
+	control.UpdateValue = UpdateValue
+	
+	if control.panel.data.registerForRefresh or control.panel.data.registerForDefaults then	--if our parent window wants to refresh controls, then add this to the list
+		tinsert(control.panel.controlsToRefresh, control)
+	end
 	
 	return control
 end

@@ -164,7 +164,7 @@ function LAMCreateControl.slider(parent, sliderData, controlName)
 		control.warning.tooltipText = sliderData.warning
 	end
 	
-	control.panel = parent.panel or parent	--if this is in a submenu, panel is its parent
+	control.panel = parent.panel or parent	--if this is in a submenu, panel is the submenu's parent
 	control.data = sliderData
 	
 	if sliderData.disabled then
