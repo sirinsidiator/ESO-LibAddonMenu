@@ -12,6 +12,7 @@ local LAM = LibStub("LibAddonMenu-2.0")
 if not LAM:RegisterWidget("description", widgetVersion) then return end
 
 local wm = WINDOW_MANAGER
+local tinsert = table.insert
 
 local function UpdateValue(control)
 	if control.title then

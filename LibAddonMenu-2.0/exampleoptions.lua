@@ -101,6 +101,7 @@ local optionsTable = {
 	[8] = {
 		type = "custom",
 		reference = "MyAddonCustomControl",	--unique name for your control to use as reference
+		refreshFunc = function(customControl) end,	--(optional) function to call when panel/controls refresh
 		width = "half",	--or "half" (optional)
 	},
 	[9] = {

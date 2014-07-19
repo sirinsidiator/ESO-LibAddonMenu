@@ -12,6 +12,7 @@ if not LAM:RegisterWidget("submenu", widgetVersion) then return end
 
 local wm = WINDOW_MANAGER
 local am = ANIMATION_MANAGER
+local tinsert = table.insert
 
 
 local function UpdateValue(control)
