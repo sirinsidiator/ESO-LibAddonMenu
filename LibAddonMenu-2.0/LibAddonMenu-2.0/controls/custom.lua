@@ -1,6 +1,6 @@
 --[[customData = {
 	type = "custom",
-	reference = "MyAddonCustomControl",	--unique name for your control to use as reference
+	reference = "MyAddonCustomControl",	--(optional) unique name for your control to use as reference
 	refreshFunc = function(customControl) end,	--(optional) function to call when panel/controls refresh
 	width = "full",	--or "half" (optional)
 }	]]

@@ -11,7 +11,7 @@
 }	]]
 
 
-local widgetVersion = 5
+local widgetVersion = 6
 local LAM = LibStub("LibAddonMenu-2.0")
 if not LAM:RegisterWidget("panel", widgetVersion) then return end
 
@@ -70,7 +70,8 @@ ESO_Dialogs["LAM_DEFAULTS"] = {
 	},
 }
 
-local scrollCount = 1
+LAMCreateControl.scrollCount = 1
+local scrollCount = LAMCreateControl.scrollCount
 function LAMCreateControl.panel(parent, panelData, controlName)
 	local control = wm:CreateTopLevelWindow(controlName)
 	control:SetParent(parent)
