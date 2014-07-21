@@ -11,7 +11,7 @@
 }	]]
 
 
-local widgetVersion = 6
+local widgetVersion = 7
 local LAM = LibStub("LibAddonMenu-2.0")
 if not LAM:RegisterWidget("panel", widgetVersion) then return end
 
@@ -70,8 +70,7 @@ ESO_Dialogs["LAM_DEFAULTS"] = {
 	},
 }
 
-LAMCreateControl.scrollCount = 1
-local scrollCount = LAMCreateControl.scrollCount
+LAMCreateControl.scrollCount = LAMCreateControl.scrollCount or 1
 function LAMCreateControl.panel(parent, panelData, controlName)
 	local control = wm:CreateTopLevelWindow(controlName)
 	control:SetParent(parent)
@@ -104,8 +103,8 @@ function LAMCreateControl.panel(parent, panelData, controlName)
 		end
 	end
 	
-	control.container = wm:CreateControlFromVirtual("LAMAddonPanelContainer"..scrollCount, control, "ZO_ScrollContainer")
-	scrollCount = scrollCount + 1
+	control.container = wm:CreateControlFromVirtual("LAMAddonPanelContainer"..LAMCreateControl.scrollCount, control, "ZO_ScrollContainer")
+	LAMCreateControl.scrollCount = LAMCreateControl.scrollCount + 1
 	local container = control.container
 	container:SetAnchor(TOPLEFT, label, BOTTOMLEFT, 0, 20)
 	container:SetAnchor(BOTTOMRIGHT, control, BOTTOMRIGHT, -3, -3)
