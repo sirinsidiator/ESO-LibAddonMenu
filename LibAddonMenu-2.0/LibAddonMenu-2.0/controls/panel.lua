@@ -11,7 +11,7 @@
 }	]]
 
 
-local widgetVersion = 7
+local widgetVersion = 8
 local LAM = LibStub("LibAddonMenu-2.0")
 if not LAM:RegisterWidget("panel", widgetVersion) then return end
 
@@ -70,6 +70,7 @@ ESO_Dialogs["LAM_DEFAULTS"] = {
 	},
 }
 
+local callbackRegistered = false
 LAMCreateControl.scrollCount = LAMCreateControl.scrollCount or 1
 function LAMCreateControl.panel(parent, panelData, controlName)
 	local control = wm:CreateTopLevelWindow(controlName)
@@ -125,8 +126,9 @@ function LAMCreateControl.panel(parent, panelData, controlName)
 			end)
 	end
 
-	if panelData.registerForRefresh then
+	if panelData.registerForRefresh and not callbackRegistered then	--don't want to register our callback more than once
 		cm:RegisterCallback("LAM-RefreshPanel", RefreshPanel)
+		callbackRegistered = true
 	end
 
 	control.data = panelData
