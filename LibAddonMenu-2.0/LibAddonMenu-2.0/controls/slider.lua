@@ -15,7 +15,7 @@
 }	]]
 
 
-local widgetVersion = 3
+local widgetVersion = 5
 local LAM = LibStub("LibAddonMenu-2.0")
 if not LAM:RegisterWidget("slider", widgetVersion) then return end
 
@@ -77,7 +77,7 @@ function LAMCreateControl.slider(parent, sliderData, controlName)
 		control:SetDimensions(510, 40)
 	end
 	control:SetMouseEnabled(true)
-	control.tooltipText = sliderData.tooltip
+	--control.tooltipText = sliderData.tooltip
 	control:SetHandler("OnMouseEnter", ZO_Options_OnMouseEnter)
 	control:SetHandler("OnMouseExit", ZO_Options_OnMouseExit)
 	
@@ -161,11 +161,13 @@ function LAMCreateControl.slider(parent, sliderData, controlName)
 	if sliderData.warning then
 		control.warning = wm:CreateControlFromVirtual(nil, control, "ZO_Options_WarningIcon")
 		control.warning:SetAnchor(RIGHT, slider, LEFT, -5, 0)
-		control.warning.tooltipText = sliderData.warning
+		--control.warning.tooltipText = sliderData.warning
+		control.warning.data = {tooltipText = sliderData.warning}
 	end
 	
 	control.panel = parent.panel or parent	--if this is in a submenu, panel is the submenu's parent
 	control.data = sliderData
+	control.data.tooltipText = sliderData.tooltip
 	
 	if sliderData.disabled then
 		control.UpdateDisabled = UpdateDisabled

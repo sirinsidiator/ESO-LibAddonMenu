@@ -13,7 +13,7 @@
 }	]]
 
 
-local widgetVersion = 4
+local widgetVersion = 6
 local LAM = LibStub("LibAddonMenu-2.0")
 if not LAM:RegisterWidget("editbox", widgetVersion) then return end
 
@@ -64,7 +64,7 @@ function LAMCreateControl.editbox(parent, editboxData, controlName)
 	control:SetParent(parent.scroll or parent)
 	control:SetMouseEnabled(true)
 	control:SetResizeToFitDescendents(true)
-	control.tooltipText = editboxData.tooltip
+	--control.tooltipText = editboxData.tooltip
 	control:SetHandler("OnMouseEnter", ZO_Options_OnMouseEnter)
 	control:SetHandler("OnMouseExit", ZO_Options_OnMouseExit)
 	
@@ -132,11 +132,13 @@ function LAMCreateControl.editbox(parent, editboxData, controlName)
 	if editboxData.warning then
 		control.warning = wm:CreateControlFromVirtual(nil, control, "ZO_Options_WarningIcon")
 		control.warning:SetAnchor(TOPRIGHT, control.bg, TOPLEFT, -5, 0)
-		control.warning.tooltipText = editboxData.warning
+		--control.warning.tooltipText = editboxData.warning
+		control.warning.data = {tooltipText = editboxData.warning}
 	end
 
 	control.panel = parent.panel or parent	--if this is in a submenu, panel is its parent
 	control.data = editboxData
+	control.data.tooltipText = editboxData.tooltip
 	
 	if editboxData.disabled then
 		control.UpdateDisabled = UpdateDisabled

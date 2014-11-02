@@ -12,7 +12,7 @@
 }	]]
 
 
-local widgetVersion = 5
+local widgetVersion = 7
 local LAM = LibStub("LibAddonMenu-2.0")
 if not LAM:RegisterWidget("checkbox", widgetVersion) then return end
 
@@ -107,7 +107,7 @@ function LAMCreateControl.checkbox(parent, checkboxData, controlName)
 	local control = wm:CreateTopLevelWindow(controlName or checkboxData.reference)
 	control:SetParent(parent.scroll or parent)
 	control:SetMouseEnabled(true)
-	control.tooltipText = checkboxData.tooltip
+	--control.tooltipText = checkboxData.tooltip
 	control:SetHandler("OnMouseEnter", OnMouseEnter)
 	control:SetHandler("OnMouseExit", OnMouseExit)
 	control:SetHandler("OnMouseUp", function(control)
@@ -149,11 +149,13 @@ function LAMCreateControl.checkbox(parent, checkboxData, controlName)
 	if checkboxData.warning then
 		control.warning = wm:CreateControlFromVirtual(nil, control, "ZO_Options_WarningIcon")
 		control.warning:SetAnchor(RIGHT, checkbox, LEFT, -5, 0)
-		control.warning.tooltipText = checkboxData.warning
+		--control.warning.tooltipText = checkboxData.warning
+		control.warning.data = {tooltipText = checkboxData.warning}
 	end
 	
 	control.panel = parent.panel or parent	--if this is in a submenu, panel is its parent
 	control.data = checkboxData
+	control.data.tooltipText = checkboxData.tooltip
 	
 	if checkboxData.disabled then
 		control.UpdateDisabled = UpdateDisabled

@@ -7,12 +7,12 @@
 	width = "full",	--or "half" (optional)
 	disabled = function() return db.someBooleanSetting end,	--or boolean (optional)
 	warning = "Will need to reload the UI.",	--(optional)
-	default = {defaults.r, defaults.g, defaults.b, defaults.a},	--(optional) table of default color values
+	default = {r = defaults.r, g = defaults.g, b = defaults.b, a = defaults.a},	--(optional) table of default color values (or default = defaultColor, where defaultColor is a table with keys of r, g, b[, a])
 	reference = "MyAddonColorpicker"	--(optional) unique global reference to control
 }	]]
 
 
-local widgetVersion = 3
+local widgetVersion = 5
 local LAM = LibStub("LibAddonMenu-2.0")
 if not LAM:RegisterWidget("colorpicker", widgetVersion) then return end
 
@@ -61,7 +61,7 @@ function LAMCreateControl.colorpicker(parent, colorpickerData, controlName)
 	local control = wm:CreateTopLevelWindow(controlName or colorpickerData.reference)
 	control:SetParent(parent.scroll or parent)
 	control:SetMouseEnabled(true)
-	control.tooltipText = colorpickerData.tooltip
+	--control.tooltipText = colorpickerData.tooltip
 	control:SetHandler("OnMouseEnter", ZO_Options_OnMouseEnter)
 	control:SetHandler("OnMouseExit", ZO_Options_OnMouseExit)
 	
@@ -117,11 +117,13 @@ function LAMCreateControl.colorpicker(parent, colorpickerData, controlName)
 	if colorpickerData.warning then
 		control.warning = wm:CreateControlFromVirtual(nil, control, "ZO_Options_WarningIcon")
 		control.warning:SetAnchor(RIGHT, control.color, LEFT, -5, 0)
-		control.warning.tooltipText = colorpickerData.warning
+		--control.warning.tooltipText = colorpickerData.warning
+		control.warning.data = {tooltipText = colorpickerData.warning}
 	end
 	
 	control.panel = parent.panel or parent	--if this is in a submenu, panel is its parent
 	control.data = colorpickerData
+	control.data.tooltipText = colorpickerData.tooltip
 	
 	if colorpickerData.disabled then
 		control.UpdateDisabled = UpdateDisabled

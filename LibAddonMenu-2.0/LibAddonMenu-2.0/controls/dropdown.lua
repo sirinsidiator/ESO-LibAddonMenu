@@ -14,7 +14,7 @@
 }	]]
 
 
-local widgetVersion = 5
+local widgetVersion = 7
 local LAM = LibStub("LibAddonMenu-2.0")
 if not LAM:RegisterWidget("dropdown", widgetVersion) then return end
 
@@ -88,7 +88,7 @@ function LAMCreateControl.dropdown(parent, dropdownData, controlName)
 	local control = wm:CreateTopLevelWindow(controlName or dropdownData.reference)
 	control:SetParent(parent.scroll or parent)
 	control:SetMouseEnabled(true)
-	control.tooltipText = dropdownData.tooltip
+	--control.tooltipText = dropdownData.tooltip
 	control:SetHandler("OnMouseEnter", ZO_Options_OnMouseEnter)
 	control:SetHandler("OnMouseExit", ZO_Options_OnMouseExit)
 	
@@ -128,11 +128,13 @@ function LAMCreateControl.dropdown(parent, dropdownData, controlName)
 	if dropdownData.warning then
 		control.warning = wm:CreateControlFromVirtual(nil, control, "ZO_Options_WarningIcon")
 		control.warning:SetAnchor(RIGHT, combobox, LEFT, -5, 0)
-		control.warning.tooltipText = dropdownData.warning
+		--control.warning.tooltipText = dropdownData.warning
+		control.warning.data = {tooltipText = dropdownData.warning}
 	end
 
 	control.panel = parent.panel or parent	--if this is in a submenu, panel is its parent
 	control.data = dropdownData
+	control.data.tooltipText = dropdownData.tooltip
 	
 	if dropdownData.disabled then
 		control.UpdateDisabled = UpdateDisabled

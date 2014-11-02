@@ -7,7 +7,7 @@
 
 
 --Register LAM with LibStub
-local MAJOR, MINOR = "LibAddonMenu-2.0", 14
+local MAJOR, MINOR = "LibAddonMenu-2.0", 16
 local lam, oldminor = LibStub:NewLibrary(MAJOR, MINOR)
 if not lam then return end	--the same or newer version of this lib is already loaded into memory 
 
@@ -57,11 +57,12 @@ function lam:OpenToPanel(panel)
 	zo_callLater(function()
 			ZO_GameMenu_InGame.gameMenu.headerControls[locSettings]:SetOpen(true)
 			SCENE_MANAGER:AddFragment(OPTIONS_WINDOW_FRAGMENT)
-			ZO_OptionsWindow_ChangePanels(lam.panelID)
-			if not lam.panelSubCategoryControl then
-				lam.panelSubCategoryControl = _G["ZO_GameMenu_InGameNavigationContainerScrollChildZO_GameMenu_SubCategory"..(lam.panelID + 1)]
-			end
-			ZO_TreeEntry_OnMouseUp(lam.panelSubCategoryControl, true)
+			--ZO_OptionsWindow_ChangePanels(lam.panelID)
+			KEYBOARD_OPTIONS:ChangePanels(lam.panelID)
+			--if not lam.panelSubCategoryControl then
+			--	lam.panelSubCategoryControl = _G["ZO_GameMenu_InGameNavigationContainerScrollChildZO_GameMenu_SubCategory"..(lam.panelID + 1)]
+			--end
+			--ZO_TreeEntry_OnMouseUp(lam.panelSubCategoryControl, true)
 			panel:SetHidden(false)
 		end, 200)
 end
@@ -197,7 +198,7 @@ local dummyFunc = function() end
 local panelWindow = ZO_OptionsWindow
 local bgL = ZO_OptionsWindowBGLeft
 local bgR = ZO_OptionsWindowBGLeftBGRight
-local function HandlePanelSwitching(panel)
+local function HandlePanelSwitching(self, panel)
 	if panel == lam.panelID then	--our addon settings panel
 		oldDefaultButton:SetCallback(dummyFunc)
 		oldDefaultButton:SetHidden(true)
@@ -225,13 +226,21 @@ local function CreateAddonSettingsPanel()
 		local controlPanelID = "LAM_ADDON_SETTINGS_PANEL"
 		--Russian for TERAB1T's RuESO addon, which creates an "ru" locale
 		--game font does not support Cyrillic, so they are using custom fonts + extended latin charset
-		local controlPanelNames = {en = "Addon Settings", fr = "Extensions", de = "Erweiterungen", ru = "Îacòpoéêè äoïoìîeîèé"}
+		--Spanish provided by Luisen75 for their translation project
+		local controlPanelNames = {
+			en = "Addon Settings",
+			fr = "Extensions",
+			de = "Erweiterungen",
+			ru = "Îacòpoéêè äoïoìîeîèé",
+			es = "Configura Addons",
+		}
 
 		ZO_OptionsWindow_AddUserPanel(controlPanelID, controlPanelNames[GetCVar("Language.2")] or controlPanelName["en"])
 
 		lam.panelID = _G[controlPanelID]
 		
-		ZO_PreHook("ZO_OptionsWindow_ChangePanels", HandlePanelSwitching)
+		--ZO_PreHook("ZO_OptionsWindow_ChangePanels", HandlePanelSwitching)
+		ZO_PreHook(ZO_SharedOptions, "ChangePanels", HandlePanelSwitching)
 		
 		LAMSettingsPanelCreated = true
 	end
@@ -294,8 +303,12 @@ local function CreateAddonList()
 			if self.currentlySelected then self.currentlySelected:SetHidden(false) end
 		end)
 	
-	list.controlType = OPTIONS_CUSTOM
-	list.panel = lam.panelID
+	--list.controlType = OPTIONS_CUSTOM
+	--list.panel = lam.panelID
+	list.data = {
+		controlType = OPTIONS_CUSTOM,
+		panel = lam.panelID,
+	}
 	
 	ZO_OptionsWindow_InitializeControl(list)
 

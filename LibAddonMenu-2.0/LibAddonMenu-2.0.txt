@@ -1,6 +1,6 @@
-## APIVersion: 100007
+## APIVersion: 100010
 ## Title: LibAddonMenu-2.0
-## Version: 2.0 r14
+## Version: 2.0 r16
 ## Author: Seerah
 ## Description: A library to aid in the creation of option panels.
 
