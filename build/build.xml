@@ -1,0 +1,65 @@
+<?xml version="1.0"?>
+<project name="LibAddonMenu-2.0" default="copyToAddonFolder" basedir=".">
+	<property name="version" value="1" />
+
+	<property name="addonhome" location="${user.home}/Documents/Elder Scrolls Online/liveeu/AddOns" />
+	<property name="addondir" location="${addonhome}/${ant.project.name}" />
+	<property name="srcdir" location="${basedir}/../LibAddonMenu-2.0" />
+	<property name="tempdir" location="${basedir}/../temp" />
+	<property name="targetdir" location="${basedir}/../target" />
+
+	<target name="getIsCustomVersion">
+		<input addproperty="buildcustom" validargs="y,n" defaultvalue="n" message="Build with custom version number?" />
+		<condition property="isCustomVersion">
+			<equals arg1="y" arg2="${buildcustom}" />
+		</condition>
+	</target>
+
+	<target name="getCustomVersion" if="isCustomVersion">
+		<loadproperties srcFile="build.number" />
+		<script language="javascript">
+			<![CDATA[
+			var buildNumber = project.getProperty("build.number");
+			project.setProperty("build.number", parseInt(buildNumber) - 1);
+			]]>
+		</script>
+		<input addproperty="finalVersion" defaultvalue="r${build.number}" message="Please enter custom version number:" />
+		<script language="javascript">
+			<![CDATA[
+			var before = project.getProperty("finalVersion");
+			project.setProperty("fileVersion", before.replaceAll("\\.", "_"));
+			]]>
+		</script>
+	</target>
+
+	<target name="getVersion" unless="isCustomVersion">
+		<buildnumber file="build.number" />
+		<property name="finalVersion" value="${build.number}" />
+		<property name="fileVersion" value="${build.number}" />
+	</target>
+
+	<target name="copyToAddonFolder">
+		<delete dir="${addondir}" />
+		<copy todir="${addondir}">
+			<fileset dir="${srcdir}" />
+		</copy>
+		<replace file="${addondir}/${ant.project.name}.txt" token="VERSION_NUMBER" value="development" />
+		<replace file="${addondir}/${ant.project.name}/${ant.project.name}.lua" token="VERSION_NUMBER" value="999" />
+	</target>
+
+	<target name="createArchive" depends="getIsCustomVersion,getCustomVersion,getVersion">
+		<delete includeemptydirs="true" dir="${tempdir}" />
+
+		<copy todir="${tempdir}/${ant.project.name}">
+			<fileset dir="${srcdir}" />
+		</copy>
+
+		<replace file="${tempdir}/${ant.project.name}/${ant.project.name}.txt" token="VERSION_NUMBER" value="${finalVersion}" />
+		<replace file="${tempdir}/${ant.project.name}/${ant.project.name}/${ant.project.name}.lua" token="VERSION_NUMBER" value="${finalVersion}" />
+
+		<zip destfile="${targetdir}/${ant.project.name}r${fileVersion}.zip">
+			<fileset dir="${tempdir}" />
+		</zip>
+		<delete includeemptydirs="true" dir="${tempdir}" />
+	</target>
+</project>

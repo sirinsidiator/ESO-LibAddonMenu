@@ -1,4 +1,4 @@
-﻿--	LibAddonMenu-2.0 & its files © Ryan Lakanen (Seerah)	--
+--	LibAddonMenu-2.0 & its files © Ryan Lakanen (Seerah)	--
 --	All Rights Reserved										--
 --	Permission is granted to use Seerah's LibAddonMenu-2.0	--
 --	in your project. Any modifications to LibAddonMenu-2.0	--
@@ -7,7 +7,7 @@
 
 
 --Register LAM with LibStub
-local MAJOR, MINOR = "LibAddonMenu-2.0", 16
+local MAJOR, MINOR = "LibAddonMenu-2.0", VERSION_NUMBER
 local lam, oldminor = LibStub:NewLibrary(MAJOR, MINOR)
 if not lam then return end	--the same or newer version of this lib is already loaded into memory 
 

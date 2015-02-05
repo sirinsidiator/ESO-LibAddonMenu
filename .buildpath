@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<buildpath>
+	<buildpathentry kind="src" path="src"/>
+	<buildpathentry kind="src" path="test"/>
+	<buildpathentry combineaccessrules="false" kind="prj" path="/luaunit"/>
+	<buildpathentry combineaccessrules="false" kind="prj" path="/eso-game"/>
+</buildpath>
