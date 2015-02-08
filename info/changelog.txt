@@ -1,0 +1,85 @@
+2.0 r16
+- updated for changes in 100010
+- thanks to Garkin for alerting me of changes needed and for testing on the test server
+- Spanish support added, translation provided by Luisen75 for their Spanish project
+
+2.0 r14
+- fixed bug where the LAM-RefreshPanel callback was being registered with CALLBACK_MANAGER multiple times
+- fixed highlighting of entries in the game Settings menu (Addon Settings now properly highlights and other entries go back to normal)
+
+2.0 r13
+- one last bug ran out from anunder the dresser - I smashed it hopefully!
+
+2.0 r12
+- fix one bug another shows up...
+
+2.0 r11
+- don't overwrite widgets list if table already exists (in case an external lib or addon registers a new widget type)
+- headers, descriptions, submenus and custom widgets now have the ability to update their text when the panel and other controls refresh (simply change the name/text in the controlData table)
+- custom controls now have the ability to refresh with other controls and your panel - there is a new optional field in the data table called refreshFunc (when the panel refreshes, this function will be called)
+
+2.0 r10
+- fixed display of warning icon for dropdown controls
+- update LibStub.lua
+
+2.0 r9
+- added Russian locale support for RuESO project
+- fixed anchoring issue with addon list (addon names are now properly in the scroll frame, so the few of you with tons installed should have no issue any longer)
+- added ability to close submenus from the bottom of the submenu (there is a small strip along the bottom of the submenu that is clickable)
+- edited each control to better support custom-created UIs via LAM and the parent passed through to the create functions
+
+2.0 r8
+- changed border texture around panel and addon list
+- expanded maximum size of submenus from 1500 to 2500
+
+2.0 r7
+- shortened game menu entry for French and German localizations (so the text doesn't get cut off)
+- fixed checkbox label coloring bug (when a checkbox that is set to "off" is re-enabled by another setting)
+- fixed multi-line editbox bug (where text didn't display)
+- added mousewheel scrolling for multi-line editboxes
+
+2.0 r6
+- added "LAM-PanelControlsCreated" callback when you panel has been shown for the first time and your controls have now been created
+- fixed duplicate Addon Settings panels when you have a newer version of LAM overwriting an older version
+- finished localizing stuff that wasn't localized yet
+- added "sort" field to dropdown control
+
+2.0 r5
+- fix RefreshPanel function so that all controls now update
+- add RefreshPanel call to ForceDefaults function
+
+2.0 r4
+- fix for me being an idiot. Sorry guys ><
+
+2.0 r3
+- fixed checkboxes making a sound when just refreshing
+- fixed error when the lib is loaded standalone, but no addons are registered with it
+- fixed error when LAM updates itself to a newer version (won't try to create two of the same frame)
+
+2.0 r2
+- LAM-2.0 is now released!  See http://www.esoui.com/portal.php?&id=5&pageid=10 for a list of differences between LAM1 and LAM2, as well as a guide for usage and the library's docs
+
+-----------------
+1.0 r8
+- updated APIVersion to 100004
+- changed submenu so scroll bar doesn't overlap contents
+- submenu should hopefully no longer occasionally show up behind the options panel
+
+1.0 r7
+- the defaults button now properly hides for each panel (Note: the keybind still works, I can't seem to get rid of that, but at least the prompt is hidden now)
+- LAM now supports sub menus! See the description page for docs on usage
+
+1.0 r6
+- copy/paste fail when changing the name of an arg.  Description titles will no longer hide from you.
+
+1.0 r5
+- exposed the widgets created via return
+
+1.0 r4
+-new widget: Description
+
+1.0 r3
+-fixed error with color picker in new patch
+
+1.0 r2
+-fixed bug when more than one addon panel is created

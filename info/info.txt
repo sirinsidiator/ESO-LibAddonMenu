@@ -1,0 +1,3 @@
+title: LibAddonMenu
+version: 2.0 r16
+compatiblity: 1.1

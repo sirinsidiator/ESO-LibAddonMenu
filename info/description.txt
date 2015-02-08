@@ -1,0 +1,54 @@
+[SIZE="3"][COLOR="Cyan"]sirinsidiator has offered to take over LAM-2.0 and LibStub. :)[/COLOR][/SIZE]
+
+LibAddonMenu-2.0 is now released!
+Your addons will continue to work under LAM-1.0, however that version of the library will no longer be receiving updates, and you will not receive any benefits of LAM-2.0.
+
+[COLOR="Wheat"][B]** NOTE:[/B] If you have already updated your addon's settings panel to LAM2, but are using a version earlier than r6, please update your copy of the lib in the addon.  This will avoid duplicate LAM entries in the game's Settings menu.  (This bug does not occur in revisions 6+.)[B]**[/B][/COLOR]
+
+
+LibAddonMenu-2.0 is a library to aid addon authors in creating a configuration GUI for their addons which is located in the game's Settings menu.  It supports the ability to have all of a user's addon options located in the same panel.
+
+You may see [URL="http://www.esoui.com/downloads/info6-ZAMStats.html"]ZAM_Stats[/URL] for an example of usage.
+
+
+[SIZE="3"][U][COLOR="DeepSkyBlue"]HOW TO USE:[/COLOR][/U][/SIZE]
+
+[COLOR="Plum"]--Including the library with your addon--[/COLOR]
+You may either embed the library and LibStub in your addon and load the files from your addon manifest, or have the library installed like any other normal addon.
+
+If your addon embeds the library, you may place this line in your manifest file, just in case the user also has a standalone version installed.
+[CODE]## OptionalDependsOn: LibAddonMenu-2.0[/CODE]
+
+If you are depending on the library being installed separately and are not embedding it, then you must include this line in your text file.
+[CODE]## DependsOn: LibAddonMenu-2.0[/CODE]
+
+Either way you choose, LibStub will ensure that only one copy of the library (the newest revision) is loaded into memory.
+
+When embedding the libary, remove the internal LibAddonMenu-2.0 folder from the main library download.  I usually place my libraries in a sub-folder called "libs", but you may put them wherever you like in your addon directory.  This is how I would then list the files in my manifest.  (LAM2's widget controls are broken out into their own files to keep their code clean - this is why there is so many.  Good thing you only have to copy-paste this once!)
+
+[CODE]libs\LibAddonMenu-2.0\LibAddonMenu-2.0.lua
+libs\LibAddonMenu-2.0\controls\panel.lua
+libs\LibAddonMenu-2.0\controls\submenu.lua
+libs\LibAddonMenu-2.0\controls\button.lua
+libs\LibAddonMenu-2.0\controls\checkbox.lua
+libs\LibAddonMenu-2.0\controls\colorpicker.lua
+libs\LibAddonMenu-2.0\controls\custom.lua
+libs\LibAddonMenu-2.0\controls\description.lua
+libs\LibAddonMenu-2.0\controls\dropdown.lua
+libs\LibAddonMenu-2.0\controls\editbox.lua
+libs\LibAddonMenu-2.0\controls\header.lua
+libs\LibAddonMenu-2.0\controls\slider.lua
+libs\LibAddonMenu-2.0\controls\texture.lua[/CODE]
+(Don't forget to also embed LibStub and have it listed to load prior to LibAddonMenu!)
+
+
+[COLOR="Plum"]--Getting the library from LibStub (required)--[/COLOR]
+[highlight="Lua"]local LAM = LibStub:GetLibrary("LibAddonMenu-2.0")
+--OR--
+local LAM = LibStub("LibAddonMenu-2.0")
+     --returns a reference to the library table[/highlight]
+
+
+[SIZE="3"]Please see the [URL="http://www.esoui.com/portal.php?&id=5&pageid=10"]LAM-2.0 page on my portal[/URL] for guides and docs, as well as a list of differences between LAM-1.0 and LAM-2.0
+
+[URL="http://www.esoui.com/portal.php?&id=5&pageid=15"]Details on LAM2 data tables[/URL][/SIZE]
