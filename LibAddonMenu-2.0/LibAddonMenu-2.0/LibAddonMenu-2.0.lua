@@ -78,13 +78,16 @@ end
 local function CreateOptionsControls(panel)
 	local addonID = panel:GetName()
 	local optionsTable = addonToOptionsMap[addonID]
-	
+
 	if optionsTable then
-		local lastAddedControl, lacAtHalfRow
-		for _, widgetData in ipairs(optionsTable) do
-			local widgetType = widgetData.type
+		local isHalf, widget
+		local lastAddedControl, lacAtHalfRow, oIndex, widgetData, widgetType
+		local submenu, subWidgetData, sIndex, subWidgetType, subWidget
+		for oIndex=1,#optionsTable do
+			widgetData = optionsTable[oIndex]
+			widgetType = widgetData.type
 			if widgetType == "submenu" then
-				local submenu = LAMCreateControl[widgetType](panel, widgetData)
+				submenu = LAMCreateControl[widgetType](panel, widgetData)
 				if lastAddedControl then
 					submenu:SetAnchor(TOPLEFT, lastAddedControl, BOTTOMLEFT, 0, 15)
 				else
@@ -92,12 +95,13 @@ local function CreateOptionsControls(panel)
 				end
 				lastAddedControl = submenu
 				lacAtHalfRow = false
-				
+
 				local lastAddedControlSub, lacAtHalfRowSub
-				for _, subWidgetData in ipairs(widgetData.controls) do
-					local subWidgetType = subWidgetData.type
-					local subWidget = LAMCreateControl[subWidgetType](submenu, subWidgetData)
-					local isHalf = subWidgetData.width == "half"
+				for sIndex=1,#widgetData.controls do
+					subWidgetData = widgetData.controls[sIndex]
+					subWidgetType = subWidgetData.type
+					subWidget = LAMCreateControl[subWidgetType](submenu, subWidgetData)
+					isHalf = subWidgetData.width == "half"
 					if lastAddedControlSub then
 						if lacAtHalfRowSub and isHalf then
 							subWidget:SetAnchor(TOPLEFT, lastAddedControlSub, TOPRIGHT, 5, 0)
@@ -114,8 +118,8 @@ local function CreateOptionsControls(panel)
 					end
 				end
 			else
-				local widget = LAMCreateControl[widgetType](panel, widgetData)
-				local isHalf = widgetData.width == "half"
+				widget = LAMCreateControl[widgetType](panel, widgetData)
+				isHalf = widgetData.width == "half"
 				if lastAddedControl then
 					if lacAtHalfRow and isHalf then
 						widget:SetAnchor(TOPLEFT, lastAddedControl, TOPRIGHT, 10, 0)
@@ -131,9 +135,9 @@ local function CreateOptionsControls(panel)
 					lastAddedControl = widget
 				end
 			end
-		end	
+		end
 	end
-	
+
 	optionsCreated[addonID] = true
 	cm:FireCallbacks("LAM-PanelControlsCreated", panel)
 end
@@ -147,11 +151,11 @@ local function ToggleAddonPanels(panel)	--called in OnShow of newly shown panel
 		currentlySelected:SetHidden(true)
 	end
 	LAMAddonPanelsMenu.currentlySelected = panel
-	
+
 	if not optionsCreated[panel:GetName()] then	--if this is the first time opening this panel, create these options
 		CreateOptionsControls(panel)
 	end
-	
+
 	cm:FireCallbacks("LAM-RefreshPanel", panel)
 end
 
