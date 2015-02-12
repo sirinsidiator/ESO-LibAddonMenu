@@ -8,7 +8,6 @@ local MAJOR, MINOR = "LibAddonMenu-2.0", 17
 local lam, oldminor = LibStub:NewLibrary(MAJOR, MINOR)
 if not lam then return end	--the same or newer version of this lib is already loaded into memory
 
-
 --UPVALUES--
 local wm = WINDOW_MANAGER
 local cm = CALLBACK_MANAGER
@@ -45,23 +44,31 @@ end
 --METHOD: OPEN TO ADDON PANEL--
 --opens to a specific addon's option panel
 --Usage:
---	panel = userdata; the panel returned by the :RegisterOptionsPanel method
---local settings = {en = "Settings", de = "Einstellungen", fr = "Réglages"}
---local locSettings = settings[GetCVar("Language.2")]
+--  panel = userdata; the panel returned by the :RegisterOptionsPanel method
 local locSettings = GetString(SI_GAME_MENU_SETTINGS)
 function lam:OpenToPanel(panel)
 	SCENE_MANAGER:Show("gameMenuInGame")
 	zo_callLater(function()
-			ZO_GameMenu_InGame.gameMenu.headerControls[locSettings]:SetOpen(true)
-			SCENE_MANAGER:AddFragment(OPTIONS_WINDOW_FRAGMENT)
-			--ZO_OptionsWindow_ChangePanels(lam.panelID)
-			KEYBOARD_OPTIONS:ChangePanels(lam.panelID)
-			--if not lam.panelSubCategoryControl then
-			--	lam.panelSubCategoryControl = _G["ZO_GameMenu_InGameNavigationContainerScrollChildZO_GameMenu_SubCategory"..(lam.panelID + 1)]
-			--end
-			--ZO_TreeEntry_OnMouseUp(lam.panelSubCategoryControl, true)
-			panel:SetHidden(false)
-		end, 200)
+		local settingsMenu = ZO_GameMenu_InGame.gameMenu.headerControls[locSettings]
+		settingsMenu:SetOpen(true)
+		SCENE_MANAGER:AddFragment(OPTIONS_WINDOW_FRAGMENT)
+		KEYBOARD_OPTIONS:ChangePanels(lam.panelID)
+		for i, child in pairs(settingsMenu.children) do
+			if type(child) == "table" and child.data.name == KEYBOARD_OPTIONS.panelNames[lam.panelID] then
+				ZO_TreeEntry_OnMouseUp(child.control, true)
+				break
+			end
+		end
+		local scroll = LAMAddonPanelsMenuScrollChild
+		for i = 1, scroll:GetNumChildren() do
+			local button = scroll:GetChild(i)
+			if button.panel == panel then
+				zo_callHandler(button, "OnClicked")
+				ZO_Scroll_ScrollControlToTop(LAMAddonPanelsMenu, button)
+				break
+			end
+		end
+	end, 200)
 end
 
 
