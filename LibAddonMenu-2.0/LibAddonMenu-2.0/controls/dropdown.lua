@@ -39,7 +39,7 @@ local function UpdateDisabled(control)
 	end
 end
 
-local function UpdateValue(control, forceDefault, value)	
+local function UpdateValue(control, forceDefault, value)
 	if forceDefault then	--if we are forcing defaults
 		value = control.data.default
 		control.data.setFunc(value)
@@ -56,7 +56,7 @@ local function UpdateValue(control, forceDefault, value)
 	end
 end
 
-local function DropdownCallback(choice, choiceText, choice)
+local function DropdownCallback(control, choiceText, choice)
 	choice.control:UpdateValue(false, choiceText)
 end
 
@@ -83,7 +83,6 @@ local function GrabSortingInfo(sortInfo)
 end
 
 
-local comboboxCount = 1
 function LAMCreateControl.dropdown(parent, dropdownData, controlName)
 	local control = wm:CreateControl(controlName or dropdownData.reference, parent.scroll or parent, CT_CONTROL)
 	control:SetMouseEnabled(true)
@@ -97,8 +96,21 @@ function LAMCreateControl.dropdown(parent, dropdownData, controlName)
 	label:SetWrapMode(TEXT_WRAP_MODE_ELLIPSIS)
 	label:SetText(dropdownData.name)
 
-	control.combobox = wm:CreateControlFromVirtual(parent:GetName().."Combobox"..comboboxCount, control, "ZO_ComboBox")
-	comboboxCount = comboboxCount + 1
+	local comboboxCount
+	local name = parent:GetName()
+	if not name or #name == 0 then
+	    name = "LAM"
+	    comboboxCount = LAMCreateControl.comboboxCount or 0
+
+		comboboxCount = comboboxCount + 1
+	    LAMCreateControl.comboboxCount = comboboxCount
+	else
+	    comboboxCount = parent.comboboxCount or 0
+		comboboxCount = comboboxCount + 1
+	    parent.comboboxCount = comboboxCount
+	end
+	control.combobox = wm:CreateControlFromVirtual(zo_strjoin(nil, name, "Combobox", comboboxCount), control, "ZO_ComboBox")
+
 	local combobox = control.combobox
 	combobox:SetHandler("OnMouseEnter", function() ZO_Options_OnMouseEnter(control) end)
 	combobox:SetHandler("OnMouseExit", function() ZO_Options_OnMouseExit(control) end)
