@@ -33,19 +33,6 @@ local function AnimateSubmenu(clicked)
 	end
 end
 
-local function OnMouseEnter(control)
-	control:SetColor(ZO_HIGHLIGHT_TEXT:UnpackRGBA())
-	ZO_Options_OnMouseEnter(control)
-end
-
-local function OnMouseExit(control)
-	if control:GetParent().open then
-		control:SetColor(ZO_SELECTED_TEXT:UnpackRGBA())
-	else
-		control:SetColor(ZO_NORMAL_TEXT:UnpackRGBA())
-	end
-	ZO_Options_OnMouseExit(control)
-end
 
 function LAMCreateControl.submenu(parent, submenuData, controlName)
 	local control = wm:CreateControl(controlName or submenuData.reference, parent.scroll or parent, CT_CONTROL)
@@ -54,15 +41,16 @@ function LAMCreateControl.submenu(parent, submenuData, controlName)
 
 	control.label = wm:CreateControlFromVirtual(nil, control, "ZO_Options_SectionTitleLabel")
 	local label = control.label
-	label:SetAnchor(TOPLEFT, control, TOPLEFT, 6, 16)
+	label:SetAnchor(TOPLEFT, control, TOPLEFT, 5, 5)
 	label:SetDimensions(520, 30)
 	label:SetWrapMode(TEXT_WRAP_MODE_ELLIPSIS)
 	label:SetText(submenuData.name)
-	label:SetColor(ZO_NORMAL_TEXT:UnpackRGBA())
 	label:SetMouseEnabled(true)
-	label:SetHandler("OnMouseEnter", OnMouseEnter)
-	label:SetHandler("OnMouseExit", OnMouseExit)
-	label.data = {tooltipText = submenuData.tooltip}
+	if submenuData.tooltip then
+		label.data = {tooltipText = submenuData.tooltip}
+		label:SetHandler("OnMouseEnter", ZO_Options_OnMouseEnter)
+		label:SetHandler("OnMouseExit", ZO_Options_OnMouseExit)
+	end
 
 	control.scroll = wm:CreateControl(nil, control, CT_SCROLL)
 	local scroll = control.scroll
@@ -72,19 +60,17 @@ function LAMCreateControl.submenu(parent, submenuData, controlName)
 
 	control.bg = wm:CreateControl(nil, label, CT_BACKDROP)
 	local bg = control.bg
-	bg:SetAnchor(TOPLEFT, label, TOPLEFT, -10, -16)
+	bg:SetAnchor(TOPLEFT, label, TOPLEFT, -5, -5)
 	bg:SetAnchor(BOTTOMRIGHT, scroll, BOTTOMRIGHT, -7, 0)
-    bg:SetEdgeTexture("EsoUI/Art/ChatWindow/chat_BG_edge.dds", 256, 256, 16)
-    bg:SetCenterTexture("EsoUI/Art/ChatWindow/chat_BG_center.dds")
+	bg:SetEdgeTexture("EsoUI\\Art\\Tooltips\\UI-Border.dds", 128, 16)
+	bg:SetCenterTexture("EsoUI\\Art\\Tooltips\\UI-TooltipCenter.dds")
 	bg:SetInsets(16, 16, -16, -16)
-	bg:SetEdgeColor(0, 0, 0, 0.75)
-	bg:SetCenterColor(0, 0, 0, 0.75)
 
 	control.arrow = wm:CreateControl(nil, bg, CT_TEXTURE)
 	local arrow = control.arrow
-	arrow:SetDimensions(32, 32)
-	arrow:SetTexture("EsoUI/Art/Buttons/plus_up.dds")	--list_sortup for the other way
-	arrow:SetAnchor(TOPRIGHT, bg, TOPRIGHT, -5, 10)
+	arrow:SetDimensions(28, 28)
+	arrow:SetTexture("EsoUI\\Art\\Miscellaneous\\list_sortdown.dds")	--list_sortup for the other way
+	arrow:SetAnchor(TOPRIGHT, bg, TOPRIGHT, -5, 5)
 
 	--figure out the cool animation later...
 	control.animation = am:CreateTimeline()
@@ -97,12 +83,10 @@ function LAMCreateControl.submenu(parent, submenuData, controlName)
 	animation:SetHandler("OnStop", function(self, completedPlaying)
 			scroll:SetResizeToFitDescendents(control.open)
 			if control.open then
-				control.arrow:SetTexture("EsoUI/Art/Buttons/minus_up.dds")
-				control.label:SetColor(ZO_SELECTED_TEXT:UnpackRGBA())
+				control.arrow:SetTexture("EsoUI\\Art\\Miscellaneous\\list_sortup.dds")
 				scroll:SetResizeToFitPadding(5, 20)
 			else
-				control.arrow:SetTexture("EsoUI/Art/Buttons/plus_up.dds")
-				control.label:SetColor(ZO_NORMAL_TEXT:UnpackRGBA())
+				control.arrow:SetTexture("EsoUI\\Art\\Miscellaneous\\list_sortdown.dds")
 				scroll:SetResizeToFitPadding(5, 0)
 				scroll:SetHeight(0)
 			end

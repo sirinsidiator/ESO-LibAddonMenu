@@ -11,7 +11,7 @@
 }	]]
 
 
-local widgetVersion = 9
+local widgetVersion = 8
 local LAM = LibStub("LibAddonMenu-2.0")
 if not LAM:RegisterWidget("panel", widgetVersion) then return end
 
@@ -75,25 +75,25 @@ LAMCreateControl.scrollCount = LAMCreateControl.scrollCount or 1
 function LAMCreateControl.panel(parent, panelData, controlName)
 	local control = wm:CreateTopLevelWindow(controlName)
 	control:SetParent(parent)
-
-	--control.bg = wm:CreateControl(nil, control, CT_BACKDROP)
-	--local bg = control.bg
-	--bg:SetAnchorFill()
-	--bg:SetEdgeTexture("EsoUI\\Art\\miscellaneous\\borderedinsettransparent_edgefile.dds", 128, 16)
-	--bg:SetEdgeColor(0, 0, 0, 0)
-	--bg:SetCenterColor(0, 0, 0, 1)
+	
+	control.bg = wm:CreateControl(nil, control, CT_BACKDROP)
+	local bg = control.bg
+	bg:SetAnchorFill()
+	bg:SetEdgeTexture("EsoUI\\Art\\miscellaneous\\borderedinsettransparent_edgefile.dds", 128, 16)
+	bg:SetCenterColor(0, 0, 0, 0)
 
 	control.label = wm:CreateControlFromVirtual(nil, control, "ZO_Options_SectionTitleLabel")
 	local label = control.label
-	label:SetAnchor(TOPLEFT, control, TOPLEFT, 0, 4)
+	label:SetAnchor(TOPLEFT, control, TOPLEFT, 10, 10)
 	label:SetText(panelData.displayName and panelData.displayName or panelData.name)
 
 	if panelData.author or panelData.version then
 		control.info = wm:CreateControl(nil, control, CT_LABEL)
 		local info = control.info
 		info:SetFont("$(CHAT_FONT)|14|soft-shadow-thin")
+		info:SetColor(ZO_HIGHLIGHT_TEXT:UnpackRGBA())
 		info:SetHeight(13)
-		info:SetAnchor(TOPLEFT, label, BOTTOMLEFT, 0, 0)
+		info:SetAnchor(TOPRIGHT, control, BOTTOMRIGHT, -5, 2)
 		if panelData.author and panelData.version then
 			--info:SetText("Version: "..panelData.version.."  -  "..GetString(SI_ADDON_MANAGER_AUTHOR)..": "..panelData.author)
 			info:SetText(string.format("Version: %s  -  %s: %s", panelData.version, GetString(SI_ADDON_MANAGER_AUTHOR), panelData.author))
@@ -107,7 +107,7 @@ function LAMCreateControl.panel(parent, panelData, controlName)
 	control.container = wm:CreateControlFromVirtual("LAMAddonPanelContainer"..LAMCreateControl.scrollCount, control, "ZO_ScrollContainer")
 	LAMCreateControl.scrollCount = LAMCreateControl.scrollCount + 1
 	local container = control.container
-	container:SetAnchor(TOPLEFT, label, BOTTOMLEFT, 0, 33)
+	container:SetAnchor(TOPLEFT, label, BOTTOMLEFT, 0, 20)
 	container:SetAnchor(BOTTOMRIGHT, control, BOTTOMRIGHT, -3, -3)
 	control.scroll = GetControl(control.container, "ScrollChild")
 	control.scroll:SetResizeToFitPadding(0, 20)

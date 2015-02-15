@@ -98,17 +98,9 @@ function LAMCreateControl.dropdown(parent, dropdownData, controlName)
 
 	local comboboxCount
 	local name = parent:GetName()
-	if not name or #name == 0 then
-	    name = "LAM"
-	    comboboxCount = LAMCreateControl.comboboxCount or 0
-
-		comboboxCount = comboboxCount + 1
-	    LAMCreateControl.comboboxCount = comboboxCount
-	else
-	    comboboxCount = parent.comboboxCount or 0
-		comboboxCount = comboboxCount + 1
-	    parent.comboboxCount = comboboxCount
-	end
+	local countControl = (not name or #name == 0) and LAMCreateControl or parent
+	comboboxCount = (countControl.comboboxCount or 0) + 1
+	countControl.comboboxCount = comboboxCount
 	control.combobox = wm:CreateControlFromVirtual(zo_strjoin(nil, name, "Combobox", comboboxCount), control, "ZO_ComboBox")
 
 	local combobox = control.combobox

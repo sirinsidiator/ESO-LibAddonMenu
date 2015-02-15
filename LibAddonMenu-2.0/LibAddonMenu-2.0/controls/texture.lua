@@ -22,10 +22,10 @@ function LAMCreateControl.texture(parent, textureData, controlName)
 
 	local isHalfWidth = textureData.width == "half"
 	if isHalfWidth then
-		control:SetDimensionConstraints(250, 55, 250, 150)
+		control:SetDimensionConstraints(250, 55, 250, 100)
 		control:SetDimensions(250, 55)
 	else
-		control:SetDimensionConstraints(510, 30, 510, 150)
+		control:SetDimensionConstraints(510, 30, 510, 100)
 		control:SetDimensions(510, 30)
 	end
 
