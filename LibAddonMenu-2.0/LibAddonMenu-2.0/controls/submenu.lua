@@ -54,7 +54,7 @@ function LAMCreateControl.submenu(parent, submenuData, controlName)
 
 	control.label = wm:CreateControlFromVirtual(nil, control, "ZO_Options_SectionTitleLabel")
 	local label = control.label
-	label:SetAnchor(TOPLEFT, control, TOPLEFT, 5, 5)
+	label:SetAnchor(TOPLEFT, control, TOPLEFT, 6, 16)
 	label:SetDimensions(520, 30)
 	label:SetWrapMode(TEXT_WRAP_MODE_ELLIPSIS)
 	label:SetText(submenuData.name)
@@ -72,17 +72,19 @@ function LAMCreateControl.submenu(parent, submenuData, controlName)
 
 	control.bg = wm:CreateControl(nil, label, CT_BACKDROP)
 	local bg = control.bg
-	bg:SetAnchor(TOPLEFT, label, TOPLEFT, -5, -5)
+	bg:SetAnchor(TOPLEFT, label, TOPLEFT, -10, -16)
 	bg:SetAnchor(BOTTOMRIGHT, scroll, BOTTOMRIGHT, -7, 0)
-	bg:SetEdgeTexture("EsoUI\\Art\\Tooltips\\UI-Border.dds", 128, 16)
-	bg:SetCenterTexture("EsoUI\\Art\\Tooltips\\UI-TooltipCenter.dds")
+    bg:SetEdgeTexture("EsoUI/Art/ChatWindow/chat_BG_edge.dds", 256, 256, 16)
+    bg:SetCenterTexture("EsoUI/Art/ChatWindow/chat_BG_center.dds")
 	bg:SetInsets(16, 16, -16, -16)
+	bg:SetEdgeColor(0, 0, 0, 0.75)
+	bg:SetCenterColor(0, 0, 0, 0.75)
 
 	control.arrow = wm:CreateControl(nil, bg, CT_TEXTURE)
 	local arrow = control.arrow
 	arrow:SetDimensions(32, 32)
 	arrow:SetTexture("EsoUI/Art/Buttons/plus_up.dds")	--list_sortup for the other way
-	arrow:SetAnchor(TOPRIGHT, bg, TOPRIGHT, -5, 5)
+	arrow:SetAnchor(TOPRIGHT, bg, TOPRIGHT, -5, 10)
 
 	--figure out the cool animation later...
 	control.animation = am:CreateTimeline()

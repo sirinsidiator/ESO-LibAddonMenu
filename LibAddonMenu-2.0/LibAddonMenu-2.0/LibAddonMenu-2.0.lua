@@ -220,9 +220,13 @@ local function HandlePanelSwitching(self, panel)
 		oldDefaultButton:SetCallback(dummyFunc)
 		oldDefaultButton:SetHidden(true)
 		oldDefaultButton:SetAlpha(0)	--just because it still bugs out
-		panelWindow:SetDimensions(999, 960)
-		bgL:SetWidth(666)
-		bgR:SetWidth(333)
+        local width = 1082
+        local padding = 24
+		panelWindow:SetDimensions(width, 960)
+		bgL:SetWidth(width - 256 + padding)
+		bgR:SetWidth(256)
+		bgL:ClearAnchors()
+		bgL:SetAnchor(TOPLEFT, ZO_OptionsWindow, TOPLEFT, -padding, 0)
 	else
 		local shown = LAMAddonPanelsMenu.currentlySelected
 		if shown then shown:SetHidden(true) end
@@ -230,7 +234,9 @@ local function HandlePanelSwitching(self, panel)
 		oldDefaultButton:SetHidden(false)
 		oldDefaultButton:SetAlpha(1)
 		panelWindow:SetDimensions(768, 914)
+		bgL:ClearAnchors()
 		bgL:SetWidth(512)
+		bgL:SetAnchor(TOPLEFT)
 		bgR:SetWidth(256)
 	end
 end
@@ -256,8 +262,7 @@ local function CreateAddonSettingsPanel()
 
 		lam.panelID = _G[controlPanelID]
 		
-		--ZO_PreHook("ZO_OptionsWindow_ChangePanels", HandlePanelSwitching)
-		ZO_PreHook(ZO_SharedOptions, "ChangePanels", HandlePanelSwitching)
+		ZO_PreHook(ZO_KeyboardOptions, "ChangePanels", HandlePanelSwitching)
 		
 		LAMSettingsPanelCreated = true
 	end
@@ -265,41 +270,69 @@ end
 
 
 --INTERNAL FUNCTION
---adds each registered addon to the menu in LAM's panel
-local function CreateAddonButtons(list, addons)
-	for i = 1, #addons do
-		local button = wm:CreateControlFromVirtual("LAMAddonMenuButton"..i, list.scrollChild, "ZO_DefaultTextButton")
-		button.name = addons[i].name
-		button.panel = _G[addons[i].panel]
-		button:SetText(button.name)
-		button:SetHorizontalAlignment(TEXT_ALIGN_LEFT)
-		button:SetWidth(190)
-		if i == 1 then
-			button:SetAnchor(TOPLEFT, list.scrollChild, TOPLEFT, 5, 5)
-		else
-			button:SetAnchor(TOPLEFT, _G["LAMAddonMenuButton"..i-1], BOTTOMLEFT)
-		end
-		button:SetHandler("OnClicked", function(self) self.panel:SetHidden(false) end)
-	end
-end
-
-
---INTERNAL FUNCTION
 --creates the left-hand menu in LAM's panel
 local function CreateAddonList()
+	--INTERNAL FUNCTION
+	--adds each registered addon to the menu in LAM's panel
+	local function CreateAddonButtons(list, addons)
+		local buttons = {}
+		local function SelectAddonClick(self)
+			self.panel:SetHidden(false)
+			local t, control
+			for t = 1, #buttons do
+				control = buttons[t]
+				control:SetState(control == self and BSTATE_PRESSED or BSTATE_NORMAL, false)
+			end
+		end
+
+		local i, lastButton, button
+		for i = 1, #addons do
+			button = wm:CreateControlFromVirtual("LAMAddonMenuButton"..i, list.scrollChild, "ZO_MenuDropDownTextButton")
+			button.name = addons[i].name
+			button.panel = _G[addons[i].panel]
+			button:SetText(button.name)
+			button:SetHorizontalAlignment(TEXT_ALIGN_LEFT)
+			button:SetWidth(240)
+			button:SetHeight(28)
+			if i == 1 then
+				button:SetAnchor(TOPLEFT, list.scrollChild, TOPLEFT, 20, 5)
+				button:SetState(BSTATE_PRESSED, false)
+			else
+    			button:SetAnchor(TOPLEFT, lastButton, BOTTOMLEFT, 0, 0)
+			end
+			button:SetHandler("OnClicked", SelectAddonClick)
+			buttons[#buttons+1] = button
+			lastButton = button
+		end
+	end
+
 	local list
 	--check if an earlier loaded copy of LAM created it already
 	list = LAMAddonPanelsMenu or wm:CreateControlFromVirtual("LAMAddonPanelsMenu", optionsWindow, "ZO_ScrollContainer")
 	list:ClearAnchors()
 	list:SetAnchor(TOPLEFT)
 	list:SetHeight(675)
-	list:SetWidth(200)
+	list:SetWidth(260)
 
-	list.bg = list.bg or wm:CreateControl(nil, list, CT_BACKDROP)
 	local bg = list.bg
-	bg:SetAnchorFill()	--offsets of 8?
-	bg:SetEdgeTexture("EsoUI\\Art\\miscellaneous\\borderedinsettransparent_edgefile.dds", 128, 16)
-	bg:SetCenterColor(0, 0, 0, 0)
+	if bg then
+		bg:SetAnchorFill()	--offsets of 8?
+		bg:SetCenterColor(0, 0, 0, 0)
+		bg:SetEdgeColor(0, 0, 0, 0)
+		bg:SetInsets(0, 0, 0, 0)
+	end
+
+	local underlayLeft = wm:CreateControl(nil, list, CT_TEXTURE)
+	underlayLeft:SetTexture("EsoUI/Art/Miscellaneous/centerscreen_indexArea_left.dds")
+	underlayLeft:SetDimensions(208, 1024)
+	underlayLeft:SetAnchor(TOPLEFT, list, TOPLEFT, -44, -156)
+	underlayLeft:SetExcludeFromResizeToFitExtents(true)
+
+	local underlayRight = wm:CreateControl(nil, list, CT_TEXTURE)
+	underlayRight:SetTexture("EsoUI/Art/Miscellaneous/centerscreen_indexArea_right.dds")
+	underlayRight:SetDimensions(128, 1024)
+	underlayRight:SetAnchor(TOPLEFT, underlayLeft, TOPRIGHT)
+	underlayRight:SetExcludeFromResizeToFitExtents(true)
 
 	list.scrollChild = LAMAddonPanelsMenuScrollChild
 	list.scrollChild:SetResizeToFitPadding(0, 15)
@@ -308,9 +341,12 @@ local function CreateAddonList()
 	list:SetHandler("OnShow", function(self)
 			if not generatedButtons and #addonsForList > 0 then
 				--we're about to show our list for the first time - let's sort the buttons before creating them
-				table.sort(addonsForList, function(a, b)
-						return a.name < b.name
-					end)
+				local i
+				for i=1,#addonsForList do
+					addonsForList[i].sortName = addonsForList[i].name:gsub("|[Cc][%x][%x][%x][%x][%x][%x]", ""):gsub("|[Rr]", "")
+				end
+				table.sort(addonsForList, function(a, b)	return a.sortName < b.sortName	end)
+
 				CreateAddonButtons(list, addonsForList)
 				self.currentlySelected = LAMAddonMenuButton1 and LAMAddonMenuButton1.panel
 				--since our addon panels don't have a parent, let's make sure they hide when we're done with them
@@ -320,16 +356,12 @@ local function CreateAddonList()
 			if self.currentlySelected then self.currentlySelected:SetHidden(false) end
 		end)
 	
-	--list.controlType = OPTIONS_CUSTOM
-	--list.panel = lam.panelID
 	list.data = {
 		controlType = OPTIONS_CUSTOM,
 		panel = lam.panelID,
 	}
 	
 	ZO_OptionsWindow_InitializeControl(list)
-
-	return list
 end
 
 
