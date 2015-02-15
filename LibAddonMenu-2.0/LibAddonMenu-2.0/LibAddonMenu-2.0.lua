@@ -285,7 +285,9 @@ local function CreateAddonList()
 			end
 		end
 
-		local i, lastButton, button
+		local i, lastButton, button, groupSize
+        groupSize = math.floor((#addons + 4) / 5) --num of blocks
+        groupSize = math.floor((#addons + groupSize - 1) / groupSize)
 		for i = 1, #addons do
 			button = wm:CreateControlFromVirtual("LAMAddonMenuButton"..i, list.scrollChild, "ZO_MenuDropDownTextButton")
 			button.name = addons[i].name
@@ -298,7 +300,7 @@ local function CreateAddonList()
 				button:SetAnchor(TOPLEFT, list.scrollChild, TOPLEFT, 20, 5)
 				button:SetState(BSTATE_PRESSED, false)
 			else
-    			button:SetAnchor(TOPLEFT, lastButton, BOTTOMLEFT, 0, 0)
+    			button:SetAnchor(TOPLEFT, lastButton, BOTTOMLEFT, 0, (((i-1) % groupSize) == 0) and 12 or 0)
 			end
 			button:SetHandler("OnClicked", SelectAddonClick)
 			buttons[#buttons+1] = button
