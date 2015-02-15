@@ -257,8 +257,7 @@ local function CreateAddonSettingsPanel()
 
 		lam.panelID = _G[controlPanelID]
 		
-		--ZO_PreHook("ZO_OptionsWindow_ChangePanels", HandlePanelSwitching)
-		ZO_PreHook(ZO_SharedOptions, "ChangePanels", HandlePanelSwitching)
+		ZO_PreHook(ZO_KeyboardOptions, "ChangePanels", HandlePanelSwitching)
 		
 		LAMSettingsPanelCreated = true
 	end
