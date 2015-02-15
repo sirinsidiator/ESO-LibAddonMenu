@@ -252,7 +252,7 @@ local function CreateAddonSettingsPanel()
 			es = "Configura Addons",
 		}
 
-		ZO_OptionsWindow_AddUserPanel(controlPanelID, controlPanelNames[GetCVar("Language.2")] or controlPanelName["en"])
+		ZO_OptionsWindow_AddUserPanel(controlPanelID, controlPanelNames[GetCVar("Language.2")] or controlPanelNames["en"], PANEL_TYPE_SETTINGS)
 
 		lam.panelID = _G[controlPanelID]
 		
