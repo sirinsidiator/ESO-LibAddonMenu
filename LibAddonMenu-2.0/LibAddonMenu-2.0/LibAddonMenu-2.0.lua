@@ -364,8 +364,17 @@ local function CreateAddonList()
 	ZO_OptionsWindow_InitializeControl(list)
 end
 
+--INTERNAL FUNCTION
+--Will be call for the last library, which passed the version check => the newest
+local function Initialize(event, name)
+    if name:find("^ZO_") then return end
 
---INITIALIZING
-CreateAddonSettingsPanel()
-CreateAddonList()
+    EVENT_MANAGER:UnregisterForEvent(MAJOR, EVENT_ADD_ON_LOADED)
 
+    --INITIALIZING
+    CreateAddonSettingsPanel()
+    CreateAddonList()
+end
+
+EVENT_MANAGER:UnregisterForEvent(MAJOR, EVENT_ADD_ON_LOADED)
+EVENT_MANAGER:RegisterForEvent(MAJOR, EVENT_ADD_ON_LOADED, Initialize)
