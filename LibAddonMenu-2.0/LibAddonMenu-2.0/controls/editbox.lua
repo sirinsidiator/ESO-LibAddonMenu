@@ -29,7 +29,7 @@ local function UpdateDisabled(control)
 	else
 		disable = control.data.disabled
 	end
-	
+
 	if disable then
 		control.label:SetColor(ZO_DEFAULT_DISABLED_COLOR:UnpackRGBA())
 		control.editbox:SetColor(ZO_DEFAULT_DISABLED_MOUSEOVER_COLOR:UnpackRGBA())
@@ -41,7 +41,7 @@ local function UpdateDisabled(control)
 	control.editbox:SetMouseEnabled(not disable)
 end
 
-local function UpdateValue(control, forceDefault, value)	
+local function UpdateValue(control, forceDefault, value)
 	if forceDefault then	--if we are forcing defaults
 		value = control.data.default
 		control.data.setFunc(value)

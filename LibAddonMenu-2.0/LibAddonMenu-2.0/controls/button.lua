@@ -26,7 +26,7 @@ local function UpdateDisabled(control)
 	else
 		disable = control.data.disabled
 	end
-	
+
 	control.button:SetEnabled(not disable)
 end
 

@@ -75,7 +75,7 @@ LAMCreateControl.scrollCount = LAMCreateControl.scrollCount or 1
 function LAMCreateControl.panel(parent, panelData, controlName)
 	local control = wm:CreateTopLevelWindow(controlName)
 	control:SetParent(parent)
-	
+
 	control.bg = wm:CreateControl(nil, control, CT_BACKDROP)
 	local bg = control.bg
 	bg:SetAnchorFill()
