@@ -53,7 +53,6 @@ function LAMCreateControl.button(parent, buttonData, controlName)
 	local button = control.button
 	button:SetAnchor(isHalfWidth and CENTER or RIGHT)
 	button:SetClickSound("Click")
-	--button.tooltipText = buttonData.tooltip
 	button.data = {tooltipText = buttonData.tooltip}
 	button:SetHandler("OnMouseEnter", ZO_Options_OnMouseEnter)
 	button:SetHandler("OnMouseExit", ZO_Options_OnMouseExit)
@@ -67,7 +66,6 @@ function LAMCreateControl.button(parent, buttonData, controlName)
 	if buttonData.warning then
 		control.warning = wm:CreateControlFromVirtual(nil, control, "ZO_Options_WarningIcon")
 		control.warning:SetAnchor(RIGHT, button, LEFT, -5, 0)
-		--control.warning.tooltipText = buttonData.warning
 		control.warning.data = {tooltipText = buttonData.warning}
 	end
 

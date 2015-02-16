@@ -130,7 +130,6 @@ function LAMCreateControl.editbox(parent, editboxData, controlName)
 	if editboxData.warning then
 		control.warning = wm:CreateControlFromVirtual(nil, control, "ZO_Options_WarningIcon")
 		control.warning:SetAnchor(TOPRIGHT, control.bg, TOPLEFT, -5, 0)
-		--control.warning.tooltipText = editboxData.warning
 		control.warning.data = {tooltipText = editboxData.warning}
 	end
 
