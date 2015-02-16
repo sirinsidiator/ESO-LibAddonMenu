@@ -76,7 +76,6 @@ function LAMCreateControl.slider(parent, sliderData, controlName)
 		control:SetDimensions(510, 40)
 	end
 	control:SetMouseEnabled(true)
-	--control.tooltipText = sliderData.tooltip
 	control:SetHandler("OnMouseEnter", ZO_Options_OnMouseEnter)
 	control:SetHandler("OnMouseExit", ZO_Options_OnMouseExit)
 
@@ -160,7 +159,6 @@ function LAMCreateControl.slider(parent, sliderData, controlName)
 	if sliderData.warning then
 		control.warning = wm:CreateControlFromVirtual(nil, control, "ZO_Options_WarningIcon")
 		control.warning:SetAnchor(RIGHT, slider, LEFT, -5, 0)
-		--control.warning.tooltipText = sliderData.warning
 		control.warning.data = {tooltipText = sliderData.warning}
 	end
 

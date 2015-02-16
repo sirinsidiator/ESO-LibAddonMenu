@@ -115,7 +115,6 @@ function LAMCreateControl.colorpicker(parent, colorpickerData, controlName)
 	if colorpickerData.warning then
 		control.warning = wm:CreateControlFromVirtual(nil, control, "ZO_Options_WarningIcon")
 		control.warning:SetAnchor(RIGHT, control.color, LEFT, -5, 0)
-		--control.warning.tooltipText = colorpickerData.warning
 		control.warning.data = {tooltipText = colorpickerData.warning}
 	end
 
