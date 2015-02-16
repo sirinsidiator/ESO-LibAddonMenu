@@ -6,7 +6,7 @@
 --Register LAM with LibStub
 local MAJOR, MINOR = "LibAddonMenu-2.0", VERSION_NUMBER
 local lam, oldminor = LibStub:NewLibrary(MAJOR, MINOR)
-if not lam then return end	--the same or newer version of this lib is already loaded into memory 
+if not lam then return end	--the same or newer version of this lib is already loaded into memory
 
 
 --UPVALUES--
@@ -45,23 +45,31 @@ end
 --METHOD: OPEN TO ADDON PANEL--
 --opens to a specific addon's option panel
 --Usage:
---	panel = userdata; the panel returned by the :RegisterOptionsPanel method
---local settings = {en = "Settings", de = "Einstellungen", fr = "Réglages"}
---local locSettings = settings[GetCVar("Language.2")]
+--  panel = userdata; the panel returned by the :RegisterOptionsPanel method
 local locSettings = GetString(SI_GAME_MENU_SETTINGS)
 function lam:OpenToPanel(panel)
 	SCENE_MANAGER:Show("gameMenuInGame")
 	zo_callLater(function()
-			ZO_GameMenu_InGame.gameMenu.headerControls[locSettings]:SetOpen(true)
-			SCENE_MANAGER:AddFragment(OPTIONS_WINDOW_FRAGMENT)
-			--ZO_OptionsWindow_ChangePanels(lam.panelID)
-			KEYBOARD_OPTIONS:ChangePanels(lam.panelID)
-			--if not lam.panelSubCategoryControl then
-			--	lam.panelSubCategoryControl = _G["ZO_GameMenu_InGameNavigationContainerScrollChildZO_GameMenu_SubCategory"..(lam.panelID + 1)]
-			--end
-			--ZO_TreeEntry_OnMouseUp(lam.panelSubCategoryControl, true)
-			panel:SetHidden(false)
-		end, 200)
+		local settingsMenu = ZO_GameMenu_InGame.gameMenu.headerControls[locSettings]
+		settingsMenu:SetOpen(true)
+		SCENE_MANAGER:AddFragment(OPTIONS_WINDOW_FRAGMENT)
+		KEYBOARD_OPTIONS:ChangePanels(lam.panelID)
+		for i, child in pairs(settingsMenu.children) do
+			if type(child) == "table" and child.data.name == KEYBOARD_OPTIONS.panelNames[lam.panelID] then
+				ZO_TreeEntry_OnMouseUp(child.control, true)
+				break
+			end
+		end
+		local scroll = LAMAddonPanelsMenuScrollChild
+		for i = 1, scroll:GetNumChildren() do
+			local button = scroll:GetChild(i)
+			if button.panel == panel then
+				zo_callHandler(button, "OnClicked")
+				ZO_Scroll_ScrollControlToTop(LAMAddonPanelsMenu, button)
+				break
+			end
+		end
+	end, 200)
 end
 
 
@@ -71,62 +79,75 @@ end
 local function CreateOptionsControls(panel)
 	local addonID = panel:GetName()
 	local optionsTable = addonToOptionsMap[addonID]
-	
+
 	if optionsTable then
-		local lastAddedControl, lacAtHalfRow
-		for _, widgetData in ipairs(optionsTable) do
-			local widgetType = widgetData.type
+		local isHalf, widget
+		local lastAddedControl, lacAtHalfRow, oIndex, widgetData, widgetType
+		local submenu, subWidgetData, sIndex, subWidgetType, subWidget
+		local anchorOffset = 0
+		local anchorOffsetSub
+		local lastAddedControlSub, lacAtHalfRowSub
+		for oIndex=1,#optionsTable do
+			widgetData = optionsTable[oIndex]
+			widgetType = widgetData.type
 			if widgetType == "submenu" then
-				local submenu = LAMCreateControl[widgetType](panel, widgetData)
+				submenu = LAMCreateControl[widgetType](panel, widgetData)
 				if lastAddedControl then
-					submenu:SetAnchor(TOPLEFT, lastAddedControl, BOTTOMLEFT, 0, 15)
+					submenu:SetAnchor(TOPLEFT, lastAddedControl, BOTTOMLEFT, 0, 15 + anchorOffset)
 				else
 					submenu:SetAnchor(TOPLEFT)
 				end
 				lastAddedControl = submenu
 				lacAtHalfRow = false
-				
-				local lastAddedControlSub, lacAtHalfRowSub
-				for _, subWidgetData in ipairs(widgetData.controls) do
-					local subWidgetType = subWidgetData.type
-					local subWidget = LAMCreateControl[subWidgetType](submenu, subWidgetData)
-					local isHalf = subWidgetData.width == "half"
+
+				anchorOffsetSub = 0
+				lacAtHalfRowSub = nil
+				lastAddedControlSub = nil
+				for sIndex=1,#widgetData.controls do
+					subWidgetData = widgetData.controls[sIndex]
+					subWidgetType = subWidgetData.type
+					subWidget = LAMCreateControl[subWidgetType](submenu, subWidgetData)
+					isHalf = subWidgetData.width == "half"
 					if lastAddedControlSub then
 						if lacAtHalfRowSub and isHalf then
 							subWidget:SetAnchor(TOPLEFT, lastAddedControlSub, TOPRIGHT, 5, 0)
 							lacAtHalfRowSub = false
+							anchorOffsetSub = zo_max(0, subWidget:GetHeight() - lastAddedControlSub:GetHeight())
 						else
-							subWidget:SetAnchor(TOPLEFT, lastAddedControlSub, BOTTOMLEFT, 0, 15)
-							lacAtHalfRowSub = isHalf and true or false
+							subWidget:SetAnchor(TOPLEFT, lastAddedControlSub, BOTTOMLEFT, 0, 15 + anchorOffsetSub)
+							lacAtHalfRowSub = isHalf
+							anchorOffsetSub = 0
 							lastAddedControlSub = subWidget
 						end
 					else
 						subWidget:SetAnchor(TOPLEFT)
-						lacAtHalfRowSub = isHalf and true or false
+						lacAtHalfRowSub = isHalf
 						lastAddedControlSub = subWidget
 					end
 				end
 			else
-				local widget = LAMCreateControl[widgetType](panel, widgetData)
-				local isHalf = widgetData.width == "half"
+				widget = LAMCreateControl[widgetType](panel, widgetData)
+				isHalf = widgetData.width == "half"
 				if lastAddedControl then
 					if lacAtHalfRow and isHalf then
 						widget:SetAnchor(TOPLEFT, lastAddedControl, TOPRIGHT, 10, 0)
+						anchorOffset = zo_max(0, widget:GetHeight() - lastAddedControl:GetHeight())
 						lacAtHalfRow = false
 					else
-						widget:SetAnchor(TOPLEFT, lastAddedControl, BOTTOMLEFT, 0, 15)
-						lacAtHalfRow = isHalf and true or false
+						widget:SetAnchor(TOPLEFT, lastAddedControl, BOTTOMLEFT, 0, 15 + anchorOffset)
+						lacAtHalfRow = isHalf
+						anchorOffset = 0
 						lastAddedControl = widget
 					end
 				else
 					widget:SetAnchor(TOPLEFT)
-					lacAtHalfRow = isHalf and true or false
+					lacAtHalfRow = isHalf
 					lastAddedControl = widget
 				end
 			end
-		end	
+		end
 	end
-	
+
 	optionsCreated[addonID] = true
 	cm:FireCallbacks("LAM-PanelControlsCreated", panel)
 end
@@ -140,11 +161,11 @@ local function ToggleAddonPanels(panel)	--called in OnShow of newly shown panel
 		currentlySelected:SetHidden(true)
 	end
 	LAMAddonPanelsMenu.currentlySelected = panel
-	
+
 	if not optionsCreated[panel:GetName()] then	--if this is the first time opening this panel, create these options
 		CreateOptionsControls(panel)
 	end
-	
+
 	cm:FireCallbacks("LAM-RefreshPanel", panel)
 end
 
@@ -232,12 +253,11 @@ local function CreateAddonSettingsPanel()
 			es = "Configura Addons",
 		}
 
-		ZO_OptionsWindow_AddUserPanel(controlPanelID, controlPanelNames[GetCVar("Language.2")] or controlPanelName["en"])
+		ZO_OptionsWindow_AddUserPanel(controlPanelID, controlPanelNames[GetCVar("Language.2")] or controlPanelNames["en"], PANEL_TYPE_SETTINGS)
 
 		lam.panelID = _G[controlPanelID]
 		
-		--ZO_PreHook("ZO_OptionsWindow_ChangePanels", HandlePanelSwitching)
-		ZO_PreHook(ZO_SharedOptions, "ChangePanels", HandlePanelSwitching)
+		ZO_PreHook(ZO_KeyboardOptions, "ChangePanels", HandlePanelSwitching)
 		
 		LAMSettingsPanelCreated = true
 	end

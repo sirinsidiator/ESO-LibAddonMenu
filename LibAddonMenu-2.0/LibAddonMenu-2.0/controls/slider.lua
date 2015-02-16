@@ -15,7 +15,7 @@
 }	]]
 
 
-local widgetVersion = 5
+local widgetVersion = 6
 local LAM = LibStub("LibAddonMenu-2.0")
 if not LAM:RegisterWidget("slider", widgetVersion) then return end
 
@@ -32,7 +32,7 @@ local function UpdateDisabled(control)
 	else
 		disable = control.data.disabled
 	end
-	
+
 	control.slider:SetEnabled(not disable)
 	control.slidervalue:SetEditEnabled(not disable)
 	if disable then
@@ -61,15 +61,14 @@ local function UpdateValue(control, forceDefault, value)
 	else
 		value = control.data.getFunc()
 	end
-	
+
 	control.slider:SetValue(value)
 	control.slidervalue:SetText(value)
 end
 
 
 function LAMCreateControl.slider(parent, sliderData, controlName)
-	local control = wm:CreateTopLevelWindow(controlName or sliderData.reference)
-	control:SetParent(parent.scroll or parent)
+	local control = wm:CreateControl(controlName or sliderData.reference, parent.scroll or parent, CT_CONTROL)
 	local isHalfWidth = sliderData.width == "half"
 	if isHalfWidth then
 		control:SetDimensions(250, 55)
@@ -80,7 +79,7 @@ function LAMCreateControl.slider(parent, sliderData, controlName)
 	--control.tooltipText = sliderData.tooltip
 	control:SetHandler("OnMouseEnter", ZO_Options_OnMouseEnter)
 	control:SetHandler("OnMouseExit", ZO_Options_OnMouseExit)
-	
+
 	control.label = wm:CreateControl(nil, control, CT_LABEL)
 	local label = control.label
 	label:SetFont("ZoFontWinH4")
@@ -88,7 +87,7 @@ function LAMCreateControl.slider(parent, sliderData, controlName)
 	label:SetWrapMode(TEXT_WRAP_MODE_ELLIPSIS)
 	label:SetAnchor(isHalfWidth and TOPLEFT or LEFT)
 	label:SetText(sliderData.name)
-	
+
 	--skipping creating the backdrop...  Is this the actual slider texture?
 	control.slider = wm:CreateControl(nil, control, CT_SLIDER)
 	local slider = control.slider
@@ -107,14 +106,14 @@ function LAMCreateControl.slider(parent, sliderData, controlName)
 	slider:SetMinMax(minValue, maxValue)
 	slider:SetHandler("OnMouseEnter", function() ZO_Options_OnMouseEnter(control) end)
 	slider:SetHandler("OnMouseEnter", function() ZO_Options_OnMouseExit(control) end)
-	
+
 	slider.bg = wm:CreateControl(nil, slider, CT_BACKDROP)
 	local bg = slider.bg
 	bg:SetCenterColor(0, 0, 0)
 	bg:SetAnchor(TOPLEFT, slider, TOPLEFT, 0, 4)
 	bg:SetAnchor(BOTTOMRIGHT, slider, BOTTOMRIGHT, 0, -4)
 	bg:SetEdgeTexture("EsoUI\\Art\\Tooltips\\UI-SliderBackdrop.dds", 32, 4)
-	
+
 	control.minText = wm:CreateControl(nil, slider, CT_LABEL)
 	local minText = control.minText
 	minText:SetFont("ZoFontGameSmall")
@@ -126,7 +125,7 @@ function LAMCreateControl.slider(parent, sliderData, controlName)
 	maxText:SetFont("ZoFontGameSmall")
 	maxText:SetAnchor(TOPRIGHT, slider, BOTTOMRIGHT)
 	maxText:SetText(sliderData.max)
-	
+
 	control.slidervalueBG = wm:CreateControlFromVirtual(nil, slider, "ZO_EditBackdrop")
 	control.slidervalueBG:SetDimensions(50, 16)
 	control.slidervalueBG:SetAnchor(TOP, slider, BOTTOM, 0, 0)
@@ -145,7 +144,7 @@ function LAMCreateControl.slider(parent, sliderData, controlName)
 			self:LoseFocus()
 			control:UpdateValue(false, tonumber(self:GetText()))
 		end)
-	
+
 	local range = maxValue - minValue
 	slider:SetValueStep(sliderData.step or 1)
 	slider:SetHandler("OnValueChanged", function(self, value, eventReason)
@@ -157,18 +156,18 @@ function LAMCreateControl.slider(parent, sliderData, controlName)
 			--sliderData.setFunc(value)
 			control:UpdateValue(false, value)	--does this work here instead?
 		end)
-		
+
 	if sliderData.warning then
 		control.warning = wm:CreateControlFromVirtual(nil, control, "ZO_Options_WarningIcon")
 		control.warning:SetAnchor(RIGHT, slider, LEFT, -5, 0)
 		--control.warning.tooltipText = sliderData.warning
 		control.warning.data = {tooltipText = sliderData.warning}
 	end
-	
+
 	control.panel = parent.panel or parent	--if this is in a submenu, panel is the submenu's parent
 	control.data = sliderData
 	control.data.tooltipText = sliderData.tooltip
-	
+
 	if sliderData.disabled then
 		control.UpdateDisabled = UpdateDisabled
 		control:UpdateDisabled()

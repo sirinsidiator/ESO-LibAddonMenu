@@ -13,7 +13,7 @@
 }	]]
 
 
-local widgetVersion = 6
+local widgetVersion = 7
 local LAM = LibStub("LibAddonMenu-2.0")
 if not LAM:RegisterWidget("editbox", widgetVersion) then return end
 
@@ -60,24 +60,22 @@ end
 
 
 function LAMCreateControl.editbox(parent, editboxData, controlName)
-	local control = wm:CreateTopLevelWindow(controlName or editboxData.reference)
-	control:SetParent(parent.scroll or parent)
+	local control = wm:CreateControl(controlName or editboxData.reference, parent.scroll or parent, CT_CONTROL)
 	control:SetMouseEnabled(true)
 	control:SetResizeToFitDescendents(true)
-	--control.tooltipText = editboxData.tooltip
 	control:SetHandler("OnMouseEnter", ZO_Options_OnMouseEnter)
 	control:SetHandler("OnMouseExit", ZO_Options_OnMouseExit)
-	
+
 	control.label = wm:CreateControl(nil, control, CT_LABEL)
 	local label = control.label
 	label:SetAnchor(TOPLEFT)
 	label:SetFont("ZoFontWinH4")
 	label:SetWrapMode(TEXT_WRAP_MODE_ELLIPSIS)
 	label:SetText(editboxData.name)
-	
+
 	control.bg = wm:CreateControlFromVirtual(nil, control, "ZO_EditBackdrop")
 	local bg = control.bg
-	
+
 	if editboxData.isMultiline then
 		control.editbox = wm:CreateControlFromVirtual(nil, bg, "ZO_DefaultEditMultiLineForBackdrop")
 		control.editbox:SetHandler("OnMouseWheel", function(self, delta)
@@ -109,7 +107,7 @@ function LAMCreateControl.editbox(parent, editboxData, controlName)
 	editbox:SetHandler("OnEscape", function(self) self:LoseFocus() control:UpdateValue(false, self:GetText()) end)
 	editbox:SetHandler("OnMouseEnter", function() ZO_Options_OnMouseEnter(control) end)
 	editbox:SetHandler("OnMouseExit", function() ZO_Options_OnMouseExit(control) end)
-	
+
 	local isHalfWidth = editboxData.width == "half"
 	if isHalfWidth then
 		control:SetDimensions(250, 55)
@@ -139,7 +137,7 @@ function LAMCreateControl.editbox(parent, editboxData, controlName)
 	control.panel = parent.panel or parent	--if this is in a submenu, panel is its parent
 	control.data = editboxData
 	control.data.tooltipText = editboxData.tooltip
-	
+
 	if editboxData.disabled then
 		control.UpdateDisabled = UpdateDisabled
 		control:UpdateDisabled()

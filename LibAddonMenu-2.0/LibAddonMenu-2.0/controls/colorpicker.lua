@@ -12,7 +12,7 @@
 }	]]
 
 
-local widgetVersion = 5
+local widgetVersion = 6
 local LAM = LibStub("LibAddonMenu-2.0")
 if not LAM:RegisterWidget("colorpicker", widgetVersion) then return end
 
@@ -28,13 +28,13 @@ local function UpdateDisabled(control)
 	else
 		disable = control.data.disabled
 	end
-	
+
 	if disable then
 		control.label:SetColor(ZO_DEFAULT_DISABLED_COLOR:UnpackRGBA())
 	else
 		control.label:SetColor(ZO_DEFAULT_ENABLED_COLOR:UnpackRGBA())
 	end
-	
+
 	control.isDisabled = disable
 end
 
@@ -58,13 +58,11 @@ end
 
 
 function LAMCreateControl.colorpicker(parent, colorpickerData, controlName)
-	local control = wm:CreateTopLevelWindow(controlName or colorpickerData.reference)
-	control:SetParent(parent.scroll or parent)
+	local control = wm:CreateControl(controlName or colorpickerData.reference, parent.scroll or parent, CT_CONTROL)
 	control:SetMouseEnabled(true)
-	--control.tooltipText = colorpickerData.tooltip
 	control:SetHandler("OnMouseEnter", ZO_Options_OnMouseEnter)
 	control:SetHandler("OnMouseExit", ZO_Options_OnMouseExit)
-	
+
 	control.label = wm:CreateControl(nil, control, CT_LABEL)
 	local label = control.label
 	label:SetDimensions(300, 26)
@@ -72,10 +70,10 @@ function LAMCreateControl.colorpicker(parent, colorpickerData, controlName)
 	label:SetFont("ZoFontWinH4")
 	label:SetWrapMode(TEXT_WRAP_MODE_ELLIPSIS)
 	label:SetText(colorpickerData.name)
-	
+
 	control.color = wm:CreateControl(nil, control, CT_CONTROL)
 	local color = control.color
-	
+
 	local isHalfWidth = colorpickerData.width == "half"
 	if isHalfWidth then
 		control:SetDimensions(250, 55)
@@ -88,12 +86,12 @@ function LAMCreateControl.colorpicker(parent, colorpickerData, controlName)
 		color:SetDimensions(200, 24)
 		color:SetAnchor(TOPRIGHT)
 	end
-	
+
 	control.thumb = wm:CreateControl(nil, color, CT_TEXTURE)
 	local thumb = control.thumb
 	thumb:SetDimensions(36, 18)
 	thumb:SetAnchor(LEFT, color, LEFT, 4, 0)
-	
+
 	color.border = wm:CreateControl(nil, color, CT_TEXTURE)
 	local border = color.border
 	border:SetTexture("EsoUI\\Art\\ChatWindow\\chatOptions_bgColSwatch_frame.dds")
@@ -104,10 +102,10 @@ function LAMCreateControl.colorpicker(parent, colorpickerData, controlName)
 	local function ColorPickerCallback(r, g, b, a)
 			control:UpdateValue(false, r, g, b, a)
 		end
-	
+
 	control:SetHandler("OnMouseUp", function(self, btn, upInside)
 			if self.isDisabled then return end
-			
+
 			if upInside then
 				local r, g, b, a = colorpickerData.getFunc()
 				COLOR_PICKER:Show(ColorPickerCallback, r, g, b, a, colorpickerData.name)
@@ -120,11 +118,11 @@ function LAMCreateControl.colorpicker(parent, colorpickerData, controlName)
 		--control.warning.tooltipText = colorpickerData.warning
 		control.warning.data = {tooltipText = colorpickerData.warning}
 	end
-	
+
 	control.panel = parent.panel or parent	--if this is in a submenu, panel is its parent
 	control.data = colorpickerData
 	control.data.tooltipText = colorpickerData.tooltip
-	
+
 	if colorpickerData.disabled then
 		control.UpdateDisabled = UpdateDisabled
 		control:UpdateDisabled()

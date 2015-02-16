@@ -21,10 +21,10 @@ local cm = CALLBACK_MANAGER
 local function RefreshPanel(control)
 	local panel = control.panel or control	--callback can be fired by a single control or by the panel showing
 	local panelControls = panel.controlsToRefresh
-	
+
 	for i = 1, #panelControls do
 		local updateControl = panelControls[i]
-		if  updateControl ~= control then		
+		if  updateControl ~= control then
 			if updateControl.UpdateValue then
 				updateControl:UpdateValue()
 			end
@@ -37,18 +37,18 @@ end
 
 local function ForceDefaults(panel)
 	local panelControls = panel.controlsToRefresh
-	
+
 	for i = 1, #panelControls do
 		local updateControl = panelControls[i]
 		if updateControl.UpdateValue and updateControl.data.default ~= nil then
 			updateControl:UpdateValue(true)
 		end
 	end
-	
+
 	if panel.data.resetFunc then
 		panel.data.resetFunc()
 	end
-	
+
 	cm:FireCallbacks("LAM-RefreshPanel", panel)
 end
 ESO_Dialogs["LAM_DEFAULTS"] = {
@@ -81,12 +81,12 @@ function LAMCreateControl.panel(parent, panelData, controlName)
 	bg:SetAnchorFill()
 	bg:SetEdgeTexture("EsoUI\\Art\\miscellaneous\\borderedinsettransparent_edgefile.dds", 128, 16)
 	bg:SetCenterColor(0, 0, 0, 0)
-	
+
 	control.label = wm:CreateControlFromVirtual(nil, control, "ZO_Options_SectionTitleLabel")
 	local label = control.label
 	label:SetAnchor(TOPLEFT, control, TOPLEFT, 10, 10)
 	label:SetText(panelData.displayName and panelData.displayName or panelData.name)
-	
+
 	if panelData.author or panelData.version then
 		control.info = wm:CreateControl(nil, control, CT_LABEL)
 		local info = control.info
@@ -103,7 +103,7 @@ function LAMCreateControl.panel(parent, panelData, controlName)
 			info:SetText("Version: "..panelData.version)
 		end
 	end
-	
+
 	control.container = wm:CreateControlFromVirtual("LAMAddonPanelContainer"..LAMCreateControl.scrollCount, control, "ZO_ScrollContainer")
 	LAMCreateControl.scrollCount = LAMCreateControl.scrollCount + 1
 	local container = control.container
@@ -111,7 +111,7 @@ function LAMCreateControl.panel(parent, panelData, controlName)
 	container:SetAnchor(BOTTOMRIGHT, control, BOTTOMRIGHT, -3, -3)
 	control.scroll = GetControl(control.container, "ScrollChild")
 	control.scroll:SetResizeToFitPadding(0, 20)
-	
+
 	if panelData.registerForDefaults then
 		control.defaultButton = wm:CreateControlFromVirtual(nil, control, "ZO_DefaultTextButton")
 		local defaultButton = control.defaultButton
@@ -133,6 +133,6 @@ function LAMCreateControl.panel(parent, panelData, controlName)
 
 	control.data = panelData
 	control.controlsToRefresh = {}
-	
+
 	return control
 end
