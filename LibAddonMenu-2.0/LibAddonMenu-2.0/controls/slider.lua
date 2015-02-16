@@ -100,7 +100,7 @@ function LAMCreateControl.slider(parent, sliderData, controlName)
 	slider:SetMouseEnabled(true)
 	slider:SetOrientation(ORIENTATION_HORIZONTAL)
 	--put nil for highlighted texture file path, and what look to be texture coords
-	slider:SetThumbTexture("EsoUI\\Art\\Miscellaneous\\scrollbox_elevator.dds", "EsoUI\\Art\\Miscellaneous\\scrollbox_elevator_disabled.dds", nil, 8, 16) 
+	slider:SetThumbTexture("EsoUI\\Art\\Miscellaneous\\scrollbox_elevator.dds", "EsoUI\\Art\\Miscellaneous\\scrollbox_elevator_disabled.dds", nil, 8, 16)
 	local minValue = sliderData.min
 	local maxValue = sliderData.max
 	slider:SetMinMax(minValue, maxValue)
@@ -150,7 +150,7 @@ function LAMCreateControl.slider(parent, sliderData, controlName)
 	slider:SetHandler("OnValueChanged", function(self, value, eventReason)
 			if eventReason == EVENT_REASON_SOFTWARE then return end
 			self:SetValue(value)	--do we actually need this line?
-			slidervalue:SetText(value)	
+			slidervalue:SetText(value)
 		end)
 	slider:SetHandler("OnSliderReleased", function(self, value)
 			--sliderData.setFunc(value)

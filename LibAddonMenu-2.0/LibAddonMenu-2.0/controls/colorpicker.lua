@@ -38,7 +38,7 @@ local function UpdateDisabled(control)
 	control.isDisabled = disable
 end
 
-local function UpdateValue(control, forceDefault, valueR, valueG, valueB, valueA)	
+local function UpdateValue(control, forceDefault, valueR, valueG, valueB, valueA)
 	if forceDefault then	--if we are forcing defaults
 		local color = control.data.default
 		valueR, valueG, valueB, valueA = color.r, color.g, color.b, color.a
@@ -53,7 +53,7 @@ local function UpdateValue(control, forceDefault, valueR, valueG, valueB, valueA
 		valueR, valueG, valueB, valueA = control.data.getFunc()
 	end
 
-	control.thumb:SetColor(valueR, valueG, valueB, valueA or 1)	
+	control.thumb:SetColor(valueR, valueG, valueB, valueA or 1)
 end
 
 

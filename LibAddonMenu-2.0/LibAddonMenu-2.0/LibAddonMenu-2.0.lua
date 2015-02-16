@@ -212,7 +212,7 @@ function lam:RegisterAddonPanel(addonID, panelData)
 			lam:OpenToPanel(panel)
 		end
 	end
-	
+
 	return panel	--return for authors creating options manually
 end
 
@@ -279,9 +279,9 @@ local function CreateAddonSettingsPanel()
 		ZO_OptionsWindow_AddUserPanel(controlPanelID, controlPanelNames[GetCVar("Language.2")] or controlPanelNames["en"], PANEL_TYPE_SETTINGS)
 
 		lam.panelID = _G[controlPanelID]
-		
+
 		ZO_PreHook(ZO_KeyboardOptions, "ChangePanels", HandlePanelSwitching)
-		
+
 		LAMSettingsPanelCreated = true
 	end
 end
@@ -326,7 +326,7 @@ local function CreateAddonList()
 
 	list.scrollChild = LAMAddonPanelsMenuScrollChild
 	list.scrollChild:SetResizeToFitPadding(0, 15)
-	
+
 	local generatedButtons
 	list:SetHandler("OnShow", function(self)
 			if not generatedButtons and #addonsForList > 0 then
@@ -342,14 +342,14 @@ local function CreateAddonList()
 			end
 			if self.currentlySelected then self.currentlySelected:SetHidden(false) end
 		end)
-	
+
 	--list.controlType = OPTIONS_CUSTOM
 	--list.panel = lam.panelID
 	list.data = {
 		controlType = OPTIONS_CUSTOM,
 		panel = lam.panelID,
 	}
-	
+
 	ZO_OptionsWindow_InitializeControl(list)
 
 	return list
