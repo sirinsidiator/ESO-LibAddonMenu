@@ -96,10 +96,13 @@ function LAMCreateControl.dropdown(parent, dropdownData, controlName)
 	label:SetWrapMode(TEXT_WRAP_MODE_ELLIPSIS)
 	label:SetText(dropdownData.name)
 
-	local comboboxCount
+	local countControl = parent
 	local name = parent:GetName()
-	local countControl = (not name or #name == 0) and LAMCreateControl or parent
-	comboboxCount = (countControl.comboboxCount or 0) + 1
+	if not name or #name == 0 then
+		countControl = LAMCreateControl
+		name = "LAM"
+	end
+	local comboboxCount = (countControl.comboboxCount or 0) + 1
 	countControl.comboboxCount = comboboxCount
 	control.combobox = wm:CreateControlFromVirtual(zo_strjoin(nil, name, "Combobox", comboboxCount), control, "ZO_ComboBox")
 
