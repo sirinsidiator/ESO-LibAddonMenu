@@ -34,14 +34,53 @@ end
 local wm = WINDOW_MANAGER
 local cm = CALLBACK_MANAGER
 local tinsert = table.insert
-local optionsWindow = ZO_OptionsWindowSettingsScrollChild
-local _
 
 local addonsForList = {}
 local addonToOptionsMap = {}
 local optionsCreated = {}
 lam.widgets = lam.widgets or {}
 local widgets = lam.widgets
+
+local ADDON_DATA_TYPE = 1
+local RESELECTING_DURING_REBUILD = true
+local USER_REQUESTED_OPEN = true
+
+
+--INTERNAL FUNCTION
+--populates `addonList` with entries from `addonsForList`
+--	addonList = ZO_ScrollList control
+--	filter = [optional] function(data)
+local function PopulateAddonList(addonList, filter)
+	local entryList = ZO_ScrollList_GetDataList(addonList)
+	local selectedData = nil
+
+	ZO_ScrollList_Clear(addonList)
+
+	for i, data in ipairs(addonsForList) do
+		if not filter or filter(data) then
+			tinsert(entryList, ZO_ScrollList_CreateDataEntry(ADDON_DATA_TYPE, data))
+			-- select the first panel passing the filter, or the currently
+			-- shown panel, but only if it passes the filter as well
+			if selectedData == nil or data.panel == lam.currentAddonPanel then
+				selectedData = data
+			end
+		end
+	end
+
+	ZO_ScrollList_Commit(addonList)
+
+	if selectedData then
+		if selectedData.panel == lam.currentAddonPanel then
+			ZO_ScrollList_SelectData(addonList, selectedData, nil, RESELECTING_DURING_REBUILD)
+		else
+			ZO_ScrollList_SelectData(addonList, selectedData, nil)
+		end
+	end
+
+	if addonList.selectedDataIndex then
+		ZO_ScrollList_ScrollDataIntoView(addonList, addonList.selectedDataIndex)
+	end
+end
 
 
 --METHOD: REGISTER WIDGET--
@@ -66,31 +105,53 @@ end
 --METHOD: OPEN TO ADDON PANEL--
 --opens to a specific addon's option panel
 --Usage:
---  panel = userdata; the panel returned by the :RegisterOptionsPanel method
+--	panel = userdata; the panel returned by the :RegisterOptionsPanel method
 local locSettings = GetString(SI_GAME_MENU_SETTINGS)
 function lam:OpenToPanel(panel)
-	SCENE_MANAGER:Show("gameMenuInGame")
-	zo_callLater(function()
-		local settingsMenu = ZO_GameMenu_InGame.gameMenu.headerControls[locSettings]
-		settingsMenu:SetOpen(true)
-		SCENE_MANAGER:AddFragment(OPTIONS_WINDOW_FRAGMENT)
-		KEYBOARD_OPTIONS:ChangePanels(lam.panelID)
-		for i, child in pairs(settingsMenu.children) do
-			if type(child) == "table" and child.data.name == KEYBOARD_OPTIONS.panelNames[lam.panelID] then
-				ZO_TreeEntry_OnMouseUp(child.control, true)
+
+	local function openMenuAndSelectAddon()
+		local gameMenu = ZO_GameMenu_InGame.gameMenu
+		local settingsMenu = gameMenu.headerControls[locSettings]
+
+		if settingsMenu then -- an instance of ZO_TreeNode
+			local children = settingsMenu:GetChildren()
+			for i = 1, (children and #children or 0) do
+				local childNode = children[i]
+				local data = childNode:GetData()
+				if data and data.id == lam.panelId then
+					-- found LAM "Addon Settings" node, yay!
+					childNode:GetTree():SelectNode(childNode)
+					break
+				end
+			end
+		end
+
+		local addonList = lam.addonList
+		local selectedData = nil
+
+		for _, addonData in ipairs(addonsForList) do
+			if addonData.panel == panel then
+				selectedData = addonData
 				break
 			end
 		end
-		local scroll = LAMAddonPanelsMenuScrollChild
-		for i = 1, scroll:GetNumChildren() do
-			local button = scroll:GetChild(i)
-			if button.panel == panel then
-				zo_callHandler(button, "OnClicked")
-				ZO_Scroll_ScrollControlToTop(LAMAddonPanelsMenu, button)
-				break
-			end
+
+		ZO_ScrollList_SelectData(addonList, selectedData, nil)
+		-- if the requested addon doesn't pass search filter, it
+		-- won't appear in the list and thus can't be scrolled to,
+		-- but its panel will still be shown
+
+		if addonList.selectedDataIndex then
+			ZO_ScrollList_ScrollDataIntoView(addonList, addonList.selectedDataIndex)
 		end
-	end, 200)
+	end
+
+	if SCENE_MANAGER:GetScene("gameMenuInGame"):GetState() == SCENE_SHOWN then
+		openMenuAndSelectAddon()
+	else
+		SCENE_MANAGER:CallWhen("gameMenuInGame", SCENE_SHOWN, openMenuAndSelectAddon)
+		SCENE_MANAGER:Show("gameMenuInGame")
+	end
 end
 
 
@@ -177,11 +238,14 @@ end
 --INTERNAL FUNCTION
 --handles switching between panels
 local function ToggleAddonPanels(panel)	--called in OnShow of newly shown panel
-	local currentlySelected = LAMAddonPanelsMenu.currentlySelected
+	local currentlySelected = lam.currentAddonPanel
 	if currentlySelected and currentlySelected ~= panel then
 		currentlySelected:SetHidden(true)
 	end
-	LAMAddonPanelsMenu.currentlySelected = panel
+	lam.currentAddonPanel = panel
+
+	-- refresh visible rows to reflect panel IsHidden status
+	ZO_ScrollList_RefreshVisible(lam.addonList)
 
 	if not optionsCreated[panel:GetName()] then	--if this is the first time opening this panel, create these options
 		CreateOptionsControls(panel)
@@ -199,14 +263,23 @@ local CheckSafetyAndInitialize
 --	panelData = table; data object for your panel - see controls\panel.lua
 function lam:RegisterAddonPanel(addonID, panelData)
 	CheckSafetyAndInitialize(addonID)
-	local panel = lamcc.panel(nil, panelData, addonID)	--addonID==global name of panel
+	local container = lam:GetAddonPanelContainer()
+	local panel = lamcc.panel(container, panelData, addonID)	--addonID==global name of panel
 	panel:SetHidden(true)
-	panel:SetAnchor(TOPLEFT, LAMAddonPanelsMenu, TOPRIGHT, 10, 0)
-	panel:SetAnchor(BOTTOMLEFT, LAMAddonPanelsMenu, BOTTOMRIGHT, 10, 0)
-	panel:SetWidth(549)
-	panel:SetDrawLayer(DL_OVERLAY)
-	tinsert(addonsForList, {panel = addonID, name = panelData.name})
+	panel:SetAnchorFill(container)
 	panel:SetHandler("OnShow", ToggleAddonPanels)
+
+	local function stripMarkup(str)
+		return str:gsub("|[Cc]%x%x%x%x%x%x", ""):gsub("|[Rr]", "")
+	end
+
+	local addonData = {
+		panel = panel,
+		name = stripMarkup(panelData.name),
+	}
+
+	tinsert(addonsForList, addonData)
+
 	if panelData.slashCommand then
 		SLASH_COMMANDS[panelData.slashCommand] = function()
 			lam:OpenToPanel(panel)
@@ -232,128 +305,190 @@ end
 
 
 --INTERNAL FUNCTION
---handles switching between LAM's Addon Settings panel and other panels in the Settings menu
-local oldDefaultButton = ZO_OptionsWindowResetToDefaultButton
-local oldCallback = oldDefaultButton.callback
-local dummyFunc = function() end
-local panelWindow = ZO_OptionsWindow
-local bgL = ZO_OptionsWindowBGLeft
-local bgR = ZO_OptionsWindowBGLeftBGRight
-local function HandlePanelSwitching(self, panel)
-	if panel == lam.panelID then	--our addon settings panel
-		oldDefaultButton:SetCallback(dummyFunc)
-		oldDefaultButton:SetHidden(true)
-		oldDefaultButton:SetAlpha(0)	--just because it still bugs out
-		panelWindow:SetDimensions(999, 960)
-		bgL:SetWidth(666)
-		bgR:SetWidth(333)
-	else
-		local shown = LAMAddonPanelsMenu.currentlySelected
-		if shown then shown:SetHidden(true) end
-		oldDefaultButton:SetCallback(oldCallback)
-		oldDefaultButton:SetHidden(false)
-		oldDefaultButton:SetAlpha(1)
-		panelWindow:SetDimensions(768, 914)
-		bgL:SetWidth(512)
-		bgR:SetWidth(256)
-	end
-end
-
-
---INTERNAL FUNCTION
---creates LAM's Addon Settings panel
-local function CreateAddonSettingsPanel()
-	if not LAMSettingsPanelCreated then
-		local controlPanelID = "LAM_ADDON_SETTINGS_PANEL"
-		--Russian for TERAB1T's RuESO addon, which creates an "ru" locale
-		--game font does not support Cyrillic, so they are using custom fonts + extended latin charset
-		--Spanish provided by Luisen75 for their translation project
-		local controlPanelNames = {
-			en = "Addon Settings",
-			fr = "Extensions",
-			de = "Erweiterungen",
-			ru = "Îacòpoéêè äoïoìîeîèé",
-			es = "Configura Addons",
-		}
-
-		ZO_OptionsWindow_AddUserPanel(controlPanelID, controlPanelNames[GetCVar("Language.2")] or controlPanelNames["en"], PANEL_TYPE_SETTINGS)
-
-		lam.panelID = _G[controlPanelID]
-
-		ZO_PreHook(ZO_KeyboardOptions, "ChangePanels", HandlePanelSwitching)
-
-		LAMSettingsPanelCreated = true
-	end
-end
-
-
---INTERNAL FUNCTION
---adds each registered addon to the menu in LAM's panel
-local function CreateAddonButtons(list, addons)
-	for i = 1, #addons do
-		local button = wm:CreateControlFromVirtual("LAMAddonMenuButton"..i, list.scrollChild, "ZO_DefaultTextButton")
-		button.name = addons[i].name
-		button.panel = _G[addons[i].panel]
-		button:SetText(button.name)
-		button:SetHorizontalAlignment(TEXT_ALIGN_LEFT)
-		button:SetWidth(190)
-		if i == 1 then
-			button:SetAnchor(TOPLEFT, list.scrollChild, TOPLEFT, 5, 5)
-		else
-			button:SetAnchor(TOPLEFT, _G["LAMAddonMenuButton"..i-1], BOTTOMLEFT)
-		end
-		button:SetHandler("OnClicked", function(self) self.panel:SetHidden(false) end)
-	end
-end
-
-
---INTERNAL FUNCTION
---creates the left-hand menu in LAM's panel
-local function CreateAddonList()
-	local list
-	--check if an earlier loaded copy of LAM created it already
-	list = LAMAddonPanelsMenu or wm:CreateControlFromVirtual("LAMAddonPanelsMenu", optionsWindow, "ZO_ScrollContainer")
-	list:ClearAnchors()
-	list:SetAnchor(TOPLEFT)
-	list:SetHeight(675)
-	list:SetWidth(200)
-
-	list.bg = list.bg or wm:CreateControl(nil, list, CT_BACKDROP)
-	local bg = list.bg
-	bg:SetAnchorFill()	--offsets of 8?
-	bg:SetEdgeTexture("EsoUI\\Art\\miscellaneous\\borderedinsettransparent_edgefile.dds", 128, 16)
-	bg:SetCenterColor(0, 0, 0, 0)
-
-	list.scrollChild = LAMAddonPanelsMenuScrollChild
-	list.scrollChild:SetResizeToFitPadding(0, 15)
-
-	local generatedButtons
-	list:SetHandler("OnShow", function(self)
-			if not generatedButtons and #addonsForList > 0 then
-				--we're about to show our list for the first time - let's sort the buttons before creating them
-				table.sort(addonsForList, function(a, b)
-						return a.name < b.name
-					end)
-				CreateAddonButtons(list, addonsForList)
-				self.currentlySelected = LAMAddonMenuButton1 and LAMAddonMenuButton1.panel
-				--since our addon panels don't have a parent, let's make sure they hide when we're done with them
-				ZO_PreHookHandler(ZO_OptionsWindow, "OnHide", function() self.currentlySelected:SetHidden(true) end)
-				generatedButtons = true
-			end
-			if self.currentlySelected then self.currentlySelected:SetHidden(false) end
-		end)
-
-	--list.controlType = OPTIONS_CUSTOM
-	--list.panel = lam.panelID
-	list.data = {
-		controlType = OPTIONS_CUSTOM,
-		panel = lam.panelID,
+--creates LAM's Addon Settings entry in ZO_GameMenu
+local function CreateAddonSettingsMenuEntry()
+	--Russian for TERAB1T's RuESO addon, which creates an "ru" locale
+	--game font does not support Cyrillic, so they are using custom fonts + extended latin charset
+	--Spanish provided by Luisen75 for their translation project
+	local controlPanelNames = {
+		en = "Addon Settings",
+		fr = "Extensions",
+		de = "Erweiterungen",
+		ru = "Îacòpoéêè äoïoìîeîèé",
+		es = "Configura Addons",
 	}
 
-	ZO_OptionsWindow_InitializeControl(list)
+	local panelData = {
+		id = KEYBOARD_OPTIONS.currentPanelId,
+		name = controlPanelNames[GetCVar("Language.2")] or controlPanelNames["en"],
+	}
 
-	return list
+	KEYBOARD_OPTIONS.currentPanelId = panelData.id + 1
+	KEYBOARD_OPTIONS.panelNames[panelData.id] = panelData.name
+
+	lam.panelId = panelData.id
+
+	local addonListSorted = false
+
+	function panelData.callback()
+		SCENE_MANAGER:AddFragment(lam:GetAddonSettingsFragment())
+		KEYBOARD_OPTIONS:ChangePanels(lam.panelId)
+
+		local title = LAMAddonSettingsWindow:GetNamedChild("Title")
+		title:SetText(panelData.name)
+
+		if not addonListSorted and #addonsForList > 0 then
+			--we're about to show our list for the first time - let's sort it
+			table.sort(addonsForList, function(a, b) return a.name < b.name end)
+			PopulateAddonList(lam.addonList, nil)
+			addonListSorted = true
+		end
+	end
+
+	function panelData.unselectedCallback()
+		SCENE_MANAGER:RemoveFragment(lam:GetAddonSettingsFragment())
+		if SetCameraOptionsPreviewModeEnabled then -- available since API version 100011
+			SetCameraOptionsPreviewModeEnabled(false)
+		end
+	end
+
+	ZO_GameMenu_AddSettingPanel(panelData)
 end
+
+
+--INTERNAL FUNCTION
+--creates the left-hand menu in LAM's window
+local function CreateAddonList(name, parent)
+	local addonList = wm:CreateControlFromVirtual(name, parent, "ZO_ScrollList")
+
+	local function addonListRow_OnMouseDown(control, button)
+		if button == 1 then
+			local data = ZO_ScrollList_GetData(control)
+			ZO_ScrollList_SelectData(addonList, data, control)
+		end
+	end
+
+	local function addonListRow_OnMouseEnter(control)
+		ZO_ScrollList_MouseEnter(addonList, control)
+	end
+
+	local function addonListRow_OnMouseExit(control)
+		ZO_ScrollList_MouseExit(addonList, control)
+	end
+
+	local function addonListRow_Select(previouslySelectedData, selectedData, reselectingDuringRebuild)
+		if not reselectingDuringRebuild then
+			if previouslySelectedData then
+				previouslySelectedData.panel:SetHidden(true)
+			end
+			if selectedData then
+				selectedData.panel:SetHidden(false)
+				PlaySound(SOUNDS.MENU_SUBCATEGORY_SELECTION)
+			end
+		end
+	end
+
+	local function addonListRow_Setup(control, data)
+		control:SetText(data.name)
+		control:SetSelected(not data.panel:IsHidden())
+	end
+
+	ZO_ScrollList_AddDataType(addonList, ADDON_DATA_TYPE, "ZO_SelectableLabel", 28, addonListRow_Setup)
+	-- I don't know how to make highlights clear properly; they often
+	-- get stuck and after a while the list is full of highlighted rows
+	--ZO_ScrollList_EnableHighlight(addonList, "ZO_ThinListHighlight")
+	ZO_ScrollList_EnableSelection(addonList, "ZO_ThinListHighlight", addonListRow_Select)
+
+	local addonDataType = ZO_ScrollList_GetDataTypeTable(addonList, ADDON_DATA_TYPE)
+	local addonListRow_CreateRaw = addonDataType.pool.m_Factory
+
+	local function addonListRow_Create(pool)
+		local control = addonListRow_CreateRaw(pool)
+		control:SetHandler("OnMouseDown", addonListRow_OnMouseDown)
+		--control:SetHandler("OnMouseEnter", addonListRow_OnMouseEnter)
+		--control:SetHandler("OnMouseExit", addonListRow_OnMouseExit)
+		control:SetHeight(28)
+		control:SetFont("ZoFontHeader")
+		control:SetHorizontalAlignment(TEXT_ALIGN_LEFT)
+		control:SetVerticalAlignment(TEXT_ALIGN_CENTER)
+		control:SetWrapMode(TEXT_WRAP_MODE_ELLIPSIS)
+		return control
+	end
+
+	addonDataType.pool.m_Factory = addonListRow_Create
+
+	return addonList
+end
+
+
+--INTERNAL FUNCTION
+--creates LAM's Addon Settings top-level window
+local function CreateAddonSettingsWindow()
+	local tlw = wm:CreateTopLevelWindow("LAMAddonSettingsWindow")
+	tlw:SetHidden(true)
+	tlw:SetDimensions(1010, 914) -- same height as ZO_OptionsWindow
+
+	ZO_ReanchorControlForLeftSidePanel(tlw)
+
+	-- create black background for the window (mimic ZO_RightFootPrintBackground)
+
+	local bgLeft = wm:CreateControl("$(parent)BackgroundLeft", tlw, CT_TEXTURE)
+	bgLeft:SetTexture("EsoUI/Art/Miscellaneous/centerscreen_left.dds")
+	bgLeft:SetDimensions(1024, 1024)
+	bgLeft:SetAnchor(TOPLEFT, nil, TOPLEFT)
+	bgLeft:SetDrawLayer(DL_BACKGROUND)
+	bgLeft:SetExcludeFromResizeToFitExtents(true)
+
+	local bgRight = wm:CreateControl("$(parent)BackgroundRight", tlw, CT_TEXTURE)
+	bgRight:SetTexture("EsoUI/Art/Miscellaneous/centerscreen_right.dds")
+	bgRight:SetDimensions(64, 1024)
+	bgRight:SetAnchor(TOPLEFT, bgLeft, TOPRIGHT)
+	bgRight:SetDrawLayer(DL_BACKGROUND)
+	bgRight:SetExcludeFromResizeToFitExtents(true)
+
+	-- create gray background for addon list (mimic ZO_TreeUnderlay)
+
+	local underlayLeft = wm:CreateControl("$(parent)UnderlayLeft", tlw, CT_TEXTURE)
+	underlayLeft:SetTexture("EsoUI/Art/Miscellaneous/centerscreen_indexArea_left.dds")
+	underlayLeft:SetDimensions(256, 1024)
+	underlayLeft:SetAnchor(TOPLEFT, bgLeft, TOPLEFT)
+	underlayLeft:SetDrawLayer(DL_BACKGROUND)
+	underlayLeft:SetExcludeFromResizeToFitExtents(true)
+
+	local underlayRight = wm:CreateControl("$(parent)UnderlayRight", tlw, CT_TEXTURE)
+	underlayRight:SetTexture("EsoUI/Art/Miscellaneous/centerscreen_indexArea_right.dds")
+	underlayRight:SetDimensions(128, 1024)
+	underlayRight:SetAnchor(TOPLEFT, underlayLeft, TOPRIGHT)
+	underlayRight:SetDrawLayer(DL_BACKGROUND)
+	underlayRight:SetExcludeFromResizeToFitExtents(true)
+
+	-- create title bar (mimic ZO_OptionsWindow)
+
+	local title = wm:CreateControl("$(parent)Title", tlw, CT_LABEL)
+	title:SetAnchor(TOPLEFT, nil, TOPLEFT, 65, 70)
+	title:SetFont("ZoFontWinH1")
+	title:SetModifyTextType(MODIFY_TEXT_TYPE_UPPERCASE)
+
+	local divider = wm:CreateControlFromVirtual("$(parent)Divider", tlw, "ZO_Options_Divider")
+	divider:SetAnchor(TOPLEFT, nil, TOPLEFT, 65, 108)
+
+	-- create scrollable addon list
+
+	local addonList = CreateAddonList("$(parent)AddonList", tlw)
+	addonList:SetAnchor(TOPLEFT, nil, TOPLEFT, 65, 120)
+	addonList:SetDimensions(285, 675)
+
+	lam.addonList = addonList -- for easy access from elsewhere
+
+	-- create container for option panels
+
+	local panelContainer = wm:CreateControl("$(parent)PanelContainer", tlw, CT_CONTROL)
+	panelContainer:SetAnchor(TOPLEFT, addonList, TOPRIGHT, 15, 0)
+	panelContainer:SetDimensions(645, 675)
+
+	return tlw
+end
+
 
 --INITIALIZING
 local safeToInitialize = false
@@ -379,8 +514,29 @@ function CheckSafetyAndInitialize(addonID)
 		PrintLater(msg)
 	end
 	if not hasInitialized then
-		CreateAddonSettingsPanel()
-		CreateAddonList()
 		hasInitialized = true
 	end
 end
+
+
+--TODO documentation
+function lam:GetAddonPanelContainer()
+	local fragment = lam:GetAddonSettingsFragment()
+	local window = fragment:GetControl()
+	return window:GetNamedChild("PanelContainer")
+end
+
+
+--TODO documentation
+function lam:GetAddonSettingsFragment()
+	assert(hasInitialized or safeToInitialize)
+	if not LAMAddonSettingsFragment then
+		local window = CreateAddonSettingsWindow()
+		LAMAddonSettingsFragment = ZO_FadeSceneFragment:New(window)
+		CreateAddonSettingsMenuEntry()
+	end
+	return LAMAddonSettingsFragment
+end
+
+
+-- vi: noexpandtab
