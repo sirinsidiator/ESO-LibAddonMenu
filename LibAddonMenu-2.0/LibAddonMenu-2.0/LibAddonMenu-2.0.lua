@@ -47,23 +47,59 @@ local USER_REQUESTED_OPEN = true
 
 
 --INTERNAL FUNCTION
+--scrolls ZO_ScrollList `list` to move the row corresponding to `data`
+--	into view (does nothing if there is no such row in the list)
+--unlike ZO_ScrollList_ScrollDataIntoView, this function accounts for
+--	fading near the list's edges - it avoids the fading area by scrolling
+--	a little further than the ZO function
+local function ScrollDataIntoView(list, data)
+	local targetIndex = data.sortIndex
+	if not targetIndex then return end
+
+	local scrollMin, scrollMax = list.scrollbar:GetMinMax()
+	local scrollTop = list.scrollbar:GetValue()
+	local controlHeight = list.controlHeight
+	local targetMin = controlHeight * (targetIndex - 1) - 64
+	-- subtracting 64 ain't arbitrary, it's the maximum fading height
+	-- (libraries/zo_templates/scrolltemplates.lua/UpdateScrollFade)
+
+	if targetMin < scrollTop then
+		ZO_ScrollList_ScrollAbsolute(list, zo_max(targetMin, scrollMin))
+	else
+		local listHeight = ZO_ScrollList_GetHeight(list)
+		local targetMax = controlHeight * targetIndex + 64 - listHeight
+
+		if targetMax > scrollTop then
+			ZO_ScrollList_ScrollAbsolute(list, zo_min(targetMax, scrollMax))
+		end
+	end
+end
+
+
+--INTERNAL FUNCTION
 --populates `addonList` with entries from `addonsForList`
 --	addonList = ZO_ScrollList control
 --	filter = [optional] function(data)
 local function PopulateAddonList(addonList, filter)
 	local entryList = ZO_ScrollList_GetDataList(addonList)
+	local numEntries = 0
 	local selectedData = nil
 
 	ZO_ScrollList_Clear(addonList)
 
 	for i, data in ipairs(addonsForList) do
 		if not filter or filter(data) then
-			tinsert(entryList, ZO_ScrollList_CreateDataEntry(ADDON_DATA_TYPE, data))
+			local dataEntry = ZO_ScrollList_CreateDataEntry(ADDON_DATA_TYPE, data)
+			numEntries = numEntries + 1
+			data.sortIndex = numEntries
+			entryList[numEntries] = dataEntry
 			-- select the first panel passing the filter, or the currently
 			-- shown panel, but only if it passes the filter as well
 			if selectedData == nil or data.panel == lam.currentAddonPanel then
 				selectedData = data
 			end
+		else
+			data.sortIndex = nil
 		end
 	end
 
@@ -75,10 +111,7 @@ local function PopulateAddonList(addonList, filter)
 		else
 			ZO_ScrollList_SelectData(addonList, selectedData, nil)
 		end
-	end
-
-	if addonList.selectedDataIndex then
-		ZO_ScrollList_ScrollDataIntoView(addonList, addonList.selectedDataIndex)
+		ScrollDataIntoView(addonList, selectedData)
 	end
 end
 
@@ -109,7 +142,27 @@ end
 local locSettings = GetString(SI_GAME_MENU_SETTINGS)
 function lam:OpenToPanel(panel)
 
-	local function openMenuAndSelectAddon()
+	-- find and select the panel's row in addon list
+
+	local addonList = lam.addonList
+	local selectedData = nil
+
+	for _, addonData in ipairs(addonsForList) do
+		if addonData.panel == panel then
+			selectedData = addonData
+			ScrollDataIntoView(addonList, selectedData)
+			break
+		end
+	end
+
+	ZO_ScrollList_SelectData(addonList, selectedData)
+	ZO_ScrollList_RefreshVisible(addonList, selectedData)
+
+	-- note that ZO_ScrollList doesn't require `selectedData` to be actually
+	-- present in the list, and that the list will only be populated once LAM
+	-- "Addon Settings" menu entry is selected for the first time
+
+	local function openAddonSettingsMenu()
 		local gameMenu = ZO_GameMenu_InGame.gameMenu
 		local settingsMenu = gameMenu.headerControls[locSettings]
 
@@ -125,31 +178,12 @@ function lam:OpenToPanel(panel)
 				end
 			end
 		end
-
-		local addonList = lam.addonList
-		local selectedData = nil
-
-		for _, addonData in ipairs(addonsForList) do
-			if addonData.panel == panel then
-				selectedData = addonData
-				break
-			end
-		end
-
-		ZO_ScrollList_SelectData(addonList, selectedData, nil)
-		-- if the requested addon doesn't pass search filter, it
-		-- won't appear in the list and thus can't be scrolled to,
-		-- but its panel will still be shown
-
-		if addonList.selectedDataIndex then
-			ZO_ScrollList_ScrollDataIntoView(addonList, addonList.selectedDataIndex)
-		end
 	end
 
 	if SCENE_MANAGER:GetScene("gameMenuInGame"):GetState() == SCENE_SHOWN then
-		openMenuAndSelectAddon()
+		openAddonSettingsMenu()
 	else
-		SCENE_MANAGER:CallWhen("gameMenuInGame", SCENE_SHOWN, openMenuAndSelectAddon)
+		SCENE_MANAGER:CallWhen("gameMenuInGame", SCENE_SHOWN, openAddonSettingsMenu)
 		SCENE_MANAGER:Show("gameMenuInGame")
 	end
 end
