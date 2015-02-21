@@ -7,8 +7,28 @@
 local MAJOR, MINOR = "LibAddonMenu-2.0", VERSION_NUMBER
 local lam, oldminor = LibStub:NewLibrary(MAJOR, MINOR)
 if not lam then return end	--the same or newer version of this lib is already loaded into memory
-if(LAMSettingsPanelCreated and not LAMCompatibilityWarning) then 
-	zo_callLater(function() d("An old version of LibAddonMenu with compatibility issues was detected. For more information search for LibAddonMenu on esoui.com") end, 1000) 
+
+local messages = {}
+local chatReady = false
+local MESSAGE_PREFIX = "[LAM2] "
+local function PrintLater(msg)
+	if(chatReady) then 
+		d(MESSAGE_PREFIX .. msg)
+	else
+		messages[#messages + 1] = msg
+	end
+end
+
+local function FlushMessages()
+	for i = 1, #messages do
+		d(MESSAGE_PREFIX .. messages[i])
+	end
+	messages = {}
+	chatReady = true
+end
+
+if(LAMSettingsPanelCreated and not LAMCompatibilityWarning) then
+	PrintLater("An old version of LibAddonMenu with compatibility issues was detected. For more information on how to proceed search for LibAddonMenu on esoui.com")
 	LAMCompatibilityWarning = true
 end
 
@@ -180,7 +200,7 @@ local Initialize
 --	addonID = "string"; unique ID which will be the global name of your panel
 --	panelData = table; data object for your panel - see controls\panel.lua
 function lam:RegisterAddonPanel(addonID, panelData)
-	if(not LAMSettingsPanelCreated) then Initialize() end
+	if(not LAMSettingsPanelCreated) then Initialize(addonID) end
 	local panel = lamcc.panel(nil, panelData, addonID)	--addonID==global name of panel
 	panel:SetHidden(true)
 	panel:SetAnchor(TOPLEFT, LAMAddonPanelsMenu, TOPRIGHT, 10, 0)
@@ -337,10 +357,26 @@ local function CreateAddonList()
 	return list
 end
 
-
 --INITIALIZING
-function Initialize()
-	CreateAddonSettingsPanel()
-	CreateAddonList()
-end
+local safeToInitialize = false
 
+local eventHandle = table.concat({MAJOR, MINOR}, "r")
+local function OnLoad(_, addonName)
+	if(addonName:sub(1,3) ~= "ZO_") then
+		-- wait for the first addon after the game libraries
+		EVENT_MANAGER:UnregisterForEvent(eventHandle, EVENT_ADD_ON_LOADED)
+		safeToInitialize = true
+		zo_callLater(FlushMessages, 1000)
+	end
+end
+EVENT_MANAGER:RegisterForEvent(eventHandle, EVENT_ADD_ON_LOADED, OnLoad)
+
+function Initialize(addonID)
+	if(safeToInitialize) then
+		CreateAddonSettingsPanel()
+		CreateAddonList()
+	else
+		local msg = string.format("The panel with id '%s' was registered before addon loading has completed. This might break the AddOn Settings menu.", addonID)
+		PrintLater(msg)
+	end
+end
