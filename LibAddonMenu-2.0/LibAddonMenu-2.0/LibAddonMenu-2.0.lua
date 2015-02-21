@@ -7,7 +7,10 @@
 local MAJOR, MINOR = "LibAddonMenu-2.0", VERSION_NUMBER
 local lam, oldminor = LibStub:NewLibrary(MAJOR, MINOR)
 if not lam then return end	--the same or newer version of this lib is already loaded into memory
-
+if(LAMSettingsPanelCreated and not LAMCompatibilityWarning) then 
+	zo_callLater(function() d("An old version of LibAddonMenu with compatibility issues was detected. For more information search for LibAddonMenu on esoui.com") end, 1000) 
+	LAMCompatibilityWarning = true
+end
 
 --UPVALUES--
 local wm = WINDOW_MANAGER
