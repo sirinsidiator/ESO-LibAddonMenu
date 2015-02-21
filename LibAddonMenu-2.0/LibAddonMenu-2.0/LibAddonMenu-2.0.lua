@@ -169,6 +169,7 @@ local function ToggleAddonPanels(panel)	--called in OnShow of newly shown panel
 	cm:FireCallbacks("LAM-RefreshPanel", panel)
 end
 
+local Initialize
 
 --METHOD: REGISTER ADDON PANEL
 --registers your addon with LibAddonMenu and creates a panel
@@ -176,6 +177,7 @@ end
 --	addonID = "string"; unique ID which will be the global name of your panel
 --	panelData = table; data object for your panel - see controls\panel.lua
 function lam:RegisterAddonPanel(addonID, panelData)
+	if(not LAMSettingsPanelCreated) then Initialize() end
 	local panel = lamcc.panel(nil, panelData, addonID)	--addonID==global name of panel
 	panel:SetHidden(true)
 	panel:SetAnchor(TOPLEFT, LAMAddonPanelsMenu, TOPRIGHT, 10, 0)
@@ -334,6 +336,8 @@ end
 
 
 --INITIALIZING
-CreateAddonSettingsPanel()
-CreateAddonList()
+function Initialize()
+	CreateAddonSettingsPanel()
+	CreateAddonList()
+end
 
