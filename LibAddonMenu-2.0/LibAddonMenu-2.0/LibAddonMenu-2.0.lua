@@ -374,12 +374,11 @@ end
 EVENT_MANAGER:RegisterForEvent(eventHandle, EVENT_PLAYER_ACTIVATED, OnActivated)
 
 function Initialize(addonID)
-	if(safeToInitialize) then
-		CreateAddonSettingsPanel()
-		CreateAddonList()
-		hasInitialized = true
-	else
+	if(not safeToInitialize) then
 		local msg = string.format("The panel with id '%s' was registered before addon loading has completed. This might break the AddOn Settings menu.", addonID)
 		PrintLater(msg)
 	end
+	CreateAddonSettingsPanel()
+	CreateAddonList()
+	hasInitialized = true
 end
