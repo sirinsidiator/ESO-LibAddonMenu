@@ -9,7 +9,7 @@ But no need to panic. There are a few things you can do in order to get it to wo
 [*]Update your addons. Maybe the author already fixed the problem.
 [*]Try to find out which addon uses the outdated version and ask for help in the comment section.
 [*]Ask for help in our comment section.
-[*]Install LibAddonMenu-2.0 as a stand alone addon.
+[*]Replace LibAddonMenu-2.0 in all your addons with the newest version.
 [/LIST]
 
 LibAddonMenu-2.0 is now released!
