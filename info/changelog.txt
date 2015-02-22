@@ -1,3 +1,12 @@
+2.0 r17
+- updated for changes in 100011
+- fixed OpenToPanel function
+- fixed possible error with combobox names
+- half width control no longer have a fixed height and instead scale automatically now
+- changed controls to no longer use top level windows
+- fixed problems with the loading order and added warning if an old version gets initialized first
+A big thank you to everyone who helped making these changes, especially votan, merlight and Garkin!
+
 2.0 r16
 - updated for changes in 100010
 - thanks to Garkin for alerting me of changes needed and for testing on the test server
