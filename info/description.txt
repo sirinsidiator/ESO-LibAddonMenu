@@ -1,9 +1,21 @@
-[SIZE="3"][COLOR="Cyan"]sirinsidiator has offered to take over LAM-2.0 and LibStub. :)[/COLOR][/SIZE]
+Since I (sirinsidiator) have taken over development of LAM-2.0 I decided it will be in the best interest of everyone to make future development a group effort.
+With the consent of Seerah I have put LAM-2.0 under [URL=https://github.com/sirinsidiator/ESO-LibAddonMenu/blob/master/LICENSE]The Artistic License 2.0[/URL] and created a [URL=https://github.com/sirinsidiator/ESO-LibAddonMenu]github project[/URL] in order to make collaborations possible.
+I also want to thank everyone who participated in planning and realizing upcoming changes, especially votan, merlight and Garkin.
+
+[B][SIZE="3"]If you came here because a message in chat told you so,[/SIZE][/B]  
+then you are using an outdated addon that relies on an older version of LAM-2.0 which might not be compatible with ESO update 6. 
+But no need to panic. There are a few things you can do in order to get it to work again:
+[LIST=1]
+[*]Update your addons. Maybe the author already fixed the problem.
+[*]Try to find out which addon uses the outdated version and ask for help in the comment section.
+[*]Ask for help in our comment section.
+[*]Replace LibAddonMenu-2.0 in all your addons with the newest version.
+[/LIST]
 
 LibAddonMenu-2.0 is now released!
 Your addons will continue to work under LAM-1.0, however that version of the library will no longer be receiving updates, and you will not receive any benefits of LAM-2.0.
 
-[COLOR="Wheat"][B]** NOTE:[/B] If you have already updated your addon's settings panel to LAM2, but are using a version earlier than r6, please update your copy of the lib in the addon.  This will avoid duplicate LAM entries in the game's Settings menu.  (This bug does not occur in revisions 6+.)[B]**[/B][/COLOR]
+[COLOR="Wheat"][B]** NOTE:[/B] If you are using a version of LAM-2.0 earlier than r17, please update your copy of the lib in the addon. This will avoid problems with loading future versions of LAM.[B]**[/B][/COLOR]
 
 
 LibAddonMenu-2.0 is a library to aid addon authors in creating a configuration GUI for their addons which is located in the game's Settings menu.  It supports the ability to have all of a user's addon options located in the same panel.
@@ -49,6 +61,6 @@ local LAM = LibStub("LibAddonMenu-2.0")
      --returns a reference to the library table[/highlight]
 
 
-[SIZE="3"]Please see the [URL="http://www.esoui.com/portal.php?&id=5&pageid=10"]LAM-2.0 page on my portal[/URL] for guides and docs, as well as a list of differences between LAM-1.0 and LAM-2.0
+[SIZE="3"]Please see the [URL="https://github.com/sirinsidiator/ESO-LibAddonMenu/wiki"]LAM-2.0 wiki on github[/URL] for guides and docs, as well as a list of differences between LAM-1.0 and LAM-2.0
 
-[URL="http://www.esoui.com/portal.php?&id=5&pageid=15"]Details on LAM2 data tables[/URL][/SIZE]
+[URL="https://github.com/sirinsidiator/ESO-LibAddonMenu/wiki/Details-on-LAM2-data-tables"]Details on LAM2 data tables[/URL][/SIZE]
