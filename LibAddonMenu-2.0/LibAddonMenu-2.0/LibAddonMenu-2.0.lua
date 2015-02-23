@@ -190,8 +190,7 @@ local function ToggleAddonPanels(panel)	--called in OnShow of newly shown panel
 	cm:FireCallbacks("LAM-RefreshPanel", panel)
 end
 
-local Initialize
-local hasInitialized = false
+local CheckSafetyAndInitialize
 
 --METHOD: REGISTER ADDON PANEL
 --registers your addon with LibAddonMenu and creates a panel
@@ -199,7 +198,7 @@ local hasInitialized = false
 --	addonID = "string"; unique ID which will be the global name of your panel
 --	panelData = table; data object for your panel - see controls\panel.lua
 function lam:RegisterAddonPanel(addonID, panelData)
-	if(not hasInitialized) then Initialize(addonID) end
+	CheckSafetyAndInitialize(addonID)
 	local panel = lamcc.panel(nil, panelData, addonID)	--addonID==global name of panel
 	panel:SetHidden(true)
 	panel:SetAnchor(TOPLEFT, LAMAddonPanelsMenu, TOPRIGHT, 10, 0)
@@ -358,6 +357,7 @@ end
 
 --INITIALIZING
 local safeToInitialize = false
+local hasInitialized = false
 
 local eventHandle = table.concat({MAJOR, MINOR}, "r")
 local function OnLoad(_, addonName)
@@ -373,12 +373,14 @@ local function OnActivated(_, addonName)
 end
 EVENT_MANAGER:RegisterForEvent(eventHandle, EVENT_PLAYER_ACTIVATED, OnActivated)
 
-function Initialize(addonID)
+function CheckSafetyAndInitialize(addonID)
 	if(not safeToInitialize) then
 		local msg = string.format("The panel with id '%s' was registered before addon loading has completed. This might break the AddOn Settings menu.", addonID)
 		PrintLater(msg)
 	end
-	CreateAddonSettingsPanel()
-	CreateAddonList()
-	hasInitialized = true
+	if not hasInitialized then
+		CreateAddonSettingsPanel()
+		CreateAddonList()
+		hasInitialized = true
+	end
 end
