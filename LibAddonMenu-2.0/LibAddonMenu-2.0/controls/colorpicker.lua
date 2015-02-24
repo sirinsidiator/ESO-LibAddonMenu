@@ -38,7 +38,7 @@ local function UpdateDisabled(control)
 	control.isDisabled = disable
 end
 
-local function UpdateValue(control, forceDefault, valueR, valueG, valueB, valueA)	
+local function UpdateValue(control, forceDefault, valueR, valueG, valueB, valueA)
 	if forceDefault then	--if we are forcing defaults
 		local color = control.data.default
 		valueR, valueG, valueB, valueA = color.r, color.g, color.b, color.a
@@ -53,7 +53,7 @@ local function UpdateValue(control, forceDefault, valueR, valueG, valueB, valueA
 		valueR, valueG, valueB, valueA = control.data.getFunc()
 	end
 
-	control.thumb:SetColor(valueR, valueG, valueB, valueA or 1)	
+	control.thumb:SetColor(valueR, valueG, valueB, valueA or 1)
 end
 
 
@@ -115,7 +115,6 @@ function LAMCreateControl.colorpicker(parent, colorpickerData, controlName)
 	if colorpickerData.warning then
 		control.warning = wm:CreateControlFromVirtual(nil, control, "ZO_Options_WarningIcon")
 		control.warning:SetAnchor(RIGHT, control.color, LEFT, -5, 0)
-		--control.warning.tooltipText = colorpickerData.warning
 		control.warning.data = {tooltipText = colorpickerData.warning}
 	end
 
