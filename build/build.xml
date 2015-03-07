@@ -44,7 +44,7 @@
 			<fileset dir="${srcdir}" />
 		</copy>
 		<replace file="${addondir}/${ant.project.name}.txt" token="VERSION_NUMBER" value="development" />
-		<replace file="${addondir}/${ant.project.name}/${ant.project.name}.lua" token="VERSION_NUMBER" value="999" />
+		<replace file="${addondir}/${ant.project.name}/${ant.project.name}.lua" token="999 -- only for test purposes. releases will get a smaller number" value="999" />
 	</target>
 
 	<target name="createArchive" depends="getIsCustomVersion,getCustomVersion,getVersion">
@@ -55,7 +55,7 @@
 		</copy>
 
 		<replace file="${tempdir}/${ant.project.name}/${ant.project.name}.txt" token="VERSION_NUMBER" value="${finalVersion}" />
-		<replace file="${tempdir}/${ant.project.name}/${ant.project.name}/${ant.project.name}.lua" token="VERSION_NUMBER" value="${finalVersion}" />
+		<replace file="${tempdir}/${ant.project.name}/${ant.project.name}/${ant.project.name}.lua" token="999 -- only for test purposes. releases will get a smaller number" value="${finalVersion}" />
 
 		<zip destfile="${targetdir}/${ant.project.name}r${fileVersion}.zip">
 			<fileset dir="${tempdir}" />

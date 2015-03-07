@@ -4,7 +4,7 @@
 
 
 --Register LAM with LibStub
-local MAJOR, MINOR = "LibAddonMenu-2.0", VERSION_NUMBER
+local MAJOR, MINOR = "LibAddonMenu-2.0", 999 -- only for test purposes. releases will get a smaller number
 local lam, oldminor = LibStub:NewLibrary(MAJOR, MINOR)
 if not lam then return end	--the same or newer version of this lib is already loaded into memory
 
