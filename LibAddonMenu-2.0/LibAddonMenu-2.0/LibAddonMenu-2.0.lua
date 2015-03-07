@@ -11,7 +11,7 @@ if not lam then return end	--the same or newer version of this lib is already lo
 local messages = {}
 local MESSAGE_PREFIX = "[LAM2] "
 local function PrintLater(msg)
-	if(CHAT_SYSTEM.primaryContainer) then 
+	if CHAT_SYSTEM.primaryContainer then
 		d(MESSAGE_PREFIX .. msg)
 	else
 		messages[#messages + 1] = msg
@@ -25,7 +25,7 @@ local function FlushMessages()
 	messages = {}
 end
 
-if(LAMSettingsPanelCreated and not LAMCompatibilityWarning) then
+if LAMSettingsPanelCreated and not LAMCompatibilityWarning then
 	PrintLater("An old version of LibAddonMenu with compatibility issues was detected. For more information on how to proceed search for LibAddonMenu on esoui.com")
 	LAMCompatibilityWarning = true
 end
@@ -105,67 +105,79 @@ local function CreateOptionsControls(panel)
 		local isHalf, widget
 		local lastAddedControl, lacAtHalfRow, oIndex, widgetData, widgetType
 		local submenu, subWidgetData, sIndex, subWidgetType, subWidget
+		local anchorOffsetSub, lastAddedControlSub, lacAtHalfRowSub
 		local anchorOffset = 0
-		local anchorOffsetSub
-		local lastAddedControlSub, lacAtHalfRowSub
+		local missingEntries = (#optionsTable ~= NonContiguousCount(optionsTable))
 		for oIndex=1,#optionsTable do
 			widgetData = optionsTable[oIndex]
-			widgetType = widgetData.type
-			if widgetType == "submenu" then
-				submenu = LAMCreateControl[widgetType](panel, widgetData)
-				if lastAddedControl then
-					submenu:SetAnchor(TOPLEFT, lastAddedControl, BOTTOMLEFT, 0, 15 + anchorOffset)
-				else
-					submenu:SetAnchor(TOPLEFT)
-				end
-				lastAddedControl = submenu
-				lacAtHalfRow = false
+			if not widgetData then
+				missingEntries = true
+			else
+				widgetType = widgetData.type
+				if widgetType == "submenu" then
+					submenu = LAMCreateControl[widgetType](panel, widgetData)
+					if lastAddedControl then
+						submenu:SetAnchor(TOPLEFT, lastAddedControl, BOTTOMLEFT, 0, 15 + anchorOffset)
+					else
+						submenu:SetAnchor(TOPLEFT)
+					end
+					lastAddedControl = submenu
+					lacAtHalfRow = false
 
-				anchorOffsetSub = 0
-				lacAtHalfRowSub = nil
-				lastAddedControlSub = nil
-				for sIndex=1,#widgetData.controls do
-					subWidgetData = widgetData.controls[sIndex]
-					subWidgetType = subWidgetData.type
-					subWidget = LAMCreateControl[subWidgetType](submenu, subWidgetData)
-					isHalf = subWidgetData.width == "half"
-					if lastAddedControlSub then
-						if lacAtHalfRowSub and isHalf then
-							subWidget:SetAnchor(TOPLEFT, lastAddedControlSub, TOPRIGHT, 5, 0)
-							lacAtHalfRowSub = false
-							anchorOffsetSub = zo_max(0, subWidget:GetHeight() - lastAddedControlSub:GetHeight())
+					anchorOffsetSub = 0
+					lacAtHalfRowSub = nil
+					lastAddedControlSub = nil
+					if #widgetData.controls ~= NonContiguousCount(widgetData.controls) then missingEntries = true end
+					for sIndex=1,#widgetData.controls do
+						subWidgetData = widgetData.controls[sIndex]
+						if not subWidgetData then
+							missingEntries = true
 						else
-							subWidget:SetAnchor(TOPLEFT, lastAddedControlSub, BOTTOMLEFT, 0, 15 + anchorOffsetSub)
-							lacAtHalfRowSub = isHalf
-							anchorOffsetSub = 0
-							lastAddedControlSub = subWidget
+							subWidgetType = subWidgetData.type
+							subWidget = LAMCreateControl[subWidgetType](submenu, subWidgetData)
+							isHalf = subWidgetData.width == "half"
+							if lastAddedControlSub then
+								if lacAtHalfRowSub and isHalf then
+									subWidget:SetAnchor(TOPLEFT, lastAddedControlSub, TOPRIGHT, 5, 0)
+									lacAtHalfRowSub = false
+									anchorOffsetSub = zo_max(0, subWidget:GetHeight() - lastAddedControlSub:GetHeight())
+								else
+									subWidget:SetAnchor(TOPLEFT, lastAddedControlSub, BOTTOMLEFT, 0, 15 + anchorOffsetSub)
+									lacAtHalfRowSub = isHalf
+									anchorOffsetSub = 0
+									lastAddedControlSub = subWidget
+								end
+							else
+								subWidget:SetAnchor(TOPLEFT)
+								lacAtHalfRowSub = isHalf
+								lastAddedControlSub = subWidget
+							end
+						end
+					end
+				else
+					widget = LAMCreateControl[widgetType](panel, widgetData)
+					isHalf = widgetData.width == "half"
+					if lastAddedControl then
+						if lacAtHalfRow and isHalf then
+							widget:SetAnchor(TOPLEFT, lastAddedControl, TOPRIGHT, 10, 0)
+							anchorOffset = zo_max(0, widget:GetHeight() - lastAddedControl:GetHeight())
+							lacAtHalfRow = false
+						else
+							widget:SetAnchor(TOPLEFT, lastAddedControl, BOTTOMLEFT, 0, 15 + anchorOffset)
+							lacAtHalfRow = isHalf
+							anchorOffset = 0
+							lastAddedControl = widget
 						end
 					else
-						subWidget:SetAnchor(TOPLEFT)
-						lacAtHalfRowSub = isHalf
-						lastAddedControlSub = subWidget
-					end
-				end
-			else
-				widget = LAMCreateControl[widgetType](panel, widgetData)
-				isHalf = widgetData.width == "half"
-				if lastAddedControl then
-					if lacAtHalfRow and isHalf then
-						widget:SetAnchor(TOPLEFT, lastAddedControl, TOPRIGHT, 10, 0)
-						anchorOffset = zo_max(0, widget:GetHeight() - lastAddedControl:GetHeight())
-						lacAtHalfRow = false
-					else
-						widget:SetAnchor(TOPLEFT, lastAddedControl, BOTTOMLEFT, 0, 15 + anchorOffset)
+						widget:SetAnchor(TOPLEFT)
 						lacAtHalfRow = isHalf
-						anchorOffset = 0
 						lastAddedControl = widget
 					end
-				else
-					widget:SetAnchor(TOPLEFT)
-					lacAtHalfRow = isHalf
-					lastAddedControl = widget
 				end
 			end
+		end
+		if missingEntries then
+			PrintLater("Missing one or more entries in the settings menu of " .. addonID .. ". Check your options table for missing indices.")
 		end
 	end
 
@@ -212,7 +224,7 @@ function lam:RegisterAddonPanel(addonID, panelData)
 			lam:OpenToPanel(panel)
 		end
 	end
-	
+
 	return panel	--return for authors creating options manually
 end
 
@@ -279,9 +291,9 @@ local function CreateAddonSettingsPanel()
 		ZO_OptionsWindow_AddUserPanel(controlPanelID, controlPanelNames[GetCVar("Language.2")] or controlPanelNames["en"], PANEL_TYPE_SETTINGS)
 
 		lam.panelID = _G[controlPanelID]
-		
+
 		ZO_PreHook(ZO_KeyboardOptions, "ChangePanels", HandlePanelSwitching)
-		
+
 		LAMSettingsPanelCreated = true
 	end
 end
@@ -326,30 +338,30 @@ local function CreateAddonList()
 
 	list.scrollChild = LAMAddonPanelsMenuScrollChild
 	list.scrollChild:SetResizeToFitPadding(0, 15)
-	
+
 	local generatedButtons
 	list:SetHandler("OnShow", function(self)
-			if not generatedButtons and #addonsForList > 0 then
-				--we're about to show our list for the first time - let's sort the buttons before creating them
-				table.sort(addonsForList, function(a, b)
-						return a.name < b.name
-					end)
-				CreateAddonButtons(list, addonsForList)
-				self.currentlySelected = LAMAddonMenuButton1 and LAMAddonMenuButton1.panel
-				--since our addon panels don't have a parent, let's make sure they hide when we're done with them
-				ZO_PreHookHandler(ZO_OptionsWindow, "OnHide", function() self.currentlySelected:SetHidden(true) end)
-				generatedButtons = true
-			end
-			if self.currentlySelected then self.currentlySelected:SetHidden(false) end
-		end)
-	
+		if not generatedButtons and #addonsForList > 0 then
+			--we're about to show our list for the first time - let's sort the buttons before creating them
+			table.sort(addonsForList, function(a, b)
+				return a.name < b.name
+			end)
+			CreateAddonButtons(list, addonsForList)
+			self.currentlySelected = LAMAddonMenuButton1 and LAMAddonMenuButton1.panel
+			--since our addon panels don't have a parent, let's make sure they hide when we're done with them
+			ZO_PreHookHandler(ZO_OptionsWindow, "OnHide", function() self.currentlySelected:SetHidden(true) end)
+			generatedButtons = true
+		end
+		if self.currentlySelected then self.currentlySelected:SetHidden(false) end
+	end)
+
 	--list.controlType = OPTIONS_CUSTOM
 	--list.panel = lam.panelID
 	list.data = {
 		controlType = OPTIONS_CUSTOM,
 		panel = lam.panelID,
 	}
-	
+
 	ZO_OptionsWindow_InitializeControl(list)
 
 	return list
@@ -374,7 +386,7 @@ end
 EVENT_MANAGER:RegisterForEvent(eventHandle, EVENT_PLAYER_ACTIVATED, OnActivated)
 
 function CheckSafetyAndInitialize(addonID)
-	if(not safeToInitialize) then
+	if not safeToInitialize then
 		local msg = string.format("The panel with id '%s' was registered before addon loading has completed. This might break the AddOn Settings menu.", addonID)
 		PrintLater(msg)
 	end
