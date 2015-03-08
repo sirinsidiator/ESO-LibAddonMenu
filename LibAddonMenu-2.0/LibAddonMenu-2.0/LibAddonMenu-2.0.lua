@@ -33,6 +33,7 @@ end
 --UPVALUES--
 local wm = WINDOW_MANAGER
 local cm = CALLBACK_MANAGER
+local tconcat = table.concat
 local tinsert = table.insert
 
 local addonsForList = {}
@@ -72,6 +73,33 @@ local function ScrollDataIntoView(list, data)
 		if targetMax > scrollTop then
 			ZO_ScrollList_ScrollAbsolute(list, zo_min(targetMax, scrollMax))
 		end
+	end
+end
+
+
+--INTERNAL FUNCTION
+--constructs a string pattern from the text in `searchEdit` control
+--	* metacharacters are escaped, losing their special meaning
+--	* whitespace matches anything (including empty substring)
+--if there is nothing but whitespace, returns nil
+--otherwise returns a filter function, which takes a `data` table argument
+--	and returns true iff `data.filterText` matches the pattern
+local function GetSearchFilterFunc(searchEdit)
+	local text = searchEdit:GetText()
+	local pattern = text:match("(%S+.-)%s*$")
+
+	if not pattern then -- nothing but whitespace
+		return nil
+	end
+
+	-- escape metacharacters, e.g. "ESO-Datenbank.de" => "ESO%-Datenbank%.de"
+	pattern = pattern:gsub("[-*+?^$().[%]%%]", "%%%0")
+
+	-- replace whitespace with "match shortest anything"
+	pattern = pattern:gsub("%s+", ".-")
+
+	return function(data)
+		return data.filterText:find(pattern) ~= nil
 	end
 end
 
@@ -157,6 +185,9 @@ function lam:OpenToPanel(panel)
 
 	ZO_ScrollList_SelectData(addonList, selectedData)
 	ZO_ScrollList_RefreshVisible(addonList, selectedData)
+
+	local srchEdit = LAMAddonSettingsWindow:GetNamedChild("SearchFilterEdit")
+	srchEdit:Clear()
 
 	-- note that ZO_ScrollList doesn't require `selectedData` to be actually
 	-- present in the list, and that the list will only be populated once LAM
@@ -319,9 +350,15 @@ function lam:RegisterAddonPanel(addonID, panelData)
 		return str:gsub("|[Cc]%x%x%x%x%x%x", ""):gsub("|[Rr]", "")
 	end
 
+	local filterParts = {panelData.name, nil, nil}
+	-- append keywords and author separately, the may be nil
+	filterParts[#filterParts + 1] = panelData.keywords
+	filterParts[#filterParts + 1] = panelData.author
+
 	local addonData = {
 		panel = panel,
 		name = stripMarkup(panelData.name),
+		filterText = stripMarkup(tconcat(filterParts, "\t")):lower(),
 	}
 
 	tinsert(addonsForList, addonData)
@@ -384,9 +421,10 @@ local function CreateAddonSettingsMenuEntry()
 		title:SetText(panelData.name)
 
 		if not addonListSorted and #addonsForList > 0 then
+			local searchEdit = LAMAddonSettingsWindow:GetNamedChild("SearchFilterEdit")
 			--we're about to show our list for the first time - let's sort it
 			table.sort(addonsForList, function(a, b) return a.name < b.name end)
-			PopulateAddonList(lam.addonList, nil)
+			PopulateAddonList(lam.addonList, GetSearchFilterFunc(searchEdit))
 			addonListSorted = true
 		end
 	end
@@ -468,6 +506,109 @@ end
 
 
 --INTERNAL FUNCTION
+local function CreateSearchFilterBox(name, parent)
+	local boxControl = wm:CreateControl(name, parent, CT_CONTROL)
+
+	local srchButton =  wm:CreateControl("$(parent)Button", boxControl, CT_BUTTON)
+	srchButton:SetDimensions(32, 32)
+	srchButton:SetAnchor(LEFT, nil, LEFT, 2, 0)
+	srchButton:SetNormalTexture("EsoUI/Art/LFG/LFG_tabIcon_groupTools_up.dds")
+	srchButton:SetPressedTexture("EsoUI/Art/LFG/LFG_tabIcon_groupTools_down.dds")
+	srchButton:SetMouseOverTexture("EsoUI/Art/LFG/LFG_tabIcon_groupTools_over.dds")
+
+	local srchEdit = wm:CreateControlFromVirtual("$(parent)Edit", boxControl, "ZO_DefaultEdit")
+	srchEdit:SetAnchor(LEFT, srchButton, RIGHT, 4, 1)
+	srchEdit:SetAnchor(RIGHT, nil, RIGHT, -4, 1)
+	srchEdit:SetColor(ZO_NORMAL_TEXT:UnpackRGBA())
+
+	local srchBg = wm:CreateControl("$(parent)Bg", boxControl, CT_BACKDROP)
+	srchBg:SetAnchorFill()
+	srchBg:SetAlpha(0)
+	srchBg:SetCenterColor(0, 0, 0, 0.5)
+	srchBg:SetEdgeColor(ZO_DISABLED_TEXT:UnpackRGBA())
+	srchBg:SetEdgeTexture("", 1, 1, 0, 0)
+
+	-- search backdrop should appear whenever you hover over either
+	-- the magnifying glass button or the edit field (which is only
+	-- visible when it contains some text), and also while the edit
+	-- field has keyboard focus
+
+	local srchActive = false
+	local srchHover = false
+
+	local function srchBgUpdateAlpha()
+		if srchActive or srchEdit:HasFocus() then
+			srchBg:SetAlpha(srchHover and 0.8 or 0.6)
+		else
+			srchBg:SetAlpha(srchHover and 0.6 or 0.0)
+		end
+	end
+
+	local function srchMouseEnter(control)
+		srchHover = true
+		srchBgUpdateAlpha()
+	end
+
+	local function srchMouseExit(control)
+		srchHover = false
+		srchBgUpdateAlpha()
+	end
+
+	boxControl:SetMouseEnabled(true)
+	boxControl:SetHitInsets(1, 1, -1, -1)
+	boxControl:SetHandler("OnMouseEnter", srchMouseEnter)
+	boxControl:SetHandler("OnMouseExit", srchMouseExit)
+
+	srchButton:SetHandler("OnMouseEnter", srchMouseEnter)
+	srchButton:SetHandler("OnMouseExit", srchMouseExit)
+
+	local focusLostTime = 0
+
+	srchButton:SetHandler("OnClicked", function(self)
+		srchEdit:Clear()
+		if GetFrameTimeMilliseconds() - focusLostTime < 100 then
+			-- re-focus the edit box if it lost focus due to this
+			-- button click (note that this handler may run a few
+			-- frames later)
+			srchEdit:TakeFocus()
+		end
+	end)
+
+	srchEdit:SetHandler("OnMouseEnter", srchMouseEnter)
+	srchEdit:SetHandler("OnMouseExit", srchMouseExit)
+	srchEdit:SetHandler("OnFocusGained", srchBgUpdateAlpha)
+
+	srchEdit:SetHandler("OnFocusLost", function()
+		focusLostTime = GetFrameTimeMilliseconds()
+		srchBgUpdateAlpha()
+	end)
+
+	srchEdit:SetHandler("OnEscape", function(self)
+		self:Clear()
+		self:LoseFocus()
+	end)
+
+	srchEdit:SetHandler("OnTextChanged", function(self)
+		local filterFunc = GetSearchFilterFunc(self)
+		if filterFunc then
+			srchActive = true
+			srchBg:SetEdgeColor(ZO_SECOND_CONTRAST_TEXT:UnpackRGBA())
+			srchButton:SetState(BSTATE_PRESSED)
+		else
+			srchActive = false
+			srchBg:SetEdgeColor(ZO_DISABLED_TEXT:UnpackRGBA())
+			srchButton:SetState(BSTATE_NORMAL)
+		end
+		srchBgUpdateAlpha()
+		PopulateAddonList(lam.addonList, filterFunc)
+		PlaySound(SOUNDS.SPINNER_DOWN)
+	end)
+
+	return boxControl
+end
+
+
+--INTERNAL FUNCTION
 --creates LAM's Addon Settings top-level window
 local function CreateAddonSettingsWindow()
 	local tlw = wm:CreateTopLevelWindow("LAMAddonSettingsWindow")
@@ -518,18 +659,24 @@ local function CreateAddonSettingsWindow()
 	local divider = wm:CreateControlFromVirtual("$(parent)Divider", tlw, "ZO_Options_Divider")
 	divider:SetAnchor(TOPLEFT, nil, TOPLEFT, 65, 108)
 
+	-- create search filter box
+
+	local srchBox = CreateSearchFilterBox("$(parent)SearchFilter", tlw)
+	srchBox:SetAnchor(TOPLEFT, nil, TOPLEFT, 63, 120)
+	srchBox:SetDimensions(260, 30)
+
 	-- create scrollable addon list
 
 	local addonList = CreateAddonList("$(parent)AddonList", tlw)
-	addonList:SetAnchor(TOPLEFT, nil, TOPLEFT, 65, 120)
-	addonList:SetDimensions(285, 675)
+	addonList:SetAnchor(TOPLEFT, nil, TOPLEFT, 65, 160)
+	addonList:SetDimensions(285, 665)
 
 	lam.addonList = addonList -- for easy access from elsewhere
 
 	-- create container for option panels
 
 	local panelContainer = wm:CreateControl("$(parent)PanelContainer", tlw, CT_CONTROL)
-	panelContainer:SetAnchor(TOPLEFT, addonList, TOPRIGHT, 15, 0)
+	panelContainer:SetAnchor(TOPLEFT, nil, TOPLEFT, 365, 120)
 	panelContainer:SetDimensions(645, 675)
 
 	return tlw

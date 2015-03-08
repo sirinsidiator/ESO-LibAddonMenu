@@ -4,6 +4,7 @@
 	displayName = "My Longer Window Title",	--(optional) (can be useful for long addon names or if you want to colorize it)
 	author = "Seerah",	--(optional)
 	version = "2.0",	--(optional)
+	keywords = "settings",	--(optional) additional keywords for search filter (it looks for matches in name..keywords..author)
 	slashCommand = "/myaddon",	--(optional) will register a keybind to open to this panel (don't forget to include the slash!)
 	registerForRefresh = true,	--boolean (optional) (will refresh all options controls when a setting is changed and when the panel is shown)
 	registerForDefaults = true,	--boolean (optional) (will set all options controls back to default values)
