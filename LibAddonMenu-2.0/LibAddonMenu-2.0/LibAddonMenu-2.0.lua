@@ -102,12 +102,29 @@ local function CreateOptionsControls(panel)
 	local optionsTable = addonToOptionsMap[addonID]
 
 	if optionsTable then
-		local isHalf, widget
-		local lastAddedControl, lacAtHalfRow, oIndex, widgetData, widgetType
-		local submenu, subWidgetData, sIndex, subWidgetType, subWidget
+		local function CreateAndAnchorWidget(parent, widgetData, offsetX, offsetY, lastAddedControl, lacAtHalfRow)
+			local widget = LAMCreateControl[widgetData.type](parent, widgetData)
+			local isHalf = (widgetData.width == "half")
+			if not lastAddedControl then -- the first widget in a panel is just placed in the top left corner
+				widget:SetAnchor(TOPLEFT)
+				lastAddedControl = widget
+			elseif lacAtHalfRow and isHalf then -- when the previous widget was only half width and this one is too, we place it on the right side
+				widget:SetAnchor(TOPLEFT, lastAddedControl, TOPRIGHT, 5 + (offsetX or 0), 0)
+				offsetY = zo_max(0, widget:GetHeight() - lastAddedControl:GetHeight()) -- we need to get the common height of both widgets to know where the next row starts
+				isHalf = false
+			else -- otherwise we just put it below the previous one normally
+				widget:SetAnchor(TOPLEFT, lastAddedControl, BOTTOMLEFT, 0, 15 + offsetY)
+				offsetY = 0
+				lastAddedControl = widget
+			end
+			return offsetY, lastAddedControl, isHalf
+		end
+
+		local widgetData, widgetType, submenu, subWidgetData
+		local anchorOffset, lastAddedControl, lacAtHalfRow = 0, nil, false
 		local anchorOffsetSub, lastAddedControlSub, lacAtHalfRowSub
-		local anchorOffset = 0
 		local missingEntries = (#optionsTable ~= NonContiguousCount(optionsTable))
+
 		for oIndex=1,#optionsTable do
 			widgetData = optionsTable[oIndex]
 			if not widgetData then
@@ -115,64 +132,20 @@ local function CreateOptionsControls(panel)
 			else
 				widgetType = widgetData.type
 				if widgetType == "submenu" then
-					submenu = LAMCreateControl[widgetType](panel, widgetData)
-					if lastAddedControl then
-						submenu:SetAnchor(TOPLEFT, lastAddedControl, BOTTOMLEFT, 0, 15 + anchorOffset)
-					else
-						submenu:SetAnchor(TOPLEFT)
-					end
-					lastAddedControl = submenu
-					lacAtHalfRow = false
-
-					anchorOffsetSub = 0
-					lacAtHalfRowSub = nil
-					lastAddedControlSub = nil
+					_, submenu, _ = CreateAndAnchorWidget(panel, widgetData, 0, anchorOffset, lastAddedControl, false)
+					lastAddedControl, lacAtHalfRow = submenu, false
+					anchorOffsetSub, lastAddedControlSub, lacAtHalfRowSub = 0, nil, false
 					if #widgetData.controls ~= NonContiguousCount(widgetData.controls) then missingEntries = true end
 					for sIndex=1,#widgetData.controls do
 						subWidgetData = widgetData.controls[sIndex]
 						if not subWidgetData then
 							missingEntries = true
 						else
-							subWidgetType = subWidgetData.type
-							subWidget = LAMCreateControl[subWidgetType](submenu, subWidgetData)
-							isHalf = subWidgetData.width == "half"
-							if lastAddedControlSub then
-								if lacAtHalfRowSub and isHalf then
-									subWidget:SetAnchor(TOPLEFT, lastAddedControlSub, TOPRIGHT, 5, 0)
-									lacAtHalfRowSub = false
-									anchorOffsetSub = zo_max(0, subWidget:GetHeight() - lastAddedControlSub:GetHeight())
-								else
-									subWidget:SetAnchor(TOPLEFT, lastAddedControlSub, BOTTOMLEFT, 0, 15 + anchorOffsetSub)
-									lacAtHalfRowSub = isHalf
-									anchorOffsetSub = 0
-									lastAddedControlSub = subWidget
-								end
-							else
-								subWidget:SetAnchor(TOPLEFT)
-								lacAtHalfRowSub = isHalf
-								lastAddedControlSub = subWidget
-							end
+							anchorOffsetSub, lastAddedControlSub, lacAtHalfRowSub = CreateAndAnchorWidget(submenu, subWidgetData, 0, anchorOffsetSub, lastAddedControlSub, lacAtHalfRowSub)
 						end
 					end
 				else
-					widget = LAMCreateControl[widgetType](panel, widgetData)
-					isHalf = widgetData.width == "half"
-					if lastAddedControl then
-						if lacAtHalfRow and isHalf then
-							widget:SetAnchor(TOPLEFT, lastAddedControl, TOPRIGHT, 10, 0)
-							anchorOffset = zo_max(0, widget:GetHeight() - lastAddedControl:GetHeight())
-							lacAtHalfRow = false
-						else
-							widget:SetAnchor(TOPLEFT, lastAddedControl, BOTTOMLEFT, 0, 15 + anchorOffset)
-							lacAtHalfRow = isHalf
-							anchorOffset = 0
-							lastAddedControl = widget
-						end
-					else
-						widget:SetAnchor(TOPLEFT)
-						lacAtHalfRow = isHalf
-						lastAddedControl = widget
-					end
+					anchorOffset, lastAddedControl, lacAtHalfRow = CreateAndAnchorWidget(panel, widgetData, 5, anchorOffset, lastAddedControl, lacAtHalfRow)
 				end
 			end
 		end
