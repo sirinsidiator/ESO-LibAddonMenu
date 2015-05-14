@@ -13,7 +13,7 @@
 }	]]
 
 
-local widgetVersion = 7
+local widgetVersion = 8
 local LAM = LibStub("LibAddonMenu-2.0")
 if not LAM:RegisterWidget("editbox", widgetVersion) then return end
 
@@ -136,7 +136,13 @@ function LAMCreateControl.editbox(parent, editboxData, controlName)
 
 	control.panel = parent.panel or parent	--if this is in a submenu, panel is its parent
 	control.data = editboxData
-	control.data.tooltipText = editboxData.tooltip
+	if editboxData.tooltip then
+		if type(editboxData.tooltip) == "string" then
+			control.data.tooltipText = editboxData.tooltip
+		elseif type(editboxData.tooltip) == "function" then
+			control.data.tooltipText = tostring(editboxData.tooltip())
+		end
+	end
 
 	if editboxData.disabled then
 		control.UpdateDisabled = UpdateDisabled

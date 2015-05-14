@@ -12,7 +12,7 @@
 }	]]
 
 
-local widgetVersion = 6
+local widgetVersion = 7
 local LAM = LibStub("LibAddonMenu-2.0")
 if not LAM:RegisterWidget("colorpicker", widgetVersion) then return end
 
@@ -121,7 +121,13 @@ function LAMCreateControl.colorpicker(parent, colorpickerData, controlName)
 
 	control.panel = parent.panel or parent	--if this is in a submenu, panel is its parent
 	control.data = colorpickerData
-	control.data.tooltipText = colorpickerData.tooltip
+	if colorpickerData.tooltip then
+		if type(colorpickerData.tooltip) == "string" then
+			control.data.tooltipText = colorpickerData.tooltip
+		elseif type(colorpickerData.tooltip) == "function" then
+			control.data.tooltipText = tostring(colorpickerData.tooltip())
+		end
+	end
 
 	if colorpickerData.disabled then
 		control.UpdateDisabled = UpdateDisabled

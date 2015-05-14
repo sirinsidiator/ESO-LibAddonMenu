@@ -15,7 +15,7 @@
 }	]]
 
 
-local widgetVersion = 6
+local widgetVersion = 7
 local LAM = LibStub("LibAddonMenu-2.0")
 if not LAM:RegisterWidget("slider", widgetVersion) then return end
 
@@ -166,7 +166,11 @@ function LAMCreateControl.slider(parent, sliderData, controlName)
 
 	control.panel = parent.panel or parent	--if this is in a submenu, panel is the submenu's parent
 	control.data = sliderData
-	control.data.tooltipText = sliderData.tooltip
+	if type(sliderData.tooltip) == "string" then
+		control.data.tooltipText = sliderData.tooltip
+	elseif type(sliderData.tooltip) == "function" then
+		control.data.tooltipText = tostring(sliderData.tooltip())
+	end
 
 	if sliderData.disabled then
 		control.UpdateDisabled = UpdateDisabled

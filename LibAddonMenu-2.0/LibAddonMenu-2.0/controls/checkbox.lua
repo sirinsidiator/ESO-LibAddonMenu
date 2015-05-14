@@ -12,7 +12,7 @@
 }	]]
 
 
-local widgetVersion = 8
+local widgetVersion = 9
 local LAM = LibStub("LibAddonMenu-2.0")
 if not LAM:RegisterWidget("checkbox", widgetVersion) then return end
 
@@ -154,7 +154,13 @@ function LAMCreateControl.checkbox(parent, checkboxData, controlName)
 
 	control.panel = parent.panel or parent	--if this is in a submenu, panel is its parent
 	control.data = checkboxData
-	control.data.tooltipText = checkboxData.tooltip
+	if checkboxData.tooltip then
+		if type(checkboxData.tooltip) == "string" then
+			control.data.tooltipText = checkboxData.tooltip
+		elseif type(checkboxData.tooltip) == "function" then
+			control.data.tooltipText = tostring(checkboxData.tooltip())
+		end
+	end
 
 	if checkboxData.disabled then
 		control.UpdateDisabled = UpdateDisabled

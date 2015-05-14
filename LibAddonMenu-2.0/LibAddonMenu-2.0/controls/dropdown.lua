@@ -14,7 +14,7 @@
 }	]]
 
 
-local widgetVersion = 8
+local widgetVersion = 9
 local LAM = LibStub("LibAddonMenu-2.0")
 if not LAM:RegisterWidget("dropdown", widgetVersion) then return end
 
@@ -138,7 +138,13 @@ function LAMCreateControl.dropdown(parent, dropdownData, controlName)
 
 	control.panel = parent.panel or parent	--if this is in a submenu, panel is its parent
 	control.data = dropdownData
-	control.data.tooltipText = dropdownData.tooltip
+	if dropdownData.tooltip then
+		if type(dropdownData.tooltip) == "string" then
+			control.data.tooltipText = dropdownData.tooltip
+		elseif type(dropdownData.tooltip) == "function" then
+			control.data.tooltipText = tostring(dropdownData.tooltip())
+		end
+	end
 
 	if dropdownData.disabled then
 		control.UpdateDisabled = UpdateDisabled

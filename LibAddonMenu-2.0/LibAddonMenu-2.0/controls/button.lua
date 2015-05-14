@@ -11,7 +11,7 @@
 }	]]
 
 
-local widgetVersion = 6
+local widgetVersion = 7
 local LAM = LibStub("LibAddonMenu-2.0")
 if not LAM:RegisterWidget("button", widgetVersion) then return end
 
@@ -54,7 +54,13 @@ function LAMCreateControl.button(parent, buttonData, controlName)
 	button:SetAnchor(isHalfWidth and CENTER or RIGHT)
 	button:SetClickSound("Click")
 	--button.tooltipText = buttonData.tooltip
-	button.data = {tooltipText = buttonData.tooltip}
+	if buttonData.tooltip then
+		if type(buttonData.tooltip) == "string" then
+			button.data.tooltipText = buttonData.tooltip
+		elseif type(buttonData.tooltip) == "function" then
+			button.data.tooltipText = tostring(buttonData.tooltip())
+		end
+	end
 	button:SetHandler("OnMouseEnter", ZO_Options_OnMouseEnter)
 	button:SetHandler("OnMouseExit", ZO_Options_OnMouseExit)
 	button:SetHandler("OnClicked", function(self, ...)
