@@ -121,13 +121,7 @@ function LAMCreateControl.colorpicker(parent, colorpickerData, controlName)
 
 	control.panel = parent.panel or parent	--if this is in a submenu, panel is its parent
 	control.data = colorpickerData
-	if colorpickerData.tooltip then
-		if type(colorpickerData.tooltip) == "string" then
-			control.data.tooltipText = colorpickerData.tooltip
-		elseif type(colorpickerData.tooltip) == "function" then
-			control.data.tooltipText = tostring(colorpickerData.tooltip())
-		end
-	end
+	control.data.tooltipText = LAM.util.GetTooltipText(colorpickerData.tooltip)
 
 	if colorpickerData.disabled then
 		control.UpdateDisabled = UpdateDisabled

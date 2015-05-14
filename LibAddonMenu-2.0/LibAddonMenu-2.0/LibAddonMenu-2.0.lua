@@ -42,7 +42,19 @@ local addonToOptionsMap = {}
 local optionsCreated = {}
 lam.widgets = lam.widgets or {}
 local widgets = lam.widgets
+lam.util = {}
+local util = lam.util
 
+local function GetTooltipText(tooltip)
+	if type(tooltip) == "string" then
+		return tooltip
+	elseif type(tooltip) == "function" then
+		return tostring(tooltip())
+	end
+	return nil
+end
+
+util.GetTooltipText = GetTooltipText
 
 --METHOD: REGISTER WIDGET--
 --each widget has its version checked before loading,

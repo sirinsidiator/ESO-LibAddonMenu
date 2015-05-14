@@ -166,11 +166,7 @@ function LAMCreateControl.slider(parent, sliderData, controlName)
 
 	control.panel = parent.panel or parent	--if this is in a submenu, panel is the submenu's parent
 	control.data = sliderData
-	if type(sliderData.tooltip) == "string" then
-		control.data.tooltipText = sliderData.tooltip
-	elseif type(sliderData.tooltip) == "function" then
-		control.data.tooltipText = tostring(sliderData.tooltip())
-	end
+	control.data.tooltipText = LAM.util.GetTooltipText(sliderData.tooltip)
 
 	if sliderData.disabled then
 		control.UpdateDisabled = UpdateDisabled

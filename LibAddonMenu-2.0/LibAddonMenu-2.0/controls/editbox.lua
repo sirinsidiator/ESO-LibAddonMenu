@@ -136,13 +136,7 @@ function LAMCreateControl.editbox(parent, editboxData, controlName)
 
 	control.panel = parent.panel or parent	--if this is in a submenu, panel is its parent
 	control.data = editboxData
-	if editboxData.tooltip then
-		if type(editboxData.tooltip) == "string" then
-			control.data.tooltipText = editboxData.tooltip
-		elseif type(editboxData.tooltip) == "function" then
-			control.data.tooltipText = tostring(editboxData.tooltip())
-		end
-	end
+	control.data.tooltipText = LAM.util.GetTooltipText(editboxData.tooltip)
 
 	if editboxData.disabled then
 		control.UpdateDisabled = UpdateDisabled

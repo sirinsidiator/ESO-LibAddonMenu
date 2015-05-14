@@ -138,13 +138,7 @@ function LAMCreateControl.dropdown(parent, dropdownData, controlName)
 
 	control.panel = parent.panel or parent	--if this is in a submenu, panel is its parent
 	control.data = dropdownData
-	if dropdownData.tooltip then
-		if type(dropdownData.tooltip) == "string" then
-			control.data.tooltipText = dropdownData.tooltip
-		elseif type(dropdownData.tooltip) == "function" then
-			control.data.tooltipText = tostring(dropdownData.tooltip())
-		end
-	end
+	control.data.tooltipText = LAM.util.GetTooltipText(dropdownData.tooltip)
 
 	if dropdownData.disabled then
 		control.UpdateDisabled = UpdateDisabled

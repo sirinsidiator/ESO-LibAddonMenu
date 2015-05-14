@@ -154,13 +154,7 @@ function LAMCreateControl.checkbox(parent, checkboxData, controlName)
 
 	control.panel = parent.panel or parent	--if this is in a submenu, panel is its parent
 	control.data = checkboxData
-	if checkboxData.tooltip then
-		if type(checkboxData.tooltip) == "string" then
-			control.data.tooltipText = checkboxData.tooltip
-		elseif type(checkboxData.tooltip) == "function" then
-			control.data.tooltipText = tostring(checkboxData.tooltip())
-		end
-	end
+	control.data.tooltipText = LAM.util.GetTooltipText(checkboxData.tooltip)
 
 	if checkboxData.disabled then
 		control.UpdateDisabled = UpdateDisabled

@@ -37,12 +37,7 @@ function LAMCreateControl.texture(parent, textureData, controlName)
 
 	if textureData.tooltip then
 		texture:SetMouseEnabled(true)
-		texture.data = {}
-		if type(textureData.tooltip) == "string" then
-			texture.data.tooltipText = textureData.tooltip
-		elseif type(textureData.tooltip) == "function" then
-			texture.data.tooltipText = tostring(textureData.tooltip())
-		end
+		texture.data = {tooltipText = LAM.util.GetTooltipText(textureData.tooltip)}
 		texture:SetHandler("OnMouseEnter", ZO_Options_OnMouseEnter)
 		texture:SetHandler("OnMouseEnter", ZO_Options_OnMouseExit)
 	end
