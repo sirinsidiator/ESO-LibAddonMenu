@@ -53,7 +53,7 @@ function LAMCreateControl.button(parent, buttonData, controlName)
 	local button = control.button
 	button:SetAnchor(isHalfWidth and CENTER or RIGHT)
 	button:SetClickSound("Click")
-	--button.tooltipText = buttonData.tooltip
+	button.data = {}
 	if buttonData.tooltip then
 		if type(buttonData.tooltip) == "string" then
 			button.data.tooltipText = buttonData.tooltip

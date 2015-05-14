@@ -50,6 +50,7 @@ function LAMCreateControl.submenu(parent, submenuData, controlName)
 	label:SetWrapMode(TEXT_WRAP_MODE_ELLIPSIS)
 	label:SetText(submenuData.name)
 	label:SetMouseEnabled(true)
+	label.data = {}
 	if submenuData.tooltip then
 		if type(submenuData.tooltip) == "string" then
 			label.data.tooltipText = submenuData.tooltip

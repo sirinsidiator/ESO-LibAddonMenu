@@ -37,8 +37,7 @@ function LAMCreateControl.texture(parent, textureData, controlName)
 
 	if textureData.tooltip then
 		texture:SetMouseEnabled(true)
-		--texture.tooltipText = textureData.tooltip
-		
+		texture.data = {}
 		if type(textureData.tooltip) == "string" then
 			texture.data.tooltipText = textureData.tooltip
 		elseif type(textureData.tooltip) == "function" then
