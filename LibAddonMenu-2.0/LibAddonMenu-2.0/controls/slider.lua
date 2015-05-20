@@ -15,7 +15,7 @@
 }	]]
 
 
-local widgetVersion = 6
+local widgetVersion = 7
 local LAM = LibStub("LibAddonMenu-2.0")
 if not LAM:RegisterWidget("slider", widgetVersion) then return end
 
@@ -66,36 +66,15 @@ local function UpdateValue(control, forceDefault, value)
 	control.slidervalue:SetText(value)
 end
 
-
 function LAMCreateControl.slider(parent, sliderData, controlName)
-	local control = wm:CreateControl(controlName or sliderData.reference, parent.scroll or parent, CT_CONTROL)
-	local isHalfWidth = sliderData.width == "half"
-	if isHalfWidth then
-		control:SetDimensions(250, 55)
-	else
-		control:SetDimensions(510, 40)
-	end
-	control:SetMouseEnabled(true)
-	control:SetHandler("OnMouseEnter", ZO_Options_OnMouseEnter)
-	control:SetHandler("OnMouseExit", ZO_Options_OnMouseExit)
-
-	control.label = wm:CreateControl(nil, control, CT_LABEL)
-	local label = control.label
-	label:SetFont("ZoFontWinH4")
-	label:SetDimensions(isHalfWidth and 250 or 300, 26)
-	label:SetWrapMode(TEXT_WRAP_MODE_ELLIPSIS)
-	label:SetAnchor(isHalfWidth and TOPLEFT or LEFT)
-	label:SetText(sliderData.name)
+	local control = LAM.util.CreateBaseControl(parent, sliderData, controlName)
 
 	--skipping creating the backdrop...  Is this the actual slider texture?
-	control.slider = wm:CreateControl(nil, control, CT_SLIDER)
+	control.slider = wm:CreateControl(nil, control.container, CT_SLIDER)
 	local slider = control.slider
-	slider:SetDimensions(190, 14)
-	if isHalfWidth then
-		slider:SetAnchor(TOPRIGHT, label, BOTTOMRIGHT, -5, 2)
-	else
-		slider:SetAnchor(RIGHT, control, RIGHT, -5, -5)
-	end
+	slider:SetAnchor(TOPLEFT)
+	slider:SetAnchor(TOPRIGHT)
+	slider:SetHeight(14)
 	slider:SetMouseEnabled(true)
 	slider:SetOrientation(ORIENTATION_HORIZONTAL)
 	--put nil for highlighted texture file path, and what look to be texture coords
@@ -131,8 +110,8 @@ function LAMCreateControl.slider(parent, sliderData, controlName)
 	control.slidervalue = wm:CreateControlFromVirtual(nil, control.slidervalueBG, "ZO_DefaultEditForBackdrop")
 	local slidervalue = control.slidervalue
 	slidervalue:ClearAnchors()
-	slidervalue:SetAnchor(TOPLEFT, slidervaluebg, TOPLEFT, 3, 1)
-	slidervalue:SetAnchor(BOTTOMRIGHT, slidervaluebg, BOTTOMRIGHT, -3, -1)
+	slidervalue:SetAnchor(TOPLEFT, control.slidervalueBG, TOPLEFT, 3, 1)
+	slidervalue:SetAnchor(BOTTOMRIGHT, control.slidervalueBG, BOTTOMRIGHT, -3, -1)
 	slidervalue:SetTextType(TEXT_TYPE_NUMERIC)
 	slidervalue:SetFont("ZoFontGameSmall")
 	slidervalue:SetHandler("OnEscape", function(self)
@@ -161,10 +140,6 @@ function LAMCreateControl.slider(parent, sliderData, controlName)
 		control.warning:SetAnchor(RIGHT, slider, LEFT, -5, 0)
 		control.warning.data = {tooltipText = sliderData.warning}
 	end
-
-	control.panel = parent.panel or parent	--if this is in a submenu, panel is the submenu's parent
-	control.data = sliderData
-	control.data.tooltipText = sliderData.tooltip
 
 	if sliderData.disabled then
 		control.UpdateDisabled = UpdateDisabled

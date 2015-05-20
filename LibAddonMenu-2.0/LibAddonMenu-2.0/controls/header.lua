@@ -6,7 +6,7 @@
 }	]]
 
 
-local widgetVersion = 5
+local widgetVersion = 6
 local LAM = LibStub("LibAddonMenu-2.0")
 if not LAM:RegisterWidget("header", widgetVersion) then return end
 
@@ -20,11 +20,12 @@ end
 function LAMCreateControl.header(parent, headerData, controlName)
 	local control = wm:CreateControl(controlName or headerData.reference, parent.scroll or parent, CT_CONTROL)
 	local isHalfWidth = headerData.width == "half"
-	control:SetDimensions(isHalfWidth and 250 or 510, 30)
+	local width = parent:GetWidth() - 20
+	control:SetDimensions(isHalfWidth and width / 2 or width, 30)
 
 	control.divider = wm:CreateControlFromVirtual(nil, control, "ZO_Options_Divider")
 	local divider = control.divider
-	divider:SetWidth(isHalfWidth and 250 or 510)
+	divider:SetWidth(isHalfWidth and width / 2 or width)
 	divider:SetAnchor(TOPLEFT)
 
 	control.header = wm:CreateControlFromVirtual(nil, control, "ZO_Options_SectionTitleLabel")

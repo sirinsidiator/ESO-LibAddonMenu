@@ -40,6 +40,48 @@ local addonToOptionsMap = {}
 local optionsCreated = {}
 lam.widgets = lam.widgets or {}
 local widgets = lam.widgets
+lam.util = {}
+local util = lam.util
+
+local function CreateBaseControl(parent, controlData, controlName)
+	local control = wm:CreateControl(controlName or controlData.reference, parent.scroll or parent, CT_CONTROL)
+	control.panel = parent.panel or parent	-- if this is in a submenu, panel is the submenu's parent
+	control.data = controlData
+
+	local isHalfWidth = controlData.width == "half"
+	local width = control.panel:GetWidth() - 60
+
+	local container = wm:CreateControl(nil, control, CT_CONTROL)
+	container:SetDimensions(width / 3, 24)
+	control.container = container
+
+	local label = wm:CreateControl(nil, control, CT_LABEL)
+	label:SetFont("ZoFontWinH4")
+	label:SetHeight(26)
+	label:SetWrapMode(TEXT_WRAP_MODE_ELLIPSIS)
+	label:SetText(controlData.name)
+	control.label = label
+
+	if isHalfWidth then
+		control:SetDimensions(width / 2, 55)
+		label:SetAnchor(TOPLEFT, control, TOPLEFT, 0, 0)
+		label:SetAnchor(TOPRIGHT, control, TOPRIGHT, 0, 0)
+		container:SetAnchor(TOPRIGHT, control.label, BOTTOMRIGHT, -5, 2)
+	else
+		control:SetDimensions(width, 40)
+		container:SetAnchor(RIGHT, control, RIGHT, -5, -5)
+		label:SetAnchor(LEFT, control, LEFT, 0, 0)
+		label:SetAnchor(RIGHT, container, LEFT, 5, 0)
+	end
+
+	control.data.tooltipText = control.data.tooltip
+	control:SetMouseEnabled(true)
+	control:SetHandler("OnMouseEnter", ZO_Options_OnMouseEnter)
+	control:SetHandler("OnMouseExit", ZO_Options_OnMouseExit)
+	return control
+end
+
+util.CreateBaseControl = CreateBaseControl
 
 local ADDON_DATA_TYPE = 1
 local RESELECTING_DURING_REBUILD = true

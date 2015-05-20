@@ -5,7 +5,7 @@
 	width = "full",	--or "half" (optional)
 }	]]
 
-local widgetVersion = 5
+local widgetVersion = 6
 local LAM = LibStub("LibAddonMenu-2.0")
 if not LAM:RegisterWidget("custom", widgetVersion) then return end
 
@@ -23,12 +23,13 @@ function LAMCreateControl.custom(parent, customData, controlName)
 	control:SetResizeToFitDescendents(true)
 
 	local isHalfWidth = customData.width == "half"
+	local width = parent:GetWidth() - 20
 	if isHalfWidth then	--note these restrictions
-		control:SetDimensionConstraints(250, 55, 250, 100)
-		control:SetDimensions(250, 55)
+		control:SetDimensionConstraints(width / 2, 55, width / 2, 100)
+		control:SetDimensions(width / 2, 55)
 	else
-		control:SetDimensionConstraints(510, 30, 510, 100)
-		control:SetDimensions(510, 30)
+		control:SetDimensionConstraints(width, 30, width, 100)
+		control:SetDimensions(width, 30)
 	end
 
 	control.panel = parent.panel or parent	--if this is in a submenu, panel is its parent

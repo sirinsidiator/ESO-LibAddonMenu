@@ -10,7 +10,7 @@
 
 --add texture coords support?
 
-local widgetVersion = 6
+local widgetVersion = 7
 local LAM = LibStub("LibAddonMenu-2.0")
 if not LAM:RegisterWidget("texture", widgetVersion) then return end
 
@@ -21,12 +21,13 @@ function LAMCreateControl.texture(parent, textureData, controlName)
 	control:SetResizeToFitDescendents(true)
 
 	local isHalfWidth = textureData.width == "half"
+	local width = parent:GetWidth() - 20
 	if isHalfWidth then
-		control:SetDimensionConstraints(250, 55, 250, 100)
-		control:SetDimensions(250, 55)
+		control:SetDimensionConstraints(width / 2, 55, width / 2, 100)
+		control:SetDimensions(width / 2, 55)
 	else
-		control:SetDimensionConstraints(510, 30, 510, 100)
-		control:SetDimensions(510, 30)
+		control:SetDimensionConstraints(width, 30, width, 100)
+		control:SetDimensions(width, 30)
 	end
 
 	control.texture = wm:CreateControl(nil, control, CT_TEXTURE)
