@@ -76,7 +76,6 @@ function LAMCreateControl.slider(parent, sliderData, controlName)
 		control:SetDimensions(510, 40)
 	end
 	control:SetMouseEnabled(true)
-	--control.tooltipText = sliderData.tooltip
 	control:SetHandler("OnMouseEnter", ZO_Options_OnMouseEnter)
 	control:SetHandler("OnMouseExit", ZO_Options_OnMouseExit)
 
@@ -100,7 +99,7 @@ function LAMCreateControl.slider(parent, sliderData, controlName)
 	slider:SetMouseEnabled(true)
 	slider:SetOrientation(ORIENTATION_HORIZONTAL)
 	--put nil for highlighted texture file path, and what look to be texture coords
-	slider:SetThumbTexture("EsoUI\\Art\\Miscellaneous\\scrollbox_elevator.dds", "EsoUI\\Art\\Miscellaneous\\scrollbox_elevator_disabled.dds", nil, 8, 16) 
+	slider:SetThumbTexture("EsoUI\\Art\\Miscellaneous\\scrollbox_elevator.dds", "EsoUI\\Art\\Miscellaneous\\scrollbox_elevator_disabled.dds", nil, 8, 16)
 	local minValue = sliderData.min
 	local maxValue = sliderData.max
 	slider:SetMinMax(minValue, maxValue)
@@ -150,7 +149,7 @@ function LAMCreateControl.slider(parent, sliderData, controlName)
 	slider:SetHandler("OnValueChanged", function(self, value, eventReason)
 			if eventReason == EVENT_REASON_SOFTWARE then return end
 			self:SetValue(value)	--do we actually need this line?
-			slidervalue:SetText(value)	
+			slidervalue:SetText(value)
 		end)
 	slider:SetHandler("OnSliderReleased", function(self, value)
 			--sliderData.setFunc(value)
@@ -160,7 +159,6 @@ function LAMCreateControl.slider(parent, sliderData, controlName)
 	if sliderData.warning then
 		control.warning = wm:CreateControlFromVirtual(nil, control, "ZO_Options_WarningIcon")
 		control.warning:SetAnchor(RIGHT, slider, LEFT, -5, 0)
-		--control.warning.tooltipText = sliderData.warning
 		control.warning.data = {tooltipText = sliderData.warning}
 	end
 

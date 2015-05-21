@@ -106,7 +106,6 @@ end
 function LAMCreateControl.checkbox(parent, checkboxData, controlName)
 	local control = wm:CreateControl(controlName or checkboxData.reference, parent.scroll or parent, CT_CONTROL)
 	control:SetMouseEnabled(true)
-	--control.tooltipText = checkboxData.tooltip
 	control:SetHandler("OnMouseEnter", OnMouseEnter)
 	control:SetHandler("OnMouseExit", OnMouseExit)
 	control:SetHandler("OnMouseUp", function(control)
@@ -148,7 +147,6 @@ function LAMCreateControl.checkbox(parent, checkboxData, controlName)
 	if checkboxData.warning then
 		control.warning = wm:CreateControlFromVirtual(nil, control, "ZO_Options_WarningIcon")
 		control.warning:SetAnchor(RIGHT, checkbox, LEFT, -5, 0)
-		--control.warning.tooltipText = checkboxData.warning
 		control.warning.data = {tooltipText = checkboxData.warning}
 	end
 

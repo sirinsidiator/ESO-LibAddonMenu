@@ -30,7 +30,7 @@ function LAMCreateControl.custom(parent, customData, controlName)
 		control:SetDimensionConstraints(510, 30, 510, 100)
 		control:SetDimensions(510, 30)
 	end
-	
+
 	control.panel = parent.panel or parent	--if this is in a submenu, panel is its parent
 	control.data = customData
 
