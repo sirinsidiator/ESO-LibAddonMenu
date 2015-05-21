@@ -29,7 +29,7 @@ local function UpdateDisabled(control)
 	else
 		disable = control.data.disabled
 	end
-	
+
 	if disable then
 		control.label:SetColor(ZO_DEFAULT_DISABLED_COLOR:UnpackRGBA())
 		control.editbox:SetColor(ZO_DEFAULT_DISABLED_MOUSEOVER_COLOR:UnpackRGBA())
@@ -41,7 +41,7 @@ local function UpdateDisabled(control)
 	control.editbox:SetMouseEnabled(not disable)
 end
 
-local function UpdateValue(control, forceDefault, value)	
+local function UpdateValue(control, forceDefault, value)
 	if forceDefault then	--if we are forcing defaults
 		value = control.data.default
 		control.data.setFunc(value)
@@ -58,23 +58,13 @@ local function UpdateValue(control, forceDefault, value)
 	end
 end
 
-
 function LAMCreateControl.editbox(parent, editboxData, controlName)
-	local control = wm:CreateControl(controlName or editboxData.reference, parent.scroll or parent, CT_CONTROL)
-	control:SetMouseEnabled(true)
-	control:SetResizeToFitDescendents(true)
-	control:SetHandler("OnMouseEnter", ZO_Options_OnMouseEnter)
-	control:SetHandler("OnMouseExit", ZO_Options_OnMouseExit)
+	local control = LAM.util.CreateLabelAndContainerControl(parent, editboxData, controlName)
 
-	control.label = wm:CreateControl(nil, control, CT_LABEL)
-	local label = control.label
-	label:SetAnchor(TOPLEFT)
-	label:SetFont("ZoFontWinH4")
-	label:SetWrapMode(TEXT_WRAP_MODE_ELLIPSIS)
-	label:SetText(editboxData.name)
-
-	control.bg = wm:CreateControlFromVirtual(nil, control, "ZO_EditBackdrop")
+	local container = control.container
+	control.bg = wm:CreateControlFromVirtual(nil, container, "ZO_EditBackdrop")
 	local bg = control.bg
+	bg:SetAnchorFill()
 
 	if editboxData.isMultiline then
 		control.editbox = wm:CreateControlFromVirtual(nil, bg, "ZO_DefaultEditMultiLineForBackdrop")
@@ -108,35 +98,20 @@ function LAMCreateControl.editbox(parent, editboxData, controlName)
 	editbox:SetHandler("OnMouseEnter", function() ZO_Options_OnMouseEnter(control) end)
 	editbox:SetHandler("OnMouseExit", function() ZO_Options_OnMouseExit(control) end)
 
-	local isHalfWidth = editboxData.width == "half"
-	if isHalfWidth then
-		control:SetDimensions(250, 55)
-		label:SetDimensions(250, 26)
-		bg:SetDimensions(225, editboxData.isMultiline and 74 or 24)
-		bg:SetAnchor(TOPRIGHT, label, BOTTOMRIGHT)
-		if editboxData.isMultiline then
-			editbox:SetDimensionConstraints(210, 74, 210, 500)
-		end
+	if not editboxData.isMultiline then 
+		container:SetHeight(24)
 	else
-		control:SetDimensions(510, 30)
-		label:SetDimensions(300, 26)
-		bg:SetDimensions(200, editboxData.isMultiline and 100 or 24)
-		bg:SetAnchor(TOPRIGHT)
-		if editboxData.isMultiline then
-			editbox:SetDimensionConstraints(185, 100, 185, 500)
-		end
+		local width = container:GetWidth()
+		local height = control.isHalfWidth and 74 or 100
+		container:SetHeight(height)
+		editbox:SetDimensionConstraints(width, height, width, 500)
 	end
 
 	if editboxData.warning then
 		control.warning = wm:CreateControlFromVirtual(nil, control, "ZO_Options_WarningIcon")
 		control.warning:SetAnchor(TOPRIGHT, control.bg, TOPLEFT, -5, 0)
-		--control.warning.tooltipText = editboxData.warning
 		control.warning.data = {tooltipText = editboxData.warning}
 	end
-
-	control.panel = parent.panel or parent	--if this is in a submenu, panel is its parent
-	control.data = editboxData
-	control.data.tooltipText = LAM.util.GetTooltipText(editboxData.tooltip)
 
 	if editboxData.disabled then
 		control.UpdateDisabled = UpdateDisabled
