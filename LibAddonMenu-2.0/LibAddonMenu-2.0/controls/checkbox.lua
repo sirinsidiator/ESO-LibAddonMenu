@@ -127,6 +127,8 @@ function LAMCreateControl.checkbox(parent, checkboxData, controlName)
 		control.warning.data = {tooltipText = checkboxData.warning}
 	end
 
+	control.data.tooltipText = LAM.util.GetTooltipText(checkboxData.tooltip)
+
 	if checkboxData.disabled then
 		control.UpdateDisabled = UpdateDisabled
 		control:UpdateDisabled()

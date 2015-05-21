@@ -43,6 +43,15 @@ local widgets = lam.widgets
 lam.util = {}
 local util = lam.util
 
+local function GetTooltipText(tooltip)
+	if type(tooltip) == "string" then
+		return tooltip
+	elseif type(tooltip) == "function" then
+		return tostring(tooltip())
+	end
+	return nil
+end
+
 local function CreateBaseControl(parent, controlData, controlName)
 	local control = wm:CreateControl(controlName or controlData.reference, parent.scroll or parent, CT_CONTROL)
 	control.panel = parent.panel or parent	-- if this is in a submenu, panel is the submenu's parent
@@ -82,13 +91,14 @@ local function CreateLabelAndContainerControl(parent, controlData, controlName)
 		label:SetAnchor(RIGHT, container, LEFT, 5, 0)
 	end
 
-	control.data.tooltipText = control.data.tooltip
+	control.data.tooltipText = GetTooltipText(control.data.tooltip)
 	control:SetMouseEnabled(true)
 	control:SetHandler("OnMouseEnter", ZO_Options_OnMouseEnter)
 	control:SetHandler("OnMouseExit", ZO_Options_OnMouseExit)
 	return control
 end
 
+util.GetTooltipText = GetTooltipText
 util.CreateBaseControl = CreateBaseControl
 util.CreateLabelAndContainerControl = CreateLabelAndContainerControl
 

@@ -66,6 +66,7 @@ local function UpdateValue(control, forceDefault, value)
 	control.slidervalue:SetText(value)
 end
 
+
 function LAMCreateControl.slider(parent, sliderData, controlName)
 	local control = LAM.util.CreateLabelAndContainerControl(parent, sliderData, controlName)
 

@@ -59,7 +59,7 @@ function LAMCreateControl.button(parent, buttonData, controlName)
 	local button = control.button
 	button:SetAnchor(control.isHalfWidth and CENTER or RIGHT)
 	button:SetClickSound("Click")
-	button.data = {tooltipText = buttonData.tooltip}
+	button.data = {tooltipText = LAM.util.GetTooltipText(buttonData.tooltip)}
 	button:SetHandler("OnMouseEnter", ZO_Options_OnMouseEnter)
 	button:SetHandler("OnMouseExit", ZO_Options_OnMouseExit)
 	button:SetHandler("OnClicked", function(self, ...)

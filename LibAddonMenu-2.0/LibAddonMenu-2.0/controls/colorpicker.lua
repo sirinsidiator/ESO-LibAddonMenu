@@ -93,6 +93,8 @@ function LAMCreateControl.colorpicker(parent, colorpickerData, controlName)
 		control.warning.data = {tooltipText = colorpickerData.warning}
 	end
 
+	control.data.tooltipText = LAM.util.GetTooltipText(colorpickerData.tooltip)
+
 	if colorpickerData.disabled then
 		control.UpdateDisabled = UpdateDisabled
 		control:UpdateDisabled()
