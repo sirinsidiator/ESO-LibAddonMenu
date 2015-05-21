@@ -14,7 +14,7 @@
 }	]]
 
 
-local widgetVersion = 8
+local widgetVersion = 9
 local LAM = LibStub("LibAddonMenu-2.0")
 if not LAM:RegisterWidget("dropdown", widgetVersion) then return end
 
@@ -82,19 +82,8 @@ local function GrabSortingInfo(sortInfo)
 	return t
 end
 
-
 function LAMCreateControl.dropdown(parent, dropdownData, controlName)
-	local control = wm:CreateControl(controlName or dropdownData.reference, parent.scroll or parent, CT_CONTROL)
-	control:SetMouseEnabled(true)
-	control:SetHandler("OnMouseEnter", ZO_Options_OnMouseEnter)
-	control:SetHandler("OnMouseExit", ZO_Options_OnMouseExit)
-
-	control.label = wm:CreateControl(nil, control, CT_LABEL)
-	local label = control.label
-	label:SetAnchor(TOPLEFT)
-	label:SetFont("ZoFontWinH4")
-	label:SetWrapMode(TEXT_WRAP_MODE_ELLIPSIS)
-	label:SetText(dropdownData.name)
+	local control = LAM.util.CreateLabelAndContainerControl(parent, dropdownData, controlName)
 
 	local countControl = parent
 	local name = parent:GetName()
@@ -104,9 +93,11 @@ function LAMCreateControl.dropdown(parent, dropdownData, controlName)
 	end
 	local comboboxCount = (countControl.comboboxCount or 0) + 1
 	countControl.comboboxCount = comboboxCount
-	control.combobox = wm:CreateControlFromVirtual(zo_strjoin(nil, name, "Combobox", comboboxCount), control, "ZO_ComboBox")
+	control.combobox = wm:CreateControlFromVirtual(zo_strjoin(nil, name, "Combobox", comboboxCount), control.container, "ZO_ComboBox")
 
 	local combobox = control.combobox
+	combobox:SetAnchor(TOPLEFT)
+	combobox:SetDimensions(control.container:GetDimensions())
 	combobox:SetHandler("OnMouseEnter", function() ZO_Options_OnMouseEnter(control) end)
 	combobox:SetHandler("OnMouseExit", function() ZO_Options_OnMouseExit(control) end)
 	control.dropdown = ZO_ComboBox_ObjectFromContainer(combobox)
@@ -117,28 +108,11 @@ function LAMCreateControl.dropdown(parent, dropdownData, controlName)
 		dropdown:SetSortOrder(sortOrder == "up" and ZO_SORT_ORDER_UP or ZO_SORT_ORDER_DOWN, sortType == "name" and ZO_SORT_BY_NAME or ZO_SORT_BY_NAME_NUMERIC)
 	end
 
-	local isHalfWidth = dropdownData.width == "half"
-	if isHalfWidth then
-		control:SetDimensions(250, 55)
-		label:SetDimensions(250, 26)
-		combobox:SetDimensions(225, 26)
-		combobox:SetAnchor(TOPRIGHT, label, BOTTOMRIGHT)
-	else
-		control:SetDimensions(510, 30)
-		label:SetDimensions(300, 26)
-		combobox:SetDimensions(200, 26)
-		combobox:SetAnchor(TOPRIGHT)
-	end
-
 	if dropdownData.warning then
 		control.warning = wm:CreateControlFromVirtual(nil, control, "ZO_Options_WarningIcon")
 		control.warning:SetAnchor(RIGHT, combobox, LEFT, -5, 0)
 		control.warning.data = {tooltipText = dropdownData.warning}
 	end
-
-	control.panel = parent.panel or parent	--if this is in a submenu, panel is its parent
-	control.data = dropdownData
-	control.data.tooltipText = dropdownData.tooltip
 
 	if dropdownData.disabled then
 		control.UpdateDisabled = UpdateDisabled
