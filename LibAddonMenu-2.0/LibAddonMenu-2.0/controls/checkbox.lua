@@ -103,7 +103,7 @@ end
 
 --controlName is optional
 function LAMCreateControl.checkbox(parent, checkboxData, controlName)
-	local control = LAM.util.CreateBaseControl(parent, checkboxData, controlName)
+	local control = LAM.util.CreateLabelAndContainerControl(parent, checkboxData, controlName)
 	control:SetHandler("OnMouseEnter", OnMouseEnter)
 	control:SetHandler("OnMouseExit", OnMouseExit)
 	control:SetHandler("OnMouseUp", function(control)

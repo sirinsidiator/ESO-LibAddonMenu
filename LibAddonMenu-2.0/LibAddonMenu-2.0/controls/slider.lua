@@ -67,7 +67,7 @@ local function UpdateValue(control, forceDefault, value)
 end
 
 function LAMCreateControl.slider(parent, sliderData, controlName)
-	local control = LAM.util.CreateBaseControl(parent, sliderData, controlName)
+	local control = LAM.util.CreateLabelAndContainerControl(parent, sliderData, controlName)
 
 	--skipping creating the backdrop...  Is this the actual slider texture?
 	control.slider = wm:CreateControl(nil, control.container, CT_SLIDER)

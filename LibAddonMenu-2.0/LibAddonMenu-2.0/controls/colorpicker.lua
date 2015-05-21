@@ -57,7 +57,7 @@ local function UpdateValue(control, forceDefault, valueR, valueG, valueB, valueA
 end
 
 function LAMCreateControl.colorpicker(parent, colorpickerData, controlName)
-	local control = LAM.util.CreateBaseControl(parent, colorpickerData, controlName)
+	local control = LAM.util.CreateLabelAndContainerControl(parent, colorpickerData, controlName)
 
 	control.color = control.container
 	local color = control.color

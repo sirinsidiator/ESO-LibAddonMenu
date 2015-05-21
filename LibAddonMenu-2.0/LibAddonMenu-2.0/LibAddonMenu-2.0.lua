@@ -48,28 +48,36 @@ local function CreateBaseControl(parent, controlData, controlName)
 	control.panel = parent.panel or parent	-- if this is in a submenu, panel is the submenu's parent
 	control.data = controlData
 
-	local isHalfWidth = controlData.width == "half"
-	local width = control.panel:GetWidth() - 60
+	control.isHalfWidth = controlData.width == "half"
+	control:SetWidth(control.panel:GetWidth() - 60)
+	return control
+end
+
+local MIN_HEIGHT = 26
+local HALF_WIDTH_LINE_SPACING = 2
+local function CreateLabelAndContainerControl(parent, controlData, controlName)
+	local control = CreateBaseControl(parent, controlData, controlName)
+	local width = control:GetWidth()
 
 	local container = wm:CreateControl(nil, control, CT_CONTROL)
-	container:SetDimensions(width / 3, 24)
+	container:SetDimensions(width / 3, MIN_HEIGHT)
 	control.container = container
 
 	local label = wm:CreateControl(nil, control, CT_LABEL)
 	label:SetFont("ZoFontWinH4")
-	label:SetHeight(26)
+	label:SetHeight(MIN_HEIGHT)
 	label:SetWrapMode(TEXT_WRAP_MODE_ELLIPSIS)
 	label:SetText(controlData.name)
 	control.label = label
 
-	if isHalfWidth then
-		control:SetDimensions(width / 2, 55)
+	if control.isHalfWidth then
+		control:SetDimensions(width / 2, MIN_HEIGHT * 2 + HALF_WIDTH_LINE_SPACING)
 		label:SetAnchor(TOPLEFT, control, TOPLEFT, 0, 0)
 		label:SetAnchor(TOPRIGHT, control, TOPRIGHT, 0, 0)
-		container:SetAnchor(TOPRIGHT, control.label, BOTTOMRIGHT, -5, 2)
+		container:SetAnchor(TOPRIGHT, control.label, BOTTOMRIGHT, 0, HALF_WIDTH_LINE_SPACING)
 	else
-		control:SetDimensions(width, 40)
-		container:SetAnchor(RIGHT, control, RIGHT, -5, -5)
+		control:SetDimensions(width, MIN_HEIGHT)
+		container:SetAnchor(RIGHT, control, RIGHT, 0, 0)
 		label:SetAnchor(LEFT, control, LEFT, 0, 0)
 		label:SetAnchor(RIGHT, container, LEFT, 5, 0)
 	end
@@ -82,6 +90,7 @@ local function CreateBaseControl(parent, controlData, controlName)
 end
 
 util.CreateBaseControl = CreateBaseControl
+util.CreateLabelAndContainerControl = CreateLabelAndContainerControl
 
 local ADDON_DATA_TYPE = 1
 local RESELECTING_DURING_REBUILD = true

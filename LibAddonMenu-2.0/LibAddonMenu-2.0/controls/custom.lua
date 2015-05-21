@@ -18,22 +18,17 @@ local function UpdateValue(control)
 	end
 end
 
+local MIN_HEIGHT = 26
 function LAMCreateControl.custom(parent, customData, controlName)
-	local control = wm:CreateControl(controlName or customData.reference, parent.scroll or parent, CT_CONTROL)
+	local control = LAM.util.CreateBaseControl(parent, customData, controlName)
+	local width = control:GetWidth()
 	control:SetResizeToFitDescendents(true)
 
-	local isHalfWidth = customData.width == "half"
-	local width = parent:GetWidth() - 20
-	if isHalfWidth then	--note these restrictions
-		control:SetDimensionConstraints(width / 2, 55, width / 2, 100)
-		control:SetDimensions(width / 2, 55)
+	if control.isHalfWidth then	--note these restrictions
+		control:SetDimensionConstraints(width / 2, MIN_HEIGHT, width / 2, MIN_HEIGHT * 4)
 	else
-		control:SetDimensionConstraints(width, 30, width, 100)
-		control:SetDimensions(width, 30)
+		control:SetDimensionConstraints(width, MIN_HEIGHT, width, MIN_HEIGHT * 4)
 	end
-
-	control.panel = parent.panel or parent	--if this is in a submenu, panel is its parent
-	control.data = customData
 
 	control.UpdateValue = UpdateValue
 

@@ -34,7 +34,7 @@ local function AnimateSubmenu(clicked)
 end
 
 function LAMCreateControl.submenu(parent, submenuData, controlName)
-	local width = parent:GetWidth() - 50
+	local width = parent:GetWidth() - 45
 	local control = wm:CreateControl(controlName or submenuData.reference, parent.scroll or parent, CT_CONTROL)
 	control.panel = parent
 	control.data = submenuData

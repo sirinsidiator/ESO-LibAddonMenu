@@ -17,11 +17,12 @@ local function UpdateValue(control)
 	control.header:SetText(control.data.name)
 end
 
+local MIN_HEIGHT = 30
 function LAMCreateControl.header(parent, headerData, controlName)
-	local control = wm:CreateControl(controlName or headerData.reference, parent.scroll or parent, CT_CONTROL)
-	local isHalfWidth = headerData.width == "half"
-	local width = parent:GetWidth() - 20
-	control:SetDimensions(isHalfWidth and width / 2 or width, 30)
+	local control = LAM.util.CreateBaseControl(parent, headerData, controlName)
+	local isHalfWidth = control.isHalfWidth
+	local width = control:GetWidth()
+	control:SetDimensions(isHalfWidth and width / 2 or width, MIN_HEIGHT)
 
 	control.divider = wm:CreateControlFromVirtual(nil, control, "ZO_Options_Divider")
 	local divider = control.divider
@@ -33,9 +34,6 @@ function LAMCreateControl.header(parent, headerData, controlName)
 	header:SetAnchor(TOPLEFT, divider, BOTTOMLEFT)
 	header:SetAnchor(BOTTOMRIGHT)
 	header:SetText(headerData.name)
-
-	control.panel = parent.panel or parent	--if this is in a submenu, panel is its parent
-	control.data = headerData
 
 	control.UpdateValue = UpdateValue
 

@@ -21,17 +21,17 @@ local function UpdateValue(control)
 	control.desc:SetText(control.data.text)
 end
 
+local MIN_HEIGHT = 26
 function LAMCreateControl.description(parent, descriptionData, controlName)
-	local control = wm:CreateControl(controlName or descriptionData.reference, parent.scroll or parent, CT_CONTROL)
+	local control = LAM.util.CreateBaseControl(parent, descriptionData, controlName)
+	local isHalfWidth = control.isHalfWidth
+	local width = control:GetWidth()
 	control:SetResizeToFitDescendents(true)
-	local isHalfWidth = descriptionData.width == "half"
-	local width = parent:GetWidth() - 20
+
 	if isHalfWidth then
-		control:SetDimensionConstraints(width / 2, 55, width / 2, 100)
-		control:SetDimensions(width / 2, 55)
+		control:SetDimensionConstraints(width / 2, MIN_HEIGHT, width / 2, MIN_HEIGHT * 4)
 	else
-		control:SetDimensionConstraints(width, 40, width, 100)
-		control:SetDimensions(width, 30)
+		control:SetDimensionConstraints(width, MIN_HEIGHT, width, MIN_HEIGHT * 4)
 	end
 
 	control.desc = wm:CreateControl(nil, control, CT_LABEL)
@@ -52,9 +52,6 @@ function LAMCreateControl.description(parent, descriptionData, controlName)
 	else
 		desc:SetAnchor(TOPLEFT)
 	end
-
-	control.panel = parent.panel or parent	--if this is in a submenu, panel is its parent
-	control.data = descriptionData
 
 	control.UpdateValue = UpdateValue
 

@@ -83,7 +83,7 @@ local function GrabSortingInfo(sortInfo)
 end
 
 function LAMCreateControl.dropdown(parent, dropdownData, controlName)
-	local control = LAM.util.CreateBaseControl(parent, dropdownData, controlName)
+	local control = LAM.util.CreateLabelAndContainerControl(parent, dropdownData, controlName)
 
 	local countControl = parent
 	local name = parent:GetName()

@@ -59,7 +59,7 @@ local function UpdateValue(control, forceDefault, value)
 end
 
 function LAMCreateControl.editbox(parent, editboxData, controlName)
-	local control = LAM.util.CreateBaseControl(parent, editboxData, controlName)
+	local control = LAM.util.CreateLabelAndContainerControl(parent, editboxData, controlName)
 
 	local container = control.container
 	control.bg = wm:CreateControlFromVirtual(nil, container, "ZO_EditBackdrop")
@@ -98,12 +98,11 @@ function LAMCreateControl.editbox(parent, editboxData, controlName)
 	editbox:SetHandler("OnMouseEnter", function() ZO_Options_OnMouseEnter(control) end)
 	editbox:SetHandler("OnMouseExit", function() ZO_Options_OnMouseExit(control) end)
 
-	local isHalfWidth = editboxData.width == "half"
 	if not editboxData.isMultiline then 
 		container:SetHeight(24)
 	else
 		local width = container:GetWidth()
-		local height = isHalfWidth and 74 or 100
+		local height = control.isHalfWidth and 74 or 100
 		container:SetHeight(height)
 		editbox:SetDimensionConstraints(width, height, width, 500)
 	end
