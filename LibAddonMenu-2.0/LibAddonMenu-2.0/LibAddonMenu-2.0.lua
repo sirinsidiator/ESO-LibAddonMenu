@@ -32,6 +32,8 @@ end
 
 --UPVALUES--
 local wm = WINDOW_MANAGER
+local em = EVENT_MANAGER
+local sm = SCENE_MANAGER
 local cm = CALLBACK_MANAGER
 local tinsert = table.insert
 
@@ -241,11 +243,11 @@ function lam:OpenToPanel(panel)
 		end
 	end
 
-	if SCENE_MANAGER:GetScene("gameMenuInGame"):GetState() == SCENE_SHOWN then
+	if sm:GetScene("gameMenuInGame"):GetState() == SCENE_SHOWN then
 		openAddonSettingsMenu()
 	else
-		SCENE_MANAGER:CallWhen("gameMenuInGame", SCENE_SHOWN, openAddonSettingsMenu)
-		SCENE_MANAGER:Show("gameMenuInGame")
+		sm:CallWhen("gameMenuInGame", SCENE_SHOWN, openAddonSettingsMenu)
+		sm:Show("gameMenuInGame")
 	end
 end
 
@@ -258,87 +260,101 @@ local function CreateOptionsControls(panel)
 	local optionsTable = addonToOptionsMap[addonID]
 
 	if optionsTable then
-		local isHalf, widget
-		local lastAddedControl, lacAtHalfRow, oIndex, widgetData, widgetType
-		local submenu, subWidgetData, sIndex, subWidgetType, subWidget
-		local anchorOffsetSub, lastAddedControlSub, lacAtHalfRowSub
-		local anchorOffset = 0
-		local missingEntries = (#optionsTable ~= NonContiguousCount(optionsTable))
-		for oIndex=1,#optionsTable do
-			widgetData = optionsTable[oIndex]
-			if not widgetData then
-				missingEntries = true
+		local function CreateAndAnchorWidget(parent, widgetData, offsetX, offsetY, anchorTarget, wasHalf)
+			local widget
+			local status, err = pcall(function() widget = LAMCreateControl[widgetData.type](parent, widgetData) end)
+			if not status then
+				return err or true, offsetY, anchorTarget, wasHalf
 			else
-				widgetType = widgetData.type
-				if widgetType == "submenu" then
-					submenu = LAMCreateControl[widgetType](panel, widgetData)
-					if lastAddedControl then
-						submenu:SetAnchor(TOPLEFT, lastAddedControl, BOTTOMLEFT, 0, 15 + anchorOffset)
-					else
-						submenu:SetAnchor(TOPLEFT)
-					end
-					lastAddedControl = submenu
-					lacAtHalfRow = false
+				local isHalf = (widgetData.width == "half")
+				if not anchorTarget then -- the first widget in a panel is just placed in the top left corner
+					widget:SetAnchor(TOPLEFT)
+					anchorTarget = widget
+				elseif wasHalf and isHalf then -- when the previous widget was only half width and this one is too, we place it on the right side
+					widget:SetAnchor(TOPLEFT, anchorTarget, TOPRIGHT, 5 + (offsetX or 0), 0)
+					offsetY = zo_max(0, widget:GetHeight() - anchorTarget:GetHeight()) -- we need to get the common height of both widgets to know where the next row starts
+					isHalf = false
+				else -- otherwise we just put it below the previous one normally
+					widget:SetAnchor(TOPLEFT, anchorTarget, BOTTOMLEFT, 0, 15 + offsetY)
+					offsetY = 0
+					anchorTarget = widget
+				end
+				return false, offsetY, anchorTarget, isHalf
+			end
+		end
 
-					anchorOffsetSub = 0
-					lacAtHalfRowSub = nil
-					lastAddedControlSub = nil
-					if #widgetData.controls ~= NonContiguousCount(widgetData.controls) then missingEntries = true end
-					for sIndex=1,#widgetData.controls do
-						subWidgetData = widgetData.controls[sIndex]
-						if not subWidgetData then
-							missingEntries = true
-						else
-							subWidgetType = subWidgetData.type
-							subWidget = LAMCreateControl[subWidgetType](submenu, subWidgetData)
-							isHalf = subWidgetData.width == "half"
-							if lastAddedControlSub then
-								if lacAtHalfRowSub and isHalf then
-									subWidget:SetAnchor(TOPLEFT, lastAddedControlSub, TOPRIGHT, 5, 0)
-									lacAtHalfRowSub = false
-									anchorOffsetSub = zo_max(0, subWidget:GetHeight() - lastAddedControlSub:GetHeight())
-								else
-									subWidget:SetAnchor(TOPLEFT, lastAddedControlSub, BOTTOMLEFT, 0, 15 + anchorOffsetSub)
-									lacAtHalfRowSub = isHalf
-									anchorOffsetSub = 0
-									lastAddedControlSub = subWidget
-								end
-							else
-								subWidget:SetAnchor(TOPLEFT)
-								lacAtHalfRowSub = isHalf
-								lastAddedControlSub = subWidget
-							end
-						end
-					end
+		local THROTTLE_TIMEOUT, THROTTLE_COUNT = 10, 20
+		local fifo = {}
+		local anchorOffset, lastAddedControl, wasHalf
+		local CreateWidgetsInPanel, err
+
+		local function PrepareForNextPanel()
+			anchorOffset, lastAddedControl, wasHalf = 0, nil, false
+		end
+
+		local function SetupCreationCalls(parent, widgetDataTable)
+			fifo[#fifo + 1] = PrepareForNextPanel
+			local count = #widgetDataTable
+			for i = 1, count, THROTTLE_COUNT do
+				fifo[#fifo + 1] = function()
+					CreateWidgetsInPanel(parent, widgetDataTable, i, zo_min(i + THROTTLE_COUNT - 1, count))
+				end
+			end
+			return count ~= NonContiguousCount(widgetDataTable)
+		end
+
+		CreateWidgetsInPanel = function(parent, widgetDataTable, startIndex, endIndex)
+			for i=startIndex,endIndex do
+				local widgetData = widgetDataTable[i]
+				if not widgetData then
+					PrintLater("Skipped creation of missing entry in the settings menu of " .. addonID .. ".")
 				else
-					widget = LAMCreateControl[widgetType](panel, widgetData)
-					isHalf = widgetData.width == "half"
-					if lastAddedControl then
-						if lacAtHalfRow and isHalf then
-							widget:SetAnchor(TOPLEFT, lastAddedControl, TOPRIGHT, 10, 0)
-							anchorOffset = zo_max(0, widget:GetHeight() - lastAddedControl:GetHeight())
-							lacAtHalfRow = false
-						else
-							widget:SetAnchor(TOPLEFT, lastAddedControl, BOTTOMLEFT, 0, 15 + anchorOffset)
-							lacAtHalfRow = isHalf
-							anchorOffset = 0
-							lastAddedControl = widget
+					local widgetType = widgetData.type
+					local offsetX = 0
+					local isSubmenu = (widgetType == "submenu")
+					if isSubmenu then
+						wasHalf = false
+						offsetX = 5
+					end
+
+					err, anchorOffset, lastAddedControl, wasHalf = CreateAndAnchorWidget(parent, widgetData, offsetX, anchorOffset, lastAddedControl, wasHalf)
+					if err then
+						PrintLater(("Could not create %s '%s' of %s."):format(widgetData.type, widgetData.name or "unnamed", addonID))
+					end
+
+					if isSubmenu then
+						if SetupCreationCalls(lastAddedControl, widgetData.controls) then
+							PrintLater(("The sub menu '%s' of %s is missing some entries."):format(widgetData.name or "unnamed", addonID))
 						end
-					else
-						widget:SetAnchor(TOPLEFT)
-						lacAtHalfRow = isHalf
-						lastAddedControl = widget
 					end
 				end
 			end
 		end
-		if missingEntries then
-			PrintLater("Missing one or more entries in the settings menu of " .. addonID .. ". Check your options table for missing indices.")
-		end
-	end
 
-	optionsCreated[addonID] = true
-	cm:FireCallbacks("LAM-PanelControlsCreated", panel)
+		local function DoCreateSettings()
+			if #fifo > 0 then
+				local nextCall = table.remove(fifo, 1)
+				nextCall()
+				if(nextCall == PrepareForNextPanel) then
+					DoCreateSettings()
+				else
+					zo_callLater(DoCreateSettings, THROTTLE_TIMEOUT)
+				end
+			else
+				if missingEntries then
+					PrintLater("Missing one or more entries in the settings menu of " .. addonID .. ". Check your options table for missing indices.")
+				end
+
+				optionsCreated[addonID] = true
+				cm:FireCallbacks("LAM-PanelControlsCreated", panel)
+			end
+		end
+
+		if SetupCreationCalls(panel, optionsTable) then
+			PrintLater(("The settings menu of %s is missing some entries."):format(addonID))
+		end
+		DoCreateSettings()
+	end
 end
 
 
@@ -438,7 +454,7 @@ local function CreateAddonSettingsMenuEntry()
 	local addonListSorted = false
 
 	function panelData.callback()
-		SCENE_MANAGER:AddFragment(lam:GetAddonSettingsFragment())
+		sm:AddFragment(lam:GetAddonSettingsFragment())
 		KEYBOARD_OPTIONS:ChangePanels(lam.panelId)
 
 		local title = LAMAddonSettingsWindow:GetNamedChild("Title")
@@ -453,7 +469,7 @@ local function CreateAddonSettingsMenuEntry()
 	end
 
 	function panelData.unselectedCallback()
-		SCENE_MANAGER:RemoveFragment(lam:GetAddonSettingsFragment())
+		sm:RemoveFragment(lam:GetAddonSettingsFragment())
 		if SetCameraOptionsPreviewModeEnabled then -- available since API version 100011
 			SetCameraOptionsPreviewModeEnabled(false)
 		end
@@ -604,16 +620,16 @@ local hasInitialized = false
 local eventHandle = table.concat({MAJOR, MINOR}, "r")
 local function OnLoad(_, addonName)
 	-- wait for the first loaded event
-	EVENT_MANAGER:UnregisterForEvent(eventHandle, EVENT_ADD_ON_LOADED)
+	em:UnregisterForEvent(eventHandle, EVENT_ADD_ON_LOADED)
 	safeToInitialize = true
 end
-EVENT_MANAGER:RegisterForEvent(eventHandle, EVENT_ADD_ON_LOADED, OnLoad)
+em:RegisterForEvent(eventHandle, EVENT_ADD_ON_LOADED, OnLoad)
 
 local function OnActivated(_, addonName)
-	EVENT_MANAGER:UnregisterForEvent(eventHandle, EVENT_PLAYER_ACTIVATED)
+	em:UnregisterForEvent(eventHandle, EVENT_PLAYER_ACTIVATED)
 	FlushMessages()
 end
-EVENT_MANAGER:RegisterForEvent(eventHandle, EVENT_PLAYER_ACTIVATED, OnActivated)
+em:RegisterForEvent(eventHandle, EVENT_PLAYER_ACTIVATED, OnActivated)
 
 function CheckSafetyAndInitialize(addonID)
 	if not safeToInitialize then
