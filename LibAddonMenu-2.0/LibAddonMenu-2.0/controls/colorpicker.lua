@@ -12,7 +12,7 @@
 }	]]
 
 
-local widgetVersion = 6
+local widgetVersion = 7
 local LAM = LibStub("LibAddonMenu-2.0")
 if not LAM:RegisterWidget("colorpicker", widgetVersion) then return end
 
@@ -38,7 +38,7 @@ local function UpdateDisabled(control)
 	control.isDisabled = disable
 end
 
-local function UpdateValue(control, forceDefault, valueR, valueG, valueB, valueA)	
+local function UpdateValue(control, forceDefault, valueR, valueG, valueB, valueA)
 	if forceDefault then	--if we are forcing defaults
 		local color = control.data.default
 		valueR, valueG, valueB, valueA = color.r, color.g, color.b, color.a
@@ -53,39 +53,14 @@ local function UpdateValue(control, forceDefault, valueR, valueG, valueB, valueA
 		valueR, valueG, valueB, valueA = control.data.getFunc()
 	end
 
-	control.thumb:SetColor(valueR, valueG, valueB, valueA or 1)	
+	control.thumb:SetColor(valueR, valueG, valueB, valueA or 1)
 end
 
-
 function LAMCreateControl.colorpicker(parent, colorpickerData, controlName)
-	local control = wm:CreateControl(controlName or colorpickerData.reference, parent.scroll or parent, CT_CONTROL)
-	control:SetMouseEnabled(true)
-	control:SetHandler("OnMouseEnter", ZO_Options_OnMouseEnter)
-	control:SetHandler("OnMouseExit", ZO_Options_OnMouseExit)
+	local control = LAM.util.CreateLabelAndContainerControl(parent, colorpickerData, controlName)
 
-	control.label = wm:CreateControl(nil, control, CT_LABEL)
-	local label = control.label
-	label:SetDimensions(300, 26)
-	label:SetAnchor(TOPLEFT)
-	label:SetFont("ZoFontWinH4")
-	label:SetWrapMode(TEXT_WRAP_MODE_ELLIPSIS)
-	label:SetText(colorpickerData.name)
-
-	control.color = wm:CreateControl(nil, control, CT_CONTROL)
+	control.color = control.container
 	local color = control.color
-
-	local isHalfWidth = colorpickerData.width == "half"
-	if isHalfWidth then
-		control:SetDimensions(250, 55)
-		label:SetDimensions(250, 26)
-		color:SetDimensions(100, 24)
-		color:SetAnchor(TOPRIGHT, label, BOTTOMRIGHT)
-	else
-		control:SetDimensions(510, 30)
-		label:SetDimensions(300, 26)
-		color:SetDimensions(200, 24)
-		color:SetAnchor(TOPRIGHT)
-	end
 
 	control.thumb = wm:CreateControl(nil, color, CT_TEXTURE)
 	local thumb = control.thumb
@@ -100,28 +75,25 @@ function LAMCreateControl.colorpicker(parent, colorpickerData, controlName)
 	border:SetAnchor(CENTER, thumb, CENTER, 0, 0)
 
 	local function ColorPickerCallback(r, g, b, a)
-			control:UpdateValue(false, r, g, b, a)
-		end
+		control:UpdateValue(false, r, g, b, a)
+	end
 
 	control:SetHandler("OnMouseUp", function(self, btn, upInside)
-			if self.isDisabled then return end
+		if self.isDisabled then return end
 
-			if upInside then
-				local r, g, b, a = colorpickerData.getFunc()
-				COLOR_PICKER:Show(ColorPickerCallback, r, g, b, a, colorpickerData.name)
-			end
-		end)
+		if upInside then
+			local r, g, b, a = colorpickerData.getFunc()
+			COLOR_PICKER:Show(ColorPickerCallback, r, g, b, a, colorpickerData.name)
+		end
+	end)
 
 	if colorpickerData.warning then
 		control.warning = wm:CreateControlFromVirtual(nil, control, "ZO_Options_WarningIcon")
 		control.warning:SetAnchor(RIGHT, control.color, LEFT, -5, 0)
-		--control.warning.tooltipText = colorpickerData.warning
 		control.warning.data = {tooltipText = colorpickerData.warning}
 	end
 
-	control.panel = parent.panel or parent	--if this is in a submenu, panel is its parent
-	control.data = colorpickerData
-	control.data.tooltipText = colorpickerData.tooltip
+	control.data.tooltipText = LAM.util.GetTooltipText(colorpickerData.tooltip)
 
 	if colorpickerData.disabled then
 		control.UpdateDisabled = UpdateDisabled

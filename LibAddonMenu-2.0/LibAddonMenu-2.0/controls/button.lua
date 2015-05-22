@@ -11,7 +11,7 @@
 }	]]
 
 
-local widgetVersion = 6
+local widgetVersion = 7
 local LAM = LibStub("LibAddonMenu-2.0")
 if not LAM:RegisterWidget("button", widgetVersion) then return end
 
@@ -26,18 +26,24 @@ local function UpdateDisabled(control)
 	else
 		disable = control.data.disabled
 	end
-	
+
 	control.button:SetEnabled(not disable)
 end
 
 
 --controlName is optional
+local MIN_HEIGHT = 28 -- default_button height
+local HALF_WIDTH_LINE_SPACING = 2
 function LAMCreateControl.button(parent, buttonData, controlName)
-	local control = wm:CreateControl(controlName or buttonData.reference, parent.scroll or parent, CT_CONTROL)
-
-	local isHalfWidth = buttonData.width == "half"
-	control:SetDimensions(isHalfWidth and 250 or 510, isHalfWidth and 55 or 28)
+	local control = LAM.util.CreateBaseControl(parent, buttonData, controlName)
 	control:SetMouseEnabled(true)
+
+	local width = control:GetWidth()
+	if control.isHalfWidth then
+		control:SetDimensions(width / 2, MIN_HEIGHT * 2 + HALF_WIDTH_LINE_SPACING)
+	else
+		control:SetDimensions(width, MIN_HEIGHT)
+	end
 
 	if buttonData.icon then
 		control.button = wm:CreateControl(nil, control, CT_BUTTON)
@@ -47,32 +53,27 @@ function LAMCreateControl.button(parent, buttonData, controlName)
 	else
 		--control.button = wm:CreateControlFromVirtual(controlName.."Button", control, "ZO_DefaultButton")
 		control.button = wm:CreateControlFromVirtual(nil, control, "ZO_DefaultButton")
-		control.button:SetWidth(isHalfWidth and 180 or 200)
+		control.button:SetWidth(width / 3)
 		control.button:SetText(buttonData.name)
 	end
 	local button = control.button
-	button:SetAnchor(isHalfWidth and CENTER or RIGHT)
+	button:SetAnchor(control.isHalfWidth and CENTER or RIGHT)
 	button:SetClickSound("Click")
-	--button.tooltipText = buttonData.tooltip
-	button.data = {tooltipText = buttonData.tooltip}
+	button.data = {tooltipText = LAM.util.GetTooltipText(buttonData.tooltip)}
 	button:SetHandler("OnMouseEnter", ZO_Options_OnMouseEnter)
 	button:SetHandler("OnMouseExit", ZO_Options_OnMouseExit)
 	button:SetHandler("OnClicked", function(self, ...)
-			buttonData.func(self, ...)
-			if control.panel.data.registerForRefresh then
-				cm:FireCallbacks("LAM-RefreshPanel", control)
-			end
-		end)
+		buttonData.func(self, ...)
+		if control.panel.data.registerForRefresh then
+			cm:FireCallbacks("LAM-RefreshPanel", control)
+		end
+	end)
 
 	if buttonData.warning then
 		control.warning = wm:CreateControlFromVirtual(nil, control, "ZO_Options_WarningIcon")
 		control.warning:SetAnchor(RIGHT, button, LEFT, -5, 0)
-		--control.warning.tooltipText = buttonData.warning
 		control.warning.data = {tooltipText = buttonData.warning}
 	end
-
-	control.panel = parent.panel or parent	--if this is in a submenu, panel is its parent
-	control.data = buttonData
 
 	if buttonData.disabled then
 		control.UpdateDisabled = UpdateDisabled

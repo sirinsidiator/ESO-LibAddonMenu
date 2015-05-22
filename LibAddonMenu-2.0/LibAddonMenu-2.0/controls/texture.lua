@@ -10,23 +10,22 @@
 
 --add texture coords support?
 
-local widgetVersion = 6
+local widgetVersion = 7
 local LAM = LibStub("LibAddonMenu-2.0")
 if not LAM:RegisterWidget("texture", widgetVersion) then return end
 
 local wm = WINDOW_MANAGER
 
+local MIN_HEIGHT = 26
 function LAMCreateControl.texture(parent, textureData, controlName)
-	local control = wm:CreateControl(controlName or textureData.reference, parent.scroll or parent, CT_CONTROL)
+	local control = LAM.util.CreateBaseControl(parent, textureData, controlName)
+	local width = control:GetWidth()
 	control:SetResizeToFitDescendents(true)
 
-	local isHalfWidth = textureData.width == "half"
-	if isHalfWidth then
-		control:SetDimensionConstraints(250, 55, 250, 100)
-		control:SetDimensions(250, 55)
+	if control.isHalfWidth then	--note these restrictions
+		control:SetDimensionConstraints(width / 2, MIN_HEIGHT, width / 2, MIN_HEIGHT * 4)
 	else
-		control:SetDimensionConstraints(510, 30, 510, 100)
-		control:SetDimensions(510, 30)
+		control:SetDimensionConstraints(width, MIN_HEIGHT, width, MIN_HEIGHT * 4)
 	end
 
 	control.texture = wm:CreateControl(nil, control, CT_TEXTURE)
@@ -37,14 +36,10 @@ function LAMCreateControl.texture(parent, textureData, controlName)
 
 	if textureData.tooltip then
 		texture:SetMouseEnabled(true)
-		--texture.tooltipText = textureData.tooltip
-		texture.data = {tooltipText = textureData.tooltip}
+		texture.data = {tooltipText = LAM.util.GetTooltipText(textureData.tooltip)}
 		texture:SetHandler("OnMouseEnter", ZO_Options_OnMouseEnter)
 		texture:SetHandler("OnMouseEnter", ZO_Options_OnMouseExit)
 	end
-
-	control.panel = parent.panel or parent	--if this is in a submenu, panel is its parent
-	control.data = textureData
 
 	return control
 end
