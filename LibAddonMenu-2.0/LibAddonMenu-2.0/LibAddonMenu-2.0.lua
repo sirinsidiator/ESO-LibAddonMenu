@@ -372,10 +372,6 @@ local function CreateOptionsControls(panel)
 					zo_callLater(DoCreateSettings, THROTTLE_TIMEOUT)
 				end
 			else
-				if missingEntries then
-					PrintLater("Missing one or more entries in the settings menu of " .. addonID .. ". Check your options table for missing indices.")
-				end
-
 				optionsCreated[addonID] = true
 				cm:FireCallbacks("LAM-PanelControlsCreated", panel)
 			end
