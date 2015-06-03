@@ -303,6 +303,7 @@ local function CreateOptionsControls(panel)
 					anchorTarget = widget
 				elseif wasHalf and isHalf then -- when the previous widget was only half width and this one is too, we place it on the right side
 					widget:SetAnchor(TOPLEFT, anchorTarget, TOPRIGHT, 5 + (offsetX or 0), 0)
+					widget.lineControl = anchorTarget
 					offsetY = zo_max(0, widget:GetHeight() - anchorTarget:GetHeight()) -- we need to get the common height of both widgets to know where the next row starts
 					isHalf = false
 				else -- otherwise we just put it below the previous one normally
