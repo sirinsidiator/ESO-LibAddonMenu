@@ -89,9 +89,9 @@ local function CreateLabelAndContainerControl(parent, controlData, controlName)
 		container:SetAnchor(TOPRIGHT, control.label, BOTTOMRIGHT, 0, HALF_WIDTH_LINE_SPACING)
 	else
 		control:SetDimensions(width, MIN_HEIGHT)
-		container:SetAnchor(RIGHT, control, RIGHT, 0, 0)
-		label:SetAnchor(LEFT, control, LEFT, 0, 0)
-		label:SetAnchor(RIGHT, container, LEFT, 5, 0)
+		container:SetAnchor(TOPRIGHT, control, TOPRIGHT, 0, 0)
+		label:SetAnchor(TOPLEFT, control, TOPLEFT, 0, 0)
+		label:SetAnchor(TOPRIGHT, container, TOPLEFT, 5, 0)
 	end
 
 	control.data.tooltipText = GetTooltipText(control.data.tooltip)
