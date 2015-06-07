@@ -799,7 +799,7 @@ function lam:GetAddonSettingsFragment()
 	assert(hasInitialized or safeToInitialize)
 	if not LAMAddonSettingsFragment then
 		local window = CreateAddonSettingsWindow()
-		LAMAddonSettingsFragment = ZO_FadeSceneFragment:New(window)
+		LAMAddonSettingsFragment = ZO_FadeSceneFragment:New(window, true, 100)
 		CreateAddonSettingsMenuEntry()
 	end
 	return LAMAddonSettingsFragment
