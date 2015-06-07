@@ -58,6 +58,8 @@ local function UpdateValue(control, forceDefault, value)
 	end
 end
 
+local MIN_HEIGHT = 26
+local HALF_WIDTH_LINE_SPACING = 2
 function LAMCreateControl.editbox(parent, editboxData, controlName)
 	local control = LAM.util.CreateLabelAndContainerControl(parent, editboxData, controlName)
 
@@ -69,24 +71,24 @@ function LAMCreateControl.editbox(parent, editboxData, controlName)
 	if editboxData.isMultiline then
 		control.editbox = wm:CreateControlFromVirtual(nil, bg, "ZO_DefaultEditMultiLineForBackdrop")
 		control.editbox:SetHandler("OnMouseWheel", function(self, delta)
-				if self:HasFocus() then	--only set focus to new spots if the editbox is currently in use
-					local cursorPos = self:GetCursorPosition()
-					local text = self:GetText()
-					local textLen = text:len()
-					local newPos
-					if delta > 0 then	--scrolling up
-						local reverseText = text:reverse()
-						local revCursorPos = textLen - cursorPos
-						local revPos = reverseText:find("\n", revCursorPos+1)
-						newPos = revPos and textLen - revPos
-					else	--scrolling down
-						newPos = text:find("\n", cursorPos+1)
-					end
-					if newPos then	--if we found a new line, then scroll, otherwise don't
-						self:SetCursorPosition(newPos)
-					end
+			if self:HasFocus() then	--only set focus to new spots if the editbox is currently in use
+				local cursorPos = self:GetCursorPosition()
+				local text = self:GetText()
+				local textLen = text:len()
+				local newPos
+				if delta > 0 then	--scrolling up
+					local reverseText = text:reverse()
+					local revCursorPos = textLen - cursorPos
+					local revPos = reverseText:find("\n", revCursorPos+1)
+					newPos = revPos and textLen - revPos
+				else	--scrolling down
+					newPos = text:find("\n", cursorPos+1)
 				end
-			end)
+				if newPos then	--if we found a new line, then scroll, otherwise don't
+					self:SetCursorPosition(newPos)
+				end
+			end
+		end)
 	else
 		control.editbox = wm:CreateControlFromVirtual(nil, bg, "ZO_DefaultEditForBackdrop")
 	end
@@ -105,6 +107,12 @@ function LAMCreateControl.editbox(parent, editboxData, controlName)
 		local height = control.isHalfWidth and 74 or 100
 		container:SetHeight(height)
 		editbox:SetDimensionConstraints(width, height, width, 500)
+
+		if control.lineControl then
+			control.lineControl:SetHeight(MIN_HEIGHT + height + HALF_WIDTH_LINE_SPACING)
+		else
+			control:SetHeight(height)
+		end
 	end
 
 	if editboxData.warning then
