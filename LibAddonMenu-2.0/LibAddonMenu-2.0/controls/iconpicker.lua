@@ -3,19 +3,21 @@
 	name = "My Icon Picker",
 	tooltip = "Color Picker's tooltip text.",
 	choices = {"texture path 1", "texture path 2", "texture path 3"},
+	choicesTooltips = {"icon tooltip 1", "icon tooltip 2", "icon tooltip 3"}, --(optional)
 	getFunc = function() return db.var end,
 	setFunc = function(var) db.var = var doStuff() end,
 	maxColumns = 5, --(optional) number of icons in one row
 	visibleRows = 4.5, --(optional) number of visible rows
 	iconSize = 28, --(optional) size of the icons
 	width = "full",	--or "half" (optional)
+	beforeShow = function(control, iconPicker) return preventShow end, --(optional)
 	disabled = function() return db.someBooleanSetting end,	--or boolean (optional)
 	warning = "Will need to reload the UI.",	--(optional)
 	default = defaults.var,	--(optional)
 	reference = "MyAddonIconPicker"	--(optional) unique global reference to control
 }	]]
 
-local widgetVersion = 1
+local widgetVersion = 2
 local LAM = LibStub("LibAddonMenu-2.0")
 if not LAM:RegisterWidget("iconpicker", widgetVersion) then return end
 
@@ -26,7 +28,15 @@ local tinsert = table.insert
 local IconPickerMenu = ZO_Object:Subclass()
 local iconPicker
 LAM.util.GetIconPickerMenu = function()
-	if not iconPicker then iconPicker = IconPickerMenu:New("LAMIconPicker") end
+	if not iconPicker then
+		iconPicker = IconPickerMenu:New("LAMIconPicker")
+		local sceneFragment = LAM:GetAddonSettingsFragment()
+		ZO_PreHook(sceneFragment, "OnHidden", function() 
+			if not iconPicker.control:IsHidden() then
+				iconPicker:Clear()
+			end
+		end)
+	end
 	return iconPicker
 end
 
@@ -78,10 +88,20 @@ function IconPickerMenu:Initialize(name)
 			mouseOver:SetAnchor(TOPLEFT, icon, TOPLEFT, 0, 0)
 			mouseOver:SetAnchor(BOTTOMRIGHT, icon, BOTTOMRIGHT, 0, 0)
 			mouseOver:SetHidden(false)
+			if self.customOnMouseEnter then
+				self.customOnMouseEnter(icon)
+			else
+				self:OnMouseEnter(icon)
+			end
 		end)
 		icon:SetHandler("OnMouseExit", function()
 			mouseOver:ClearAnchors()
 			mouseOver:SetHidden(true)
+			if self.customOnMouseExit then
+				self.customOnMouseExit(icon)
+			else
+				self:OnMouseExit(icon)
+			end
 		end)
 		icon:SetHandler("OnMouseUp", function(control, ...)
 			PlaySound("Click")
@@ -113,6 +133,16 @@ function IconPickerMenu:Initialize(name)
 	end)
 end
 
+function IconPickerMenu:OnMouseEnter(icon)
+	InitializeTooltip(InformationTooltip, icon, TOPLEFT, 0, 0, BOTTOMRIGHT)
+	SetTooltipText(InformationTooltip, LAM.util.GetTooltipText(icon.tooltip))
+	InformationTooltipTopLevel:BringWindowToTop()
+end
+
+function IconPickerMenu:OnMouseExit(icon)
+	ClearTooltip(InformationTooltip)
+end
+
 function IconPickerMenu:SetMaxColumns(value)
 	self.maxCols = value ~= nil and value or 5
 end
@@ -126,6 +156,11 @@ end
 
 function IconPickerMenu:SetVisibleRows(value)
 	self.visibleRows = value ~= nil and value or 4.5
+end
+
+function IconPickerMenu:SetMouseHandlers(onEnter, onExit)
+	self.customOnMouseEnter = onEnter
+	self.customOnMouseExit = onExit
 end
 
 function IconPickerMenu:UpdateDimensions()
@@ -172,13 +207,16 @@ function IconPickerMenu:Clear()
 	self.color = ZO_DEFAULT_ENABLED_COLOR
 	self.refCount = nil
 	self.parent = nil
+	self.customOnMouseEnter = nil
+	self.customOnMouseExit = nil
 end
 
-function IconPickerMenu:AddIcon(texturePath, callback)
+function IconPickerMenu:AddIcon(texturePath, callback, tooltip)
 	local icon, key = self.iconPool:AcquireObject()
 	icon:SetTexture(texturePath)
 	icon:SetColor(self.color:UnpackRGBA())
 	icon.texture = texturePath
+	icon.tooltip = tooltip
 	icon.OnSelect = callback
 	self.icons[#self.icons + 1] = icon
 end
@@ -211,9 +249,11 @@ end
 
 -------------------------------------------------------------
 
-local function UpdateChoices(control, choices)
+local function UpdateChoices(control, choices, choicesTooltips)
 	local data = control.data
-	local choices = choices or data.choices
+	if not choices then
+		choices, choicesTooltips = data.choices, data.choicesTooltips
+	end
 	local addedChoices = {}
 
 	local iconPicker = LAM.util.GetIconPickerMenu()
@@ -227,7 +267,7 @@ local function UpdateChoices(control, choices)
 				if control.panel.data.registerForRefresh then
 					cm:FireCallbacks("LAM-RefreshPanel", control)
 				end
-			end)
+			end, choicesTooltips[i])
 			addedChoices[texture] = true
 		end
 	end
@@ -330,6 +370,12 @@ function LAMCreateControl.iconpicker(parent, iconpickerData, controlName)
 			iconPicker:SetIconSize(control.icon.size)
 			UpdateChoices(control)
 			iconPicker:SetColor(control.icon.color)
+			if iconpickerData.beforeShow then
+				if iconpickerData.beforeShow(control, iconPicker) then
+					iconPicker:Clear()
+					return
+				end
+			end
 			iconPicker:Show(control.container)
 		end
 	end
