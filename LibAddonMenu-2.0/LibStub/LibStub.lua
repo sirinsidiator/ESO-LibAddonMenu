@@ -3,7 +3,7 @@
 -- LibStub developed for World of Warcraft by above members of the WowAce community.
 -- Ported to Elder Scrolls Online by Seerah
 
-local LIBSTUB_MAJOR, LIBSTUB_MINOR = "LibStub", 2  -- NEVER MAKE THIS AN SVN REVISION! IT NEEDS TO BE USABLE IN ALL REPOS!
+local LIBSTUB_MAJOR, LIBSTUB_MINOR = "LibStub", 3
 local LibStub = _G[LIBSTUB_MAJOR]
 
 local strformat = string.format
@@ -14,7 +14,9 @@ if not LibStub or LibStub.minor < LIBSTUB_MINOR then
 	
 	function LibStub:NewLibrary(major, minor)
 		assert(type(major) == "string", "Bad argument #2 to `NewLibrary' (string expected)")
-		minor = assert(tonumber(zo_strmatch(minor, "%d+")), "Minor version must either be a number or contain a number.")
+		if type(minor) ~= "number" then
+			minor = assert(tonumber(zo_strmatch(minor, "%d+%.?%d*")), "Minor version must either be a number or contain a number.")
+		end
 		
 		local oldminor = self.minors[major]
 		if oldminor and oldminor >= minor then return nil end
