@@ -9,6 +9,7 @@
 	maxColumns = 5, --(optional) number of icons in one row
 	visibleRows = 4.5, --(optional) number of visible rows
 	iconSize = 28, --(optional) size of the icons
+	defaultColor = ZO_ColorDef:New("FFFFFF"), --(optional) default color of the icons
 	width = "full",	--or "half" (optional)
 	beforeShow = function(control, iconPicker) return preventShow end, --(optional)
 	disabled = function() return db.someBooleanSetting end,	--or boolean (optional)
@@ -286,7 +287,7 @@ local function SetColor(control, color)
 	if IsDisabled(control) then
 		icon:SetColor(ZO_DEFAULT_DISABLED_COLOR:UnpackRGBA())
 	else
-		icon.color = color or ZO_DEFAULT_ENABLED_COLOR
+		icon.color = color or control.data.defaultColor or ZO_DEFAULT_ENABLED_COLOR
 		icon:SetColor(icon.color:UnpackRGBA())
 	end
 
