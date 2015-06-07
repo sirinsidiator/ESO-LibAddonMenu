@@ -148,7 +148,7 @@ end
 --otherwise returns a filter function, which takes a `data` table argument
 --	and returns true iff `data.filterText` matches the pattern
 local function GetSearchFilterFunc(searchEdit)
-	local text = searchEdit:GetText()
+	local text = searchEdit:GetText():lower()
 	local pattern = text:match("(%S+.-)%s*$")
 
 	if not pattern then -- nothing but whitespace
@@ -162,7 +162,7 @@ local function GetSearchFilterFunc(searchEdit)
 	pattern = pattern:gsub("%s+", ".-")
 
 	return function(data)
-		return data.filterText:find(pattern) ~= nil
+		return data.filterText:lower():find(pattern) ~= nil
 	end
 end
 
