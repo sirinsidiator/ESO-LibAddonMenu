@@ -1,3 +1,12 @@
+2.0 r18
+- major overhaul of the addon menu style (thanks votan & merlight)
+	- NOTE: the menu is now a bit wider than before, if you created custom elements you might need to update them accordingly
+- added search box to addon list (thanks votan & merlight)
+- new icon picker widget
+- removed micro freeze when opening a menu with many options for the first time
+- changed tooltip property to accept functions that return a string (thanks Ayantir)
+- changed the label on the defaults button and menu to avoid a grammar mistake in the french localization (thanks Ayantir)
+
 2.0 r17
 - updated for changes in 100011
 - fixed OpenToPanel function
