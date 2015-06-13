@@ -23,7 +23,7 @@
 			project.setProperty("build.number", parseInt(buildNumber) - 1);
 			]]>
 		</script>
-		<input addproperty="finalVersion" defaultvalue="r${build.number}" message="Please enter custom version number:" />
+		<input addproperty="finalVersion" defaultvalue="${build.number}" message="Please enter custom version number:" />
 		<script language="javascript">
 			<![CDATA[
 			var before = project.getProperty("finalVersion");
