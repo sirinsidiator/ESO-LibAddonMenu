@@ -54,7 +54,7 @@ local function ForceDefaults(panel)
 end
 ESO_Dialogs["LAM_DEFAULTS"] = {
 	title = {
-		text = SI_OPTIONS_RESET_TITLE,
+		text = SI_INTERFACE_OPTIONS_RESET_TO_DEFAULT_TOOLTIP,
 	},
 	mainText = {
 		text = SI_OPTIONS_RESET_PROMPT,
@@ -109,7 +109,7 @@ function LAMCreateControl.panel(parent, panelData, controlName)
 		defaultButton:SetFont("ZoFontDialogKeybindDescription")
 		defaultButton:SetHorizontalAlignment(TEXT_ALIGN_LEFT)
 		--defaultButton:SetText("Reset To Defaults")
-		defaultButton:SetText(GetString(SI_OPTIONS_RESET_TITLE))
+		defaultButton:SetText(GetString(SI_OPTIONS_DEFAULTS))
 		defaultButton:SetDimensions(200, 30)
 		defaultButton:SetAnchor(TOPLEFT, control, BOTTOMLEFT, 0, 2)
 		defaultButton:SetHandler("OnClicked", function()
