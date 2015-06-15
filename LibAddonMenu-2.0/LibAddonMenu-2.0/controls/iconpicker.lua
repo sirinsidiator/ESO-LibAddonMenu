@@ -18,7 +18,7 @@
 	reference = "MyAddonIconPicker"	--(optional) unique global reference to control
 }	]]
 
-local widgetVersion = 2
+local widgetVersion = 3
 local LAM = LibStub("LibAddonMenu-2.0")
 if not LAM:RegisterWidget("iconpicker", widgetVersion) then return end
 
@@ -253,7 +253,7 @@ end
 local function UpdateChoices(control, choices, choicesTooltips)
 	local data = control.data
 	if not choices then
-		choices, choicesTooltips = data.choices, data.choicesTooltips
+		choices, choicesTooltips = data.choices, data.choicesTooltips or {}
 	end
 	local addedChoices = {}
 
