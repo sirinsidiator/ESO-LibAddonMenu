@@ -61,7 +61,9 @@ local function CreateBaseControl(parent, controlData, controlName)
 	control.data = controlData
 
 	control.isHalfWidth = controlData.width == "half"
-	control:SetWidth(control.panel:GetWidth() - 60)
+	local width = 510 -- set default width in case a custom parent object is passed
+	if control.panel.GetWidth ~= nil then width = control.panel:GetWidth() - 60 end
+	control:SetWidth(width)
 	return control
 end
 
