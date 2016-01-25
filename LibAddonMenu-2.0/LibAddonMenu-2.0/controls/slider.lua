@@ -142,7 +142,7 @@ function LAMCreateControl.slider(parent, sliderData, controlName)
 		control.warning.data = {tooltipText = sliderData.warning}
 	end
 
-	if sliderData.disabled then
+	if sliderData.disabled ~= nil then
 		control.UpdateDisabled = UpdateDisabled
 		control:UpdateDisabled()
 	end

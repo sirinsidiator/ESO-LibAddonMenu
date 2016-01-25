@@ -95,7 +95,7 @@ function LAMCreateControl.colorpicker(parent, colorpickerData, controlName)
 
 	control.data.tooltipText = LAM.util.GetTooltipText(colorpickerData.tooltip)
 
-	if colorpickerData.disabled then
+	if colorpickerData.disabled ~= nil then
 		control.UpdateDisabled = UpdateDisabled
 		control:UpdateDisabled()
 	end
