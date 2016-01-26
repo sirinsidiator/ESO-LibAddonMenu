@@ -100,7 +100,7 @@ function LAMCreateControl.editbox(parent, editboxData, controlName)
 	editbox:SetHandler("OnMouseEnter", function() ZO_Options_OnMouseEnter(control) end)
 	editbox:SetHandler("OnMouseExit", function() ZO_Options_OnMouseExit(control) end)
 
-	if not editboxData.isMultiline then 
+	if not editboxData.isMultiline then
 		container:SetHeight(24)
 	else
 		local width = container:GetWidth()
@@ -121,7 +121,7 @@ function LAMCreateControl.editbox(parent, editboxData, controlName)
 		control.warning.data = {tooltipText = editboxData.warning}
 	end
 
-	if editboxData.disabled then
+	if editboxData.disabled ~= nil then
 		control.UpdateDisabled = UpdateDisabled
 		control:UpdateDisabled()
 	end

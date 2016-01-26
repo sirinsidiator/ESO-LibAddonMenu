@@ -32,7 +32,7 @@ LAM.util.GetIconPickerMenu = function()
 	if not iconPicker then
 		iconPicker = IconPickerMenu:New("LAMIconPicker")
 		local sceneFragment = LAM:GetAddonSettingsFragment()
-		ZO_PreHook(sceneFragment, "OnHidden", function() 
+		ZO_PreHook(sceneFragment, "OnHidden", function()
 			if not iconPicker.control:IsHidden() then
 				iconPicker:Clear()
 			end
@@ -420,7 +420,7 @@ function LAMCreateControl.iconpicker(parent, iconpickerData, controlName)
 		control.warning.data = {tooltipText = iconpickerData.warning}
 	end
 
-	if iconpickerData.disabled then
+	if iconpickerData.disabled ~= nil then
 		control.UpdateDisabled = UpdateDisabled
 		control:UpdateDisabled()
 	end

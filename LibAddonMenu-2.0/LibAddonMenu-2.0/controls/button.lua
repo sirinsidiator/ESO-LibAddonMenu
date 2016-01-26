@@ -75,7 +75,7 @@ function LAMCreateControl.button(parent, buttonData, controlName)
 		control.warning.data = {tooltipText = buttonData.warning}
 	end
 
-	if buttonData.disabled then
+	if buttonData.disabled ~= nil then
 		control.UpdateDisabled = UpdateDisabled
 		control:UpdateDisabled()
 
