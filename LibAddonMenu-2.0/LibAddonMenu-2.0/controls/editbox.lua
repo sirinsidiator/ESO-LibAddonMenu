@@ -58,7 +58,6 @@ local function UpdateValue(control, forceDefault, value)
 	end
 end
 
-local MIN_HEIGHT = 26
 local HALF_WIDTH_LINE_SPACING = 2
 function LAMCreateControl.editbox(parent, editboxData, controlName)
 	local control = LAM.util.CreateLabelAndContainerControl(parent, editboxData, controlName)
@@ -100,20 +99,28 @@ function LAMCreateControl.editbox(parent, editboxData, controlName)
 	editbox:SetHandler("OnMouseEnter", function() ZO_Options_OnMouseEnter(control) end)
 	editbox:SetHandler("OnMouseExit", function() ZO_Options_OnMouseExit(control) end)
 
-	if not editboxData.isMultiline then
-		container:SetHeight(24)
-	else
-		local width = container:GetWidth()
-		local height = control.isHalfWidth and 74 or 100
-		container:SetHeight(height)
-		editbox:SetDimensionConstraints(width, height, width, 500)
+	local MIN_HEIGHT = 24
 
-		if control.lineControl then
-			control.lineControl:SetHeight(MIN_HEIGHT + height + HALF_WIDTH_LINE_SPACING)
+	if editboxData.isMultiline then
+		if control.isHalfWidth then
+			control:SetHeight((MIN_HEIGHT * 2) + control.label:GetHeight())
+			container:SetHeight(MIN_HEIGHT * 2)
 		else
-			control:SetHeight(height)
+			control:SetHeight((MIN_HEIGHT * 3) + control.label:GetHeight())
+			container:SetHeight(MIN_HEIGHT * 3)
 		end
+	else
+		control:SetHeight(MIN_HEIGHT + control.label:GetHeight())
+		container:SetHeight(MIN_HEIGHT)
 	end
+
+	control.label:ClearAnchors()
+	control.label:SetAnchor(TOPLEFT, control, TOPLEFT, 0, 0)
+	container:ClearAnchors()
+	container:SetAnchor(BOTTOMLEFT, control, BOTTOMLEFT, 0, 0)
+	container:SetAnchor(BOTTOMRIGHT, control, BOTTOMRIGHT, 0, 0)
+	editbox:ClearAnchors()
+	editbox:SetAnchorFill(container)
 
 	if editboxData.warning then
 		control.warning = wm:CreateControlFromVirtual(nil, control, "ZO_Options_WarningIcon")
