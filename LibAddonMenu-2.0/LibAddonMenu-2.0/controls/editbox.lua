@@ -100,6 +100,7 @@ function LAMCreateControl.editbox(parent, editboxData, controlName)
 	editbox:SetHandler("OnMouseExit", function() ZO_Options_OnMouseExit(control) end)
 
 	local MIN_HEIGHT = 24
+	local MIN_WIDTH = control:GetWidth() / 10
 
 	if editboxData.isMultiline then
 		if control.isHalfWidth then
@@ -117,10 +118,23 @@ function LAMCreateControl.editbox(parent, editboxData, controlName)
 	control.label:ClearAnchors()
 	control.label:SetAnchor(TOPLEFT, control, TOPLEFT, 0, 0)
 	container:ClearAnchors()
-	container:SetAnchor(BOTTOMLEFT, control, BOTTOMLEFT, 0, 0)
-	container:SetAnchor(BOTTOMRIGHT, control, BOTTOMRIGHT, 0, 0)
+	
+	if editboxData.isExtraWide then
+		container:SetAnchor(BOTTOMLEFT, control, BOTTOMLEFT, 0, 0)
+		container:SetAnchor(BOTTOMRIGHT, control, BOTTOMRIGHT, 0, 0)
+	else
+		if control.isHalfWidth then
+			container:SetWidth(MIN_WIDTH * 6.65)
+			container:SetAnchor(BOTTOMRIGHT, control, BOTTOMRIGHT, 0, 0)
+		else
+			container:SetWidth(MIN_WIDTH * 3.35)
+			container:SetAnchor(TOPRIGHT, control, TOPRIGHT, 0, 0)
+		end
+	end
+
 	editbox:ClearAnchors()
-	editbox:SetAnchorFill(container)
+	editbox:SetAnchor(TOPLEFT, container, TOPLEFT, 2, 2)
+	editbox:SetAnchor(BOTTOMRIGHT, container, BOTTOMRIGHT, -2, -2)
 
 	if editboxData.warning then
 		control.warning = wm:CreateControlFromVirtual(nil, control, "ZO_Options_WarningIcon")
