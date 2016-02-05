@@ -282,6 +282,27 @@ function lam:OpenToPanel(panel)
 	end
 end
 
+local TwinOptionsContainer_Index = 0
+local function TwinOptionsContainer(parent, leftWidget, rightWidget)
+	TwinOptionsContainer_Index = TwinOptionsContainer_Index + 1
+	local cParent = parent.scroll or parent
+	local panel = parent.panel or parent
+	local container = wm:CreateControl("$(parent)TwinContainer" .. tostring(TwinOptionsContainer_Index),
+										cParent, CT_CONTROL)
+	container:SetWidth(cParent:GetWidth())
+	container:SetResizeToFitDescendents(true)
+
+	container:SetAnchor(select(2, leftWidget:GetAnchor(0) ))
+	leftWidget:ClearAnchors()
+	leftWidget:SetAnchor(TOPLEFT, container, TOPLEFT)
+
+	leftWidget:SetParent(container)
+	rightWidget:SetParent(container)
+
+	container.data = {type = "container"}
+	container.panel = panel
+	return container
+end
 
 --INTERNAL FUNCTION
 --creates controls when options panel is first shown
@@ -306,6 +327,8 @@ local function CreateOptionsControls(panel)
 					widget.lineControl = anchorTarget
 					offsetY = zo_max(0, widget:GetHeight() - anchorTarget:GetHeight()) -- we need to get the common height of both widgets to know where the next row starts
 					isHalf = false
+					
+					anchorTarget = TwinOptionsContainer(parent, anchorTarget, widget)
 				else -- otherwise we just put it below the previous one normally
 					widget:SetAnchor(TOPLEFT, anchorTarget, BOTTOMLEFT, 0, 15 + offsetY)
 					offsetY = 0
