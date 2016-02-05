@@ -103,16 +103,19 @@ function LAMCreateControl.editbox(parent, editboxData, controlName)
 	local MIN_WIDTH = control:GetWidth() / 10
 
 	if editboxData.isMultiline then
-		if control.isHalfWidth then
-			control:SetHeight((MIN_HEIGHT * 2) + control.label:GetHeight())
+		if editboxData.isHalfWidth then
 			container:SetHeight(MIN_HEIGHT * 2)
 		else
-			control:SetHeight((MIN_HEIGHT * 3) + control.label:GetHeight())
 			container:SetHeight(MIN_HEIGHT * 3)
 		end
 	else
-		control:SetHeight(MIN_HEIGHT + control.label:GetHeight())
 		container:SetHeight(MIN_HEIGHT)
+	end
+
+	if editboxData.isHalfWidth or editboxData.isExtraWide then
+		control:SetHeight(MIN_HEIGHT + control.label:GetHeight())
+	else
+		control:SetHeight(container:GetHeight())
 	end
 
 	control.label:ClearAnchors()
