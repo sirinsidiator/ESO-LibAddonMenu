@@ -123,17 +123,21 @@ function LAMCreateControl.slider(parent, sliderData, controlName)
 			self:LoseFocus()
 			control:UpdateValue(false, tonumber(self:GetText()))
 		end)
-
+	local function RoundDecimalToPlace(d, place)
+		return tonumber(string.format("%." .. tostring(place) .. "f", d))
+	end
 	local range = maxValue - minValue
 	slider:SetValueStep(sliderData.step or 1)
 	slider:SetHandler("OnValueChanged", function(self, value, eventReason)
 			if eventReason == EVENT_REASON_SOFTWARE then return end
-			self:SetValue(value)	--do we actually need this line?
-			slidervalue:SetText(value)
+			local new_value = sliderData.decimals and RoundDecimalToPlace(value, sliderData.decimals) or value
+			self:SetValue(new_value)	--do we actually need this line?
+			slidervalue:SetText(new_value)
 		end)
 	slider:SetHandler("OnSliderReleased", function(self, value)
 			--sliderData.setFunc(value)
-			control:UpdateValue(false, value)	--does this work here instead?
+			local new_value = sliderData.decimals and RoundDecimalToPlace(value, sliderData.decimals) or value
+			control:UpdateValue(false, new_value)	--does this work here instead?
 		end)
 
 	if sliderData.warning then
