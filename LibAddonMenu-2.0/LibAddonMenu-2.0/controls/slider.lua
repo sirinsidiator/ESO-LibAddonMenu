@@ -135,6 +135,10 @@ function LAMCreateControl.slider(parent, sliderData, controlName)
 			--sliderData.setFunc(value)
 			control:UpdateValue(false, value)	--does this work here instead?
 		end)
+	slider:SetHandler("OnMouseWheel", function(self, value)
+			local new_value = (tonumber(slidervalue:GetText()) or sliderData.min) + (sliderData.step * value)
+			control:UpdateValue(false, new_value)
+		end)
 
 	if sliderData.warning then
 		control.warning = wm:CreateControlFromVirtual(nil, control, "ZO_Options_WarningIcon")
