@@ -327,10 +327,10 @@ local function CreateOptionsControls(panel)
 					widget.lineControl = anchorTarget
 					offsetY = zo_max(0, widget:GetHeight() - anchorTarget:GetHeight()) -- we need to get the common height of both widgets to know where the next row starts
 					isHalf = false
-					
+					offsetY = 0
 					anchorTarget = TwinOptionsContainer(parent, anchorTarget, widget)
 				else -- otherwise we just put it below the previous one normally
-					widget:SetAnchor(TOPLEFT, anchorTarget, BOTTOMLEFT, 0, 15 + offsetY)
+					widget:SetAnchor(TOPLEFT, anchorTarget, BOTTOMLEFT, 0, 15)
 					offsetY = 0
 					anchorTarget = widget
 				end
