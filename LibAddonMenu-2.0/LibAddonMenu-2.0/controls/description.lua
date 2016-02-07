@@ -7,7 +7,7 @@
 }	]]
 
 
-local widgetVersion = 6
+local widgetVersion = 7
 local LAM = LibStub("LibAddonMenu-2.0")
 if not LAM:RegisterWidget("description", widgetVersion) then return end
 

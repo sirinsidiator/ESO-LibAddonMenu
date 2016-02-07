@@ -13,7 +13,7 @@
 }	]]
 
 
-local widgetVersion = 8
+local widgetVersion = 9
 local LAM = LibStub("LibAddonMenu-2.0")
 if not LAM:RegisterWidget("editbox", widgetVersion) then return end
 

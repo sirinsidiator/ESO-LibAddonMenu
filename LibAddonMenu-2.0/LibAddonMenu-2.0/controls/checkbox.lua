@@ -12,7 +12,7 @@
 }	]]
 
 
-local widgetVersion = 9
+local widgetVersion = 10
 local LAM = LibStub("LibAddonMenu-2.0")
 if not LAM:RegisterWidget("checkbox", widgetVersion) then return end
 
