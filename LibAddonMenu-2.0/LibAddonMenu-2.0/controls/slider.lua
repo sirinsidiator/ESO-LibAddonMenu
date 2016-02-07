@@ -136,7 +136,7 @@ function LAMCreateControl.slider(parent, sliderData, controlName)
 			control:UpdateValue(false, value)	--does this work here instead?
 		end)
 	slider:SetHandler("OnMouseWheel", function(self, value)
-			local new_value = (tonumber(slidervalue:GetText()) or sliderData.min) + (sliderData.step * value)
+			local new_value = (tonumber(slidervalue:GetText()) or sliderData.min or 0) + ((sliderData.step or 1) * value)
 			control:UpdateValue(false, new_value)
 		end)
 
