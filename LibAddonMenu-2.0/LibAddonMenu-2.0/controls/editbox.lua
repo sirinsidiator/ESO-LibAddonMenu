@@ -121,7 +121,8 @@ function LAMCreateControl.editbox(parent, editboxData, controlName)
 	control.label:ClearAnchors()
 	control.label:SetAnchor(TOPLEFT, control, TOPLEFT, 0, 0)
 	container:ClearAnchors()
-	
+	control:SetHeight(control.label:GetHeight() + container:GetHeight())
+
 	if editboxData.isExtraWide then
 		container:SetAnchor(BOTTOMLEFT, control, BOTTOMLEFT, 0, 0)
 		container:SetAnchor(BOTTOMRIGHT, control, BOTTOMRIGHT, 0, 0)
@@ -130,6 +131,7 @@ function LAMCreateControl.editbox(parent, editboxData, controlName)
 			container:SetWidth(MIN_WIDTH * 6.65)
 			container:SetAnchor(BOTTOMRIGHT, control, BOTTOMRIGHT, 0, 0)
 		else
+			control:SetHeight(container:GetHeight())
 			container:SetWidth(MIN_WIDTH * 3.35)
 			container:SetAnchor(TOPRIGHT, control, TOPRIGHT, 0, 0)
 		end
