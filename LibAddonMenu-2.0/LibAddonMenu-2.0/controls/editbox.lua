@@ -58,6 +58,7 @@ local function UpdateValue(control, forceDefault, value)
 	end
 end
 
+local MIN_HEIGHT = 24
 local HALF_WIDTH_LINE_SPACING = 2
 function LAMCreateControl.editbox(parent, editboxData, controlName)
 	local control = LAM.util.CreateLabelAndContainerControl(parent, editboxData, controlName)
@@ -99,42 +100,34 @@ function LAMCreateControl.editbox(parent, editboxData, controlName)
 	editbox:SetHandler("OnMouseEnter", function() ZO_Options_OnMouseEnter(control) end)
 	editbox:SetHandler("OnMouseExit", function() ZO_Options_OnMouseExit(control) end)
 
-	local MIN_HEIGHT = 24
-	local MIN_WIDTH = control:GetWidth() / 10
+	local MIN_WIDTH = parent:GetWidth() / 10
+
+	control.label:ClearAnchors()
+	container:ClearAnchors()
+
+	control.label:SetAnchor(TOPLEFT, control, TOPLEFT, 0, 0)
+	container:SetAnchor(BOTTOMRIGHT, control, BOTTOMRIGHT, 0, 0)
+
+	if control.isHalfWidth then
+		container:SetAnchor(BOTTOMRIGHT, control, BOTTOMRIGHT, 0, 0)
+	end
+
+	if editboxData.isExtraWide then
+		container:SetAnchor(BOTTOMLEFT, control, BOTTOMLEFT, 0, 0)
+	else
+		container:SetWidth(MIN_WIDTH * 3.2)
+	end
 
 	if editboxData.isMultiline then
-		if editboxData.isHalfWidth then
-			container:SetHeight(MIN_HEIGHT * 2)
-		else
-			container:SetHeight(MIN_HEIGHT * 3)
-		end
+		container:SetHeight(MIN_HEIGHT * 3)
 	else
 		container:SetHeight(MIN_HEIGHT)
 	end
 
-	if editboxData.isHalfWidth or editboxData.isExtraWide then
-		control:SetHeight(MIN_HEIGHT + control.label:GetHeight())
-	else
+	if control.isHalfWidth ~= true and editboxData.isExtraWide ~= true then
 		control:SetHeight(container:GetHeight())
-	end
-
-	control.label:ClearAnchors()
-	control.label:SetAnchor(TOPLEFT, control, TOPLEFT, 0, 0)
-	container:ClearAnchors()
-	control:SetHeight(control.label:GetHeight() + container:GetHeight())
-
-	if editboxData.isExtraWide then
-		container:SetAnchor(BOTTOMLEFT, control, BOTTOMLEFT, 0, 0)
-		container:SetAnchor(BOTTOMRIGHT, control, BOTTOMRIGHT, 0, 0)
 	else
-		if control.isHalfWidth then
-			container:SetWidth(MIN_WIDTH * 6.65)
-			container:SetAnchor(BOTTOMRIGHT, control, BOTTOMRIGHT, 0, 0)
-		else
-			control:SetHeight(container:GetHeight())
-			container:SetWidth(MIN_WIDTH * 3.35)
-			container:SetAnchor(TOPRIGHT, control, TOPRIGHT, 0, 0)
-		end
+		control:SetHeight(container:GetHeight() + control.label:GetHeight())
 	end
 
 	editbox:ClearAnchors()
@@ -143,7 +136,11 @@ function LAMCreateControl.editbox(parent, editboxData, controlName)
 
 	if editboxData.warning then
 		control.warning = wm:CreateControlFromVirtual(nil, control, "ZO_Options_WarningIcon")
-		control.warning:SetAnchor(TOPRIGHT, control.bg, TOPLEFT, -5, 0)
+		if editboxData.isExtraWide then
+			control.warning:SetAnchor(BOTTOMRIGHT, control.bg, TOPRIGHT, 2, 0)
+		else
+			control.warning:SetAnchor(TOPRIGHT, control.bg, TOPLEFT, -5, 0)
+		end
 		control.warning.data = {tooltipText = editboxData.warning}
 	end
 
