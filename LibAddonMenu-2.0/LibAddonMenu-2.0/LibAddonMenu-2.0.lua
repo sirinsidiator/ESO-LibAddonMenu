@@ -286,15 +286,18 @@ local TwinOptionsContainer_Index = 0
 local function TwinOptionsContainer(parent, leftWidget, rightWidget)
 	TwinOptionsContainer_Index = TwinOptionsContainer_Index + 1
 	local cParent = parent.scroll or parent
-	local panel = parent.panel or parent
+	local panel = parent.panel or cParent
 	local container = wm:CreateControl("$(parent)TwinContainer" .. tostring(TwinOptionsContainer_Index),
 										cParent, CT_CONTROL)
-	container:SetWidth(cParent:GetWidth())
 	container:SetResizeToFitDescendents(true)
-
 	container:SetAnchor(select(2, leftWidget:GetAnchor(0) ))
+
 	leftWidget:ClearAnchors()
 	leftWidget:SetAnchor(TOPLEFT, container, TOPLEFT)
+	rightWidget:SetAnchor(TOPLEFT, leftWidget, TOPRIGHT, 5, 0)
+
+	leftWidget:SetWidth( leftWidget:GetWidth() - 2.5 ) -- fixes bad alignment with 'full' controls
+	rightWidget:SetWidth( rightWidget:GetWidth() - 2.5 )
 
 	leftWidget:SetParent(container)
 	rightWidget:SetParent(container)
@@ -323,9 +326,7 @@ local function CreateOptionsControls(panel)
 					widget:SetAnchor(TOPLEFT)
 					anchorTarget = widget
 				elseif wasHalf and isHalf then -- when the previous widget was only half width and this one is too, we place it on the right side
-					widget:SetAnchor(TOPLEFT, anchorTarget, TOPRIGHT, 5 + (offsetX or 0), 0)
 					widget.lineControl = anchorTarget
-					offsetY = zo_max(0, widget:GetHeight() - anchorTarget:GetHeight()) -- we need to get the common height of both widgets to know where the next row starts
 					isHalf = false
 					offsetY = 0
 					anchorTarget = TwinOptionsContainer(parent, anchorTarget, widget)
