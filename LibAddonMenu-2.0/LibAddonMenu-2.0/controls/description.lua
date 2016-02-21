@@ -21,7 +21,6 @@ local function UpdateValue(control)
 	control.desc:SetText(control.data.text)
 end
 
-local MIN_HEIGHT = 26
 function LAMCreateControl.description(parent, descriptionData, controlName)
 	local control = LAM.util.CreateBaseControl(parent, descriptionData, controlName)
 	local isHalfWidth = control.isHalfWidth
@@ -29,9 +28,9 @@ function LAMCreateControl.description(parent, descriptionData, controlName)
 	control:SetResizeToFitDescendents(true)
 
 	if isHalfWidth then
-		control:SetDimensionConstraints(width / 2, MIN_HEIGHT, width / 2, MIN_HEIGHT * 4)
+		control:SetDimensionConstraints(width / 2, 0, width / 2, 0)
 	else
-		control:SetDimensionConstraints(width, MIN_HEIGHT, width, MIN_HEIGHT * 4)
+		control:SetDimensionConstraints(width, 0, width, 0)
 	end
 
 	control.desc = wm:CreateControl(nil, control, CT_LABEL)
