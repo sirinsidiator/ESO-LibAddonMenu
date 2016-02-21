@@ -58,7 +58,7 @@ local function UpdateValue(control, forceDefault, value)
 	end
 end
 
-local MIN_HEIGHT = 26
+local MIN_HEIGHT = 24
 local HALF_WIDTH_LINE_SPACING = 2
 function LAMCreateControl.editbox(parent, editboxData, controlName)
 	local control = LAM.util.CreateLabelAndContainerControl(parent, editboxData, controlName)
@@ -100,24 +100,47 @@ function LAMCreateControl.editbox(parent, editboxData, controlName)
 	editbox:SetHandler("OnMouseEnter", function() ZO_Options_OnMouseEnter(control) end)
 	editbox:SetHandler("OnMouseExit", function() ZO_Options_OnMouseExit(control) end)
 
-	if not editboxData.isMultiline then
-		container:SetHeight(24)
-	else
-		local width = container:GetWidth()
-		local height = control.isHalfWidth and 74 or 100
-		container:SetHeight(height)
-		editbox:SetDimensionConstraints(width, height, width, 500)
+	local MIN_WIDTH = (parent.GetWidth and (parent:GetWidth() / 10)) or (parent.panel.GetWidth and (parent.panel:GetWidth() / 10))
 
-		if control.lineControl then
-			control.lineControl:SetHeight(MIN_HEIGHT + height + HALF_WIDTH_LINE_SPACING)
-		else
-			control:SetHeight(height)
-		end
+	control.label:ClearAnchors()
+	container:ClearAnchors()
+
+	control.label:SetAnchor(TOPLEFT, control, TOPLEFT, 0, 0)
+	container:SetAnchor(BOTTOMRIGHT, control, BOTTOMRIGHT, 0, 0)
+
+	if control.isHalfWidth then
+		container:SetAnchor(BOTTOMRIGHT, control, BOTTOMRIGHT, 0, 0)
 	end
+
+	if editboxData.isExtraWide then
+		container:SetAnchor(BOTTOMLEFT, control, BOTTOMLEFT, 0, 0)
+	else
+		container:SetWidth(MIN_WIDTH * 3.2)
+	end
+
+	if editboxData.isMultiline then
+		container:SetHeight(MIN_HEIGHT * 3)
+	else
+		container:SetHeight(MIN_HEIGHT)
+	end
+
+	if control.isHalfWidth ~= true and editboxData.isExtraWide ~= true then
+		control:SetHeight(container:GetHeight())
+	else
+		control:SetHeight(container:GetHeight() + control.label:GetHeight())
+	end
+
+	editbox:ClearAnchors()
+	editbox:SetAnchor(TOPLEFT, container, TOPLEFT, 2, 2)
+	editbox:SetAnchor(BOTTOMRIGHT, container, BOTTOMRIGHT, -2, -2)
 
 	if editboxData.warning then
 		control.warning = wm:CreateControlFromVirtual(nil, control, "ZO_Options_WarningIcon")
-		control.warning:SetAnchor(TOPRIGHT, control.bg, TOPLEFT, -5, 0)
+		if editboxData.isExtraWide then
+			control.warning:SetAnchor(BOTTOMRIGHT, control.bg, TOPRIGHT, 2, 0)
+		else
+			control.warning:SetAnchor(TOPRIGHT, control.bg, TOPLEFT, -5, 0)
+		end
 		control.warning.data = {tooltipText = editboxData.warning}
 	end
 
