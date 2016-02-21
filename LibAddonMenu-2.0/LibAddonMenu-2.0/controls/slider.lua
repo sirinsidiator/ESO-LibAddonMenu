@@ -139,6 +139,10 @@ function LAMCreateControl.slider(parent, sliderData, controlName)
 			local new_value = sliderData.decimals and RoundDecimalToPlace(value, sliderData.decimals) or value
 			control:UpdateValue(false, new_value)	--does this work here instead?
 		end)
+	slider:SetHandler("OnMouseWheel", function(self, value)
+			local new_value = (tonumber(slidervalue:GetText()) or sliderData.min or 0) + ((sliderData.step or 1) * value)
+			control:UpdateValue(false, new_value)
+		end)
 
 	if sliderData.warning then
 		control.warning = wm:CreateControlFromVirtual(nil, control, "ZO_Options_WarningIcon")
