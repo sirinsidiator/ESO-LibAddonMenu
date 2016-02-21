@@ -1,4 +1,4 @@
-## APIVersion: 100011
+## APIVersion: 100014
 ## Title: LibAddonMenu-2.0
 ## Version: 2.0 rVERSION_NUMBER
 ## Author: Seerah, sirinsidiator, et al.
