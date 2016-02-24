@@ -1,3 +1,12 @@
+2.0 r19
+- made icon picker choicesTooltips array optional
+- added support for custom panel objects without a GetWidth method (partially fixes [url=https://github.com/sirinsidiator/ESO-LibAddonMenu/pull/26]#26[/url])
+- fixed controls not refreshing correctly when they are initialized with a boolean "false" on the disabled property ([url=https://github.com/sirinsidiator/ESO-LibAddonMenu/pull/35]#35[/url], thanks Randactyl)
+- removed height constraint on the description control ([url=https://github.com/sirinsidiator/ESO-LibAddonMenu/pull/36]#36[/url], thanks KuroiLight)
+- added "isExtraWide" property to editboxes, allowing them to utilize more space ([url=https://github.com/sirinsidiator/ESO-LibAddonMenu/pull/37]#37[/url], thanks KuroiLight)
+- added "decimals" property to sliders to allow rounding values to x decimals ([url=https://github.com/sirinsidiator/ESO-LibAddonMenu/pull/38]#38[/url], implements [url=https://github.com/sirinsidiator/ESO-LibAddonMenu/pull/21]#21[/url], thanks KuroiLight)
+- added mousewheel support for sliders ([url=https://github.com/sirinsidiator/ESO-LibAddonMenu/pull/39]#39[/url], implements [url=https://github.com/sirinsidiator/ESO-LibAddonMenu/pull/30]#30[/url], thanks KuroiLight)
+
 2.0 r18
 - major overhaul of the addon menu style (thanks votan & merlight)
 [INDENT][COLOR="Gray"]- NOTE: the menu is now a bit wider than before, if you created custom elements you might need to update them accordingly[/COLOR][/INDENT]

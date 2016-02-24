@@ -5,6 +5,7 @@
 	min = 0,
 	max = 20,
 	step = 1,	--(optional)
+	decimals = 0, --(optional)
 	getFunc = function() return db.var end,
 	setFunc = function(value) db.var = value doStuff() end,
 	width = "full",	--or "half" (optional)

@@ -2,7 +2,7 @@
 ## Title: LibAddonMenu-2.0
 ## Version: 2.0 rVERSION_NUMBER
 ## Author: Seerah, sirinsidiator, et al.
-## Contributors: votan, merlight, Garkin
+## Contributors: votan, merlight, Garkin, Randactyl, KuroiLight
 ## Description: A library to aid in the creation of option panels.
 
 

@@ -4,7 +4,8 @@
 	tooltip = "Editbox's tooltip text.",
 	getFunc = function() return db.text end,
 	setFunc = function(text) db.text = text doStuff() end,
-	isMultiline = true,	--boolean
+	isMultiline = true,	--boolean (optional)
+	isExtraWide = true,	--boolean (optional)
 	width = "full",	--or "half" (optional)
 	disabled = function() return db.someBooleanSetting end,	--or boolean (optional)
 	warning = "Will need to reload the UI.",	--(optional)
