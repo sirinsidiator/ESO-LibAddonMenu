@@ -3,7 +3,7 @@
 -- LibStub developed for World of Warcraft by above members of the WowAce community.
 -- Ported to Elder Scrolls Online by Seerah
 
-local LIBSTUB_MAJOR, LIBSTUB_MINOR = "LibStub", 3
+local LIBSTUB_MAJOR, LIBSTUB_MINOR = "LibStub", 4
 local LibStub = _G[LIBSTUB_MAJOR]
 
 local strformat = string.format
@@ -34,3 +34,5 @@ if not LibStub or LibStub.minor < LIBSTUB_MINOR then
 	function LibStub:IterateLibraries() return pairs(self.libs) end
 	setmetatable(LibStub, { __call = LibStub.GetLibrary })
 end
+
+LibStub.SILENT = true
