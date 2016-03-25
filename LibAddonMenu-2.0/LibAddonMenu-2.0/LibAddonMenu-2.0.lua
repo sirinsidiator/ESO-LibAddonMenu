@@ -227,6 +227,21 @@ function lam:RegisterWidget(widgetType, widgetVersion)
 	end
 end
 
+-- INTERNAL METHOD: fires the LAM-PanelOpened callback if not already done
+local function OpenCurrentPanel()
+	if(lam.currentAddonPanel and not lam.currentPanelOpened) then
+		lam.currentPanelOpened = true
+		cm:FireCallbacks("LAM-PanelOpened", lam.currentAddonPanel)
+	end
+end
+
+-- INTERNAL METHOD: fires the LAM-PanelClosed callback if not already done
+local function CloseCurrentPanel()
+	if(lam.currentAddonPanel and lam.currentPanelOpened) then
+		lam.currentPanelOpened = false
+		cm:FireCallbacks("LAM-PanelClosed", lam.currentAddonPanel)
+	end
+end
 
 --METHOD: OPEN TO ADDON PANEL--
 --opens to a specific addon's option panel
@@ -401,6 +416,7 @@ local function CreateOptionsControls(panel)
 			else
 				optionsCreated[addonID] = true
 				cm:FireCallbacks("LAM-PanelControlsCreated", panel)
+				OpenCurrentPanel()
 			end
 		end
 
@@ -411,6 +427,7 @@ local function CreateOptionsControls(panel)
 	else
 		optionsCreated[addonID] = true
 		cm:FireCallbacks("LAM-PanelControlsCreated", panel)
+		OpenCurrentPanel()
 	end
 end
 
@@ -421,6 +438,7 @@ local function ToggleAddonPanels(panel)	--called in OnShow of newly shown panel
 	local currentlySelected = lam.currentAddonPanel
 	if currentlySelected and currentlySelected ~= panel then
 		currentlySelected:SetHidden(true)
+		CloseCurrentPanel()
 	end
 	lam.currentAddonPanel = panel
 
@@ -429,6 +447,8 @@ local function ToggleAddonPanels(panel)	--called in OnShow of newly shown panel
 
 	if not optionsCreated[panel:GetName()] then	--if this is the first time opening this panel, create these options
 		CreateOptionsControls(panel)
+	else
+		OpenCurrentPanel()
 	end
 
 	cm:FireCallbacks("LAM-RefreshPanel", panel)
@@ -829,6 +849,13 @@ function lam:GetAddonSettingsFragment()
 	if not LAMAddonSettingsFragment then
 		local window = CreateAddonSettingsWindow()
 		LAMAddonSettingsFragment = ZO_FadeSceneFragment:New(window, true, 100)
+		LAMAddonSettingsFragment:RegisterCallback("StateChange", function(oldState, newState)
+			if(newState == SCENE_FRAGMENT_SHOWN) then
+				OpenCurrentPanel()
+			elseif(newState == SCENE_FRAGMENT_HIDDEN) then
+				CloseCurrentPanel()
+			end
+		end)
 		CreateAddonSettingsMenuEntry()
 	end
 	return LAMAddonSettingsFragment
