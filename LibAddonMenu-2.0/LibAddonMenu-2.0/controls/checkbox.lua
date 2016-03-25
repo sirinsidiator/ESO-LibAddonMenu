@@ -1,18 +1,18 @@
 --[[checkboxData = {
 	type = "checkbox",
-	name = "My Checkbox",
-	tooltip = "Checkbox's tooltip text.",
+	name = "My Checkbox", -- or string id or function returning a string
 	getFunc = function() return db.var end,
 	setFunc = function(value) db.var = value doStuff() end,
-	width = "full",	--or "half" (optional)
+	tooltip = "Checkbox's tooltip text.", -- or string id or function returning a string (optional)
+	width = "full", -- or "half" (optional)
 	disabled = function() return db.someBooleanSetting end,	--or boolean (optional)
-	warning = "Will need to reload the UI.",	--(optional)
-	default = defaults.var,	--(optional) boolean or function that returns a boolean
-	reference = "MyAddonCheckbox"	--(optional) unique global reference to control
+	warning = "Will need to reload the UI.", -- or string id or function returning a string (optional)
+	default = defaults.var,	-- a boolean or function that returns a boolean (optional)
+	reference = "MyAddonCheckbox", -- unique global reference to control (optional)
 }	]]
 
 
-local widgetVersion = 10
+local widgetVersion = 11
 local LAM = LibStub("LibAddonMenu-2.0")
 if not LAM:RegisterWidget("checkbox", widgetVersion) then return end
 
@@ -124,10 +124,10 @@ function LAMCreateControl.checkbox(parent, checkboxData, controlName)
 	if checkboxData.warning then
 		control.warning = wm:CreateControlFromVirtual(nil, control, "ZO_Options_WarningIcon")
 		control.warning:SetAnchor(RIGHT, checkbox, LEFT, -5, 0)
-		control.warning.data = {tooltipText = checkboxData.warning}
+		control.warning.data = {tooltipText = LAM.util.GetStringFromValue(checkboxData.warning)}
 	end
 
-	control.data.tooltipText = LAM.util.GetTooltipText(checkboxData.tooltip)
+	control.data.tooltipText = LAM.util.GetStringFromValue(checkboxData.tooltip)
 
 	if checkboxData.disabled ~= nil then
 		control.UpdateDisabled = UpdateDisabled

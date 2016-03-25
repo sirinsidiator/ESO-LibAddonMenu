@@ -1,12 +1,12 @@
 --[[submenuData = {
 	type = "submenu",
-	name = "Submenu Title",
-	tooltip = "My submenu tooltip",	--(optional)
+	name = "Submenu Title", -- or string id or function returning a string
+	tooltip = "My submenu tooltip",	-- -- or string id or function returning a string (optional)
 	controls = {sliderData, buttonData}	--(optional) used by LAM
 	reference = "MyAddonSubmenu"	--(optional) unique global reference to control
 }	]]
 
-local widgetVersion = 10
+local widgetVersion = 11
 local LAM = LibStub("LibAddonMenu-2.0")
 if not LAM:RegisterWidget("submenu", widgetVersion) then return end
 
@@ -16,9 +16,9 @@ local tinsert = table.insert
 
 
 local function UpdateValue(control)
-	control.label:SetText(control.data.name)
+	control.label:SetText(LAM.util.GetStringFromValue(control.data.name))
 	if control.data.tooltip then
-		control.label.data.tooltipText = LAM.util.GetTooltipText(control.data.tooltip)
+		control.label.data.tooltipText = LAM.util.GetStringFromValue(control.data.tooltip)
 	end
 end
 
@@ -44,10 +44,10 @@ function LAMCreateControl.submenu(parent, submenuData, controlName)
 	label:SetAnchor(TOPLEFT, control, TOPLEFT, 5, 5)
 	label:SetDimensions(width, 30)
 	label:SetWrapMode(TEXT_WRAP_MODE_ELLIPSIS)
-	label:SetText(submenuData.name)
+	label:SetText(LAM.util.GetStringFromValue(submenuData.name))
 	label:SetMouseEnabled(true)
 	if submenuData.tooltip then
-		label.data = {tooltipText = LAM.util.GetTooltipText(submenuData.tooltip)}
+		label.data = {tooltipText = LAM.util.GetStringFromValue(submenuData.tooltip)}
 		label:SetHandler("OnMouseEnter", ZO_Options_OnMouseEnter)
 		label:SetHandler("OnMouseExit", ZO_Options_OnMouseExit)
 	end

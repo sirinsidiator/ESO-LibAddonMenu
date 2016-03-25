@@ -3,14 +3,14 @@
 	image = "file/path.dds",
 	imageWidth = 64,	--max of 250 for half width, 510 for full
 	imageHeight = 32,	--max of 100
-	tooltip = "Image's tooltip text.",	--(optional)
+	tooltip = "Image's tooltip text.",	-- or string id or function returning a string (optional)
 	width = "full",	--or "half" (optional)
 	reference = "MyAddonTexture"	--(optional) unique global reference to control
 }	]]
 
 --add texture coords support?
 
-local widgetVersion = 7
+local widgetVersion = 8
 local LAM = LibStub("LibAddonMenu-2.0")
 if not LAM:RegisterWidget("texture", widgetVersion) then return end
 
@@ -36,7 +36,7 @@ function LAMCreateControl.texture(parent, textureData, controlName)
 
 	if textureData.tooltip then
 		texture:SetMouseEnabled(true)
-		texture.data = {tooltipText = LAM.util.GetTooltipText(textureData.tooltip)}
+		texture.data = {tooltipText = LAM.util.GetStringFromValue(textureData.tooltip)}
 		texture:SetHandler("OnMouseEnter", ZO_Options_OnMouseEnter)
 		texture:SetHandler("OnMouseEnter", ZO_Options_OnMouseExit)
 	end

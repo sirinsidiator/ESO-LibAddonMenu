@@ -1,18 +1,18 @@
 --[[panelData = {
 	type = "panel",
-	name = "Window Title",
-	displayName = "My Longer Window Title",	--(optional) (can be useful for long addon names or if you want to colorize it)
-	author = "Seerah",	--(optional)
-	version = "2.0",	--(optional)
-	keywords = "settings",	--(optional) additional keywords for search filter (it looks for matches in name..keywords..author)
-	slashCommand = "/myaddon",	--(optional) will register a keybind to open to this panel (don't forget to include the slash!)
+	name = "Window Title", -- or string id or function returning a string
+	displayName = "My Longer Window Title",	 -- or string id or function returning a string (optional) (can be useful for long addon names or if you want to colorize it)
+	author = "Seerah",	 -- or string id or function returning a string (optional)
+	version = "2.0",	 -- or string id or function returning a string (optional)
+	keywords = "settings",	-- additional keywords for search filter (it looks for matches in name..keywords..author) (optional)
+	slashCommand = "/myaddon",	-- will register a keybind to open to this panel (don't forget to include the slash!) (optional)
 	registerForRefresh = true,	--boolean (optional) (will refresh all options controls when a setting is changed and when the panel is shown)
 	registerForDefaults = true,	--boolean (optional) (will set all options controls back to default values)
 	resetFunc = function() print("defaults reset") end,	--(optional) custom function to run after settings are reset to defaults
 }	]]
 
 
-local widgetVersion = 9
+local widgetVersion = 10
 local LAM = LibStub("LibAddonMenu-2.0")
 if not LAM:RegisterWidget("panel", widgetVersion) then return end
 
@@ -79,7 +79,7 @@ function LAMCreateControl.panel(parent, panelData, controlName)
 	control.label = wm:CreateControlFromVirtual(nil, control, "ZO_Options_SectionTitleLabel")
 	local label = control.label
 	label:SetAnchor(TOPLEFT, control, TOPLEFT, 0, 4)
-	label:SetText(panelData.displayName or panelData.name)
+	label:SetText(LAM.util.GetStringFromValue(panelData.displayName or panelData.name))
 
 	if panelData.author or panelData.version then
 		control.info = wm:CreateControl(nil, control, CT_LABEL)
@@ -87,11 +87,11 @@ function LAMCreateControl.panel(parent, panelData, controlName)
 		info:SetFont("$(CHAT_FONT)|14|soft-shadow-thin")
 		info:SetAnchor(TOPLEFT, label, BOTTOMLEFT, 0, -2)
 		if panelData.author and panelData.version then
-			info:SetText(string.format("Version: %s  -  %s: %s", panelData.version, GetString(SI_ADDON_MANAGER_AUTHOR), panelData.author))
+			info:SetText(string.format("Version: %s  -  %s: %s", LAM.util.GetStringFromValue(panelData.version), GetString(SI_ADDON_MANAGER_AUTHOR), LAM.util.GetStringFromValue(panelData.author)))
 		elseif panelData.author then
-			info:SetText(string.format("%s: %s", GetString(SI_ADDON_MANAGER_AUTHOR), panelData.author))
+			info:SetText(string.format("%s: %s", GetString(SI_ADDON_MANAGER_AUTHOR), LAM.util.GetStringFromValue(panelData.author)))
 		else
-			info:SetText("Version: "..panelData.version)
+			info:SetText("Version: " .. LAM.util.GetStringFromValue(panelData.version))
 		end
 	end
 

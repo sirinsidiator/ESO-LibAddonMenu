@@ -1,20 +1,20 @@
 --[[dropdownData = {
 	type = "dropdown",
-	name = "My Dropdown",
-	tooltip = "Dropdown's tooltip text.",
+	name = "My Dropdown", -- or string id or function returning a string
 	choices = {"table", "of", "choices"},
-	sort = "name-up", --or "name-down", "numeric-up", "numeric-down" (optional) - if not provided, list will not be sorted
 	getFunc = function() return db.var end,
 	setFunc = function(var) db.var = var doStuff() end,
+	tooltip = "Dropdown's tooltip text.", -- or string id or function returning a string (optional)
+	sort = "name-up", --or "name-down", "numeric-up", "numeric-down" (optional) - if not provided, list will not be sorted
 	width = "full",	--or "half" (optional)
 	disabled = function() return db.someBooleanSetting end,	--or boolean (optional)
-	warning = "Will need to reload the UI.",	--(optional)
-	default = defaults.var,	--(optional) default value or function that returns the default value
-	reference = "MyAddonDropdown"	--(optional) unique global reference to control
+	warning = "Will need to reload the UI.",	 -- or string id or function returning a string (optional)
+	default = defaults.var,	-- default value or function that returns the default value (optional)
+	reference = "MyAddonDropdown"	-- unique global reference to control (optional)
 }	]]
 
 
-local widgetVersion = 11
+local widgetVersion = 12
 local LAM = LibStub("LibAddonMenu-2.0")
 if not LAM:RegisterWidget("dropdown", widgetVersion) then return end
 
@@ -111,7 +111,7 @@ function LAMCreateControl.dropdown(parent, dropdownData, controlName)
 	if dropdownData.warning then
 		control.warning = wm:CreateControlFromVirtual(nil, control, "ZO_Options_WarningIcon")
 		control.warning:SetAnchor(RIGHT, combobox, LEFT, -5, 0)
-		control.warning.data = {tooltipText = dropdownData.warning}
+		control.warning.data = {tooltipText = LAM.util.GetStringFromValue(dropdownData.warning)}
 	end
 
 	if dropdownData.disabled ~= nil then

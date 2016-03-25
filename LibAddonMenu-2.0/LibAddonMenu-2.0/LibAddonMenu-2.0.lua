@@ -46,13 +46,20 @@ local widgets = lam.widgets
 lam.util = {}
 local util = lam.util
 
-local function GetTooltipText(tooltip)
-	if type(tooltip) == "string" then
-		return tooltip
-	elseif type(tooltip) == "function" then
-		return tostring(tooltip())
+local function GetDefaultValue(default)
+	if type(default) == "function" then
+		return default()
 	end
-	return nil
+	return default
+end
+
+local function GetStringFromValue(value)
+	if type(value) == "function" then
+		return value()
+	elseif type(value) == "number" then
+		return GetString(value)
+	end
+	return value
 end
 
 local function CreateBaseControl(parent, controlData, controlName)
@@ -81,7 +88,7 @@ local function CreateLabelAndContainerControl(parent, controlData, controlName)
 	label:SetFont("ZoFontWinH4")
 	label:SetHeight(MIN_HEIGHT)
 	label:SetWrapMode(TEXT_WRAP_MODE_ELLIPSIS)
-	label:SetText(controlData.name)
+	label:SetText(GetStringFromValue(controlData.name))
 	control.label = label
 
 	if control.isHalfWidth then
@@ -96,24 +103,18 @@ local function CreateLabelAndContainerControl(parent, controlData, controlName)
 		label:SetAnchor(TOPRIGHT, container, TOPLEFT, 5, 0)
 	end
 
-	control.data.tooltipText = GetTooltipText(control.data.tooltip)
+	control.data.tooltipText = GetStringFromValue(control.data.tooltip)
 	control:SetMouseEnabled(true)
 	control:SetHandler("OnMouseEnter", ZO_Options_OnMouseEnter)
 	control:SetHandler("OnMouseExit", ZO_Options_OnMouseExit)
 	return control
 end
 
-util.GetTooltipText = GetTooltipText
+util.GetTooltipText = GetStringFromValue -- deprecated, use util.GetStringFromValue instead
+util.GetStringFromValue = GetStringFromValue
+util.GetDefaultValue = GetDefaultValue
 util.CreateBaseControl = CreateBaseControl
 util.CreateLabelAndContainerControl = CreateLabelAndContainerControl
-
-local function GetDefaultValue(default)
-	if type(default) == "function" then
-		return default()
-	end
-	return default
-end
-util.GetDefaultValue = GetDefaultValue
 
 local ADDON_DATA_TYPE = 1
 local RESELECTING_DURING_REBUILD = true

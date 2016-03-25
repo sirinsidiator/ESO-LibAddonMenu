@@ -1,18 +1,18 @@
 --[[colorpickerData = {
 	type = "colorpicker",
-	name = "My Color Picker",
-	tooltip = "Color Picker's tooltip text.",
+	name = "My Color Picker", -- or string id or function returning a string
 	getFunc = function() return db.r, db.g, db.b, db.a end,	--(alpha is optional)
 	setFunc = function(r,g,b,a) db.r=r, db.g=g, db.b=b, db.a=a end,	--(alpha is optional)
+	tooltip = "Color Picker's tooltip text.", -- or string id or function returning a string (optional)
 	width = "full",	--or "half" (optional)
 	disabled = function() return db.someBooleanSetting end,	--or boolean (optional)
-	warning = "Will need to reload the UI.",	--(optional)
-	default = {r = defaults.r, g = defaults.g, b = defaults.b, a = defaults.a},	--(optional) table of default color values (or default = defaultColor, where defaultColor is a table with keys of r, g, b[, a]) or a function that returns the table
-	reference = "MyAddonColorpicker"	--(optional) unique global reference to control
+	warning = "Will need to reload the UI.",	-- or string id or function returning a string (optional)
+	default = {r = defaults.r, g = defaults.g, b = defaults.b, a = defaults.a},	--(optional) table of default color values (or default = defaultColor, where defaultColor is a table with keys of r, g, b[, a]) or a function that returns the color
+	reference = "MyAddonColorpicker"	-- unique global reference to control (optional)
 }	]]
 
 
-local widgetVersion = 9
+local widgetVersion = 10
 local LAM = LibStub("LibAddonMenu-2.0")
 if not LAM:RegisterWidget("colorpicker", widgetVersion) then return end
 
@@ -83,17 +83,17 @@ function LAMCreateControl.colorpicker(parent, colorpickerData, controlName)
 
 		if upInside then
 			local r, g, b, a = colorpickerData.getFunc()
-			COLOR_PICKER:Show(ColorPickerCallback, r, g, b, a, colorpickerData.name)
+			COLOR_PICKER:Show(ColorPickerCallback, r, g, b, a, LAM.util.GetStringFromValue(colorpickerData.name))
 		end
 	end)
 
 	if colorpickerData.warning then
 		control.warning = wm:CreateControlFromVirtual(nil, control, "ZO_Options_WarningIcon")
 		control.warning:SetAnchor(RIGHT, control.color, LEFT, -5, 0)
-		control.warning.data = {tooltipText = colorpickerData.warning}
+		control.warning.data = {tooltipText = LAM.util.GetStringFromValue(colorpickerData.warning)}
 	end
 
-	control.data.tooltipText = LAM.util.GetTooltipText(colorpickerData.tooltip)
+	control.data.tooltipText = LAM.util.GetStringFromValue(colorpickerData.tooltip)
 
 	if colorpickerData.disabled ~= nil then
 		control.UpdateDisabled = UpdateDisabled

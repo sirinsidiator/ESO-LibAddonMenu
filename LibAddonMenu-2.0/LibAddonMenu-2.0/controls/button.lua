@@ -1,17 +1,17 @@
 --[[buttonData = {
 	type = "button",
-	name = "My Button",
-	tooltip = "Button's tooltip text.",
+	name = "My Button", -- string id or function returning a string
 	func = function() end,
+	tooltip = "Button's tooltip text.", -- string id or function returning a string (optional)
 	width = "full",	--or "half" (optional)
 	disabled = function() return db.someBooleanSetting end,	--or boolean (optional)
 	icon = "icon\\path.dds",	--(optional)
 	warning = "Will need to reload the UI.",	--(optional)
-	reference = "MyAddonButton"	--(optional) unique global reference to control
+	reference = "MyAddonButton",	-- unique global reference to control (optional)
 }	]]
 
 
-local widgetVersion = 8
+local widgetVersion = 9
 local LAM = LibStub("LibAddonMenu-2.0")
 if not LAM:RegisterWidget("button", widgetVersion) then return end
 
@@ -54,12 +54,12 @@ function LAMCreateControl.button(parent, buttonData, controlName)
 		--control.button = wm:CreateControlFromVirtual(controlName.."Button", control, "ZO_DefaultButton")
 		control.button = wm:CreateControlFromVirtual(nil, control, "ZO_DefaultButton")
 		control.button:SetWidth(width / 3)
-		control.button:SetText(buttonData.name)
+		control.button:SetText(LAM.util.GetStringFromValue(buttonData.name))
 	end
 	local button = control.button
 	button:SetAnchor(control.isHalfWidth and CENTER or RIGHT)
 	button:SetClickSound("Click")
-	button.data = {tooltipText = LAM.util.GetTooltipText(buttonData.tooltip)}
+	button.data = {tooltipText = LAM.util.GetStringFromValue(buttonData.tooltip)}
 	button:SetHandler("OnMouseEnter", ZO_Options_OnMouseEnter)
 	button:SetHandler("OnMouseExit", ZO_Options_OnMouseExit)
 	button:SetHandler("OnClicked", function(self, ...)
@@ -72,7 +72,7 @@ function LAMCreateControl.button(parent, buttonData, controlName)
 	if buttonData.warning then
 		control.warning = wm:CreateControlFromVirtual(nil, control, "ZO_Options_WarningIcon")
 		control.warning:SetAnchor(RIGHT, button, LEFT, -5, 0)
-		control.warning.data = {tooltipText = buttonData.warning}
+		control.warning.data = {tooltipText = LAM.util.GetStringFromValue(buttonData.warning)}
 	end
 
 	if buttonData.disabled ~= nil then

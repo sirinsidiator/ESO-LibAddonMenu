@@ -1,22 +1,22 @@
 --[[sliderData = {
 	type = "slider",
-	name = "My Slider",
-	tooltip = "Slider's tooltip text.",
+	name = "My Slider", -- or string id or function returning a string
+	getFunc = function() return db.var end,
+	setFunc = function(value) db.var = value doStuff() end,
 	min = 0,
 	max = 20,
 	step = 1,	--(optional)
 	decimals = 0, --(optional)
-	getFunc = function() return db.var end,
-	setFunc = function(value) db.var = value doStuff() end,
+	tooltip = "Slider's tooltip text.", -- or string id or function returning a string (optional)
 	width = "full",	--or "half" (optional)
 	disabled = function() return db.someBooleanSetting end,	--or boolean (optional)
-	warning = "Will need to reload the UI.",	--(optional)
-	default = defaults.var,	--(optional) default value or function that returns the default value
-	reference = "MyAddonSlider"	--(optional) unique global reference to control
+	warning = "Will need to reload the UI.",	-- or string id or function returning a string (optional)
+	default = defaults.var,	-- default value or function that returns the default value (optional)
+	reference = "MyAddonSlider"	-- unique global reference to control (optional)
 }	]]
 
 
-local widgetVersion = 8
+local widgetVersion = 9
 local LAM = LibStub("LibAddonMenu-2.0")
 if not LAM:RegisterWidget("slider", widgetVersion) then return end
 
@@ -148,7 +148,7 @@ function LAMCreateControl.slider(parent, sliderData, controlName)
 	if sliderData.warning then
 		control.warning = wm:CreateControlFromVirtual(nil, control, "ZO_Options_WarningIcon")
 		control.warning:SetAnchor(RIGHT, slider, LEFT, -5, 0)
-		control.warning.data = {tooltipText = sliderData.warning}
+		control.warning.data = {tooltipText = LAM.util.GetStringFromValue(sliderData.warning)}
 	end
 
 	if sliderData.disabled ~= nil then
