@@ -9,12 +9,12 @@
 	width = "full",	--or "half" (optional)
 	disabled = function() return db.someBooleanSetting end,	--or boolean (optional)
 	warning = "Will need to reload the UI.",	--(optional)
-	default = defaults.text,	--(optional)
+	default = defaults.text,	--(optional) default value or function that returns the default value
 	reference = "MyAddonEditbox"	--(optional) unique global reference to control
 }	]]
 
 
-local widgetVersion = 9
+local widgetVersion = 10
 local LAM = LibStub("LibAddonMenu-2.0")
 if not LAM:RegisterWidget("editbox", widgetVersion) then return end
 
@@ -44,7 +44,7 @@ end
 
 local function UpdateValue(control, forceDefault, value)
 	if forceDefault then	--if we are forcing defaults
-		value = control.data.default
+		value = LAM.util.GetDefaultValue(control.data.default)
 		control.data.setFunc(value)
 		control.editbox:SetText(value)
 	elseif value then

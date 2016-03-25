@@ -9,12 +9,12 @@
 	width = "full",	--or "half" (optional)
 	disabled = function() return db.someBooleanSetting end,	--or boolean (optional)
 	warning = "Will need to reload the UI.",	--(optional)
-	default = defaults.var,	--(optional)
+	default = defaults.var,	--(optional) default value or function that returns the default value
 	reference = "MyAddonDropdown"	--(optional) unique global reference to control
 }	]]
 
 
-local widgetVersion = 10
+local widgetVersion = 11
 local LAM = LibStub("LibAddonMenu-2.0")
 if not LAM:RegisterWidget("dropdown", widgetVersion) then return end
 
@@ -41,7 +41,7 @@ end
 
 local function UpdateValue(control, forceDefault, value)
 	if forceDefault then	--if we are forcing defaults
-		value = control.data.default
+		value = LAM.util.GetDefaultValue(control.data.default)
 		control.data.setFunc(value)
 		control.dropdown:SetSelectedItem(value)
 	elseif value then

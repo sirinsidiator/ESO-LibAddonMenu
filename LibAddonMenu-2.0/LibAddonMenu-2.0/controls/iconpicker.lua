@@ -14,11 +14,11 @@
 	beforeShow = function(control, iconPicker) return preventShow end, --(optional)
 	disabled = function() return db.someBooleanSetting end,	--or boolean (optional)
 	warning = "Will need to reload the UI.",	--(optional)
-	default = defaults.var,	--(optional)
+	default = defaults.var,	--(optional) default value or function that returns the default value
 	reference = "MyAddonIconPicker"	--(optional) unique global reference to control
 }	]]
 
-local widgetVersion = 3
+local widgetVersion = 4
 local LAM = LibStub("LibAddonMenu-2.0")
 if not LAM:RegisterWidget("iconpicker", widgetVersion) then return end
 
@@ -318,7 +318,7 @@ end
 
 local function UpdateValue(control, forceDefault, value)
 	if forceDefault then	--if we are forcing defaults
-		value = control.data.default
+		value = LAM.util.GetDefaultValue(control.data.default)
 		control.data.setFunc(value)
 		control.icon:SetTexture(value)
 	elseif value then

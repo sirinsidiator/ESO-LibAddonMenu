@@ -11,7 +11,7 @@
 	width = "full",	--or "half" (optional)
 	disabled = function() return db.someBooleanSetting end,	--or boolean (optional)
 	warning = "Will need to reload the UI.",	--(optional)
-	default = defaults.var,	--(optional)
+	default = defaults.var,	--(optional) default value or function that returns the default value
 	reference = "MyAddonSlider"	--(optional) unique global reference to control
 }	]]
 
@@ -51,7 +51,7 @@ end
 
 local function UpdateValue(control, forceDefault, value)
 	if forceDefault then	--if we are forcing defaults
-		value = control.data.default
+		value = LAM.util.GetDefaultValue(control.data.default)
 		control.data.setFunc(value)
 	elseif value and value >= control.data.min and value <= control.data.max then
 		control.data.setFunc(value)

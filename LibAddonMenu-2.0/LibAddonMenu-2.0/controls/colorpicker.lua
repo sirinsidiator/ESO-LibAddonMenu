@@ -7,12 +7,12 @@
 	width = "full",	--or "half" (optional)
 	disabled = function() return db.someBooleanSetting end,	--or boolean (optional)
 	warning = "Will need to reload the UI.",	--(optional)
-	default = {r = defaults.r, g = defaults.g, b = defaults.b, a = defaults.a},	--(optional) table of default color values (or default = defaultColor, where defaultColor is a table with keys of r, g, b[, a])
+	default = {r = defaults.r, g = defaults.g, b = defaults.b, a = defaults.a},	--(optional) table of default color values (or default = defaultColor, where defaultColor is a table with keys of r, g, b[, a]) or a function that returns the table
 	reference = "MyAddonColorpicker"	--(optional) unique global reference to control
 }	]]
 
 
-local widgetVersion = 8
+local widgetVersion = 9
 local LAM = LibStub("LibAddonMenu-2.0")
 if not LAM:RegisterWidget("colorpicker", widgetVersion) then return end
 
@@ -40,7 +40,7 @@ end
 
 local function UpdateValue(control, forceDefault, valueR, valueG, valueB, valueA)
 	if forceDefault then	--if we are forcing defaults
-		local color = control.data.default
+		local color = LAM.util.GetDefaultValue(control.data.default)
 		valueR, valueG, valueB, valueA = color.r, color.g, color.b, color.a
 		control.data.setFunc(valueR, valueG, valueB, valueA)
 	elseif valueR and valueG and valueB then

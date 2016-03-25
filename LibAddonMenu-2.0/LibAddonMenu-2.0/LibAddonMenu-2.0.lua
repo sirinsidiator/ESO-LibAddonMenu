@@ -107,6 +107,14 @@ util.GetTooltipText = GetTooltipText
 util.CreateBaseControl = CreateBaseControl
 util.CreateLabelAndContainerControl = CreateLabelAndContainerControl
 
+local function GetDefaultValue(default)
+	if type(default) == "function" then
+		return default()
+	end
+	return default
+end
+util.GetDefaultValue = GetDefaultValue
+
 local ADDON_DATA_TYPE = 1
 local RESELECTING_DURING_REBUILD = true
 local USER_REQUESTED_OPEN = true

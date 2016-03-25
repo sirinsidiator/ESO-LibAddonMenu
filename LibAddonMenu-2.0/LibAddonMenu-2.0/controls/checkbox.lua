@@ -7,7 +7,7 @@
 	width = "full",	--or "half" (optional)
 	disabled = function() return db.someBooleanSetting end,	--or boolean (optional)
 	warning = "Will need to reload the UI.",	--(optional)
-	default = defaults.var,	--(optional)
+	default = defaults.var,	--(optional) boolean or function that returns a boolean
 	reference = "MyAddonCheckbox"	--(optional) unique global reference to control
 }	]]
 
@@ -57,7 +57,7 @@ end
 
 local function UpdateValue(control, forceDefault, value)
 	if forceDefault then	--if we are forcing defaults
-		value = control.data.default
+		value = LAM.util.GetDefaultValue(control.data.default)
 		control.data.setFunc(value)
 	elseif value ~= nil then	--our value could be false
 		control.data.setFunc(value)
