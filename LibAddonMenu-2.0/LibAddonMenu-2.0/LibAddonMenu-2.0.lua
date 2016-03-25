@@ -408,6 +408,9 @@ local function CreateOptionsControls(panel)
 			PrintLater(("The settings menu of %s is missing some entries."):format(addonID))
 		end
 		DoCreateSettings()
+	else
+		optionsCreated[addonID] = true
+		cm:FireCallbacks("LAM-PanelControlsCreated", panel)
 	end
 end
 
