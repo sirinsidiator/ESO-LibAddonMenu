@@ -1,3 +1,11 @@
+2.0 r20
+- fixed empty panels not firing LAM-PanelControlsCreated ([url=https://github.com/sirinsidiator/ESO-LibAddonMenu/issues/32]#32[/url])
+- removed height constraint of 2500 from submenus ([url=https://github.com/sirinsidiator/ESO-LibAddonMenu/issues/34]#34[/url])
+- added two new callbacks LAM-PanelOpened and LAM-PanelClosed. Both pass the panel as their sole argument ([url=https://github.com/sirinsidiator/ESO-LibAddonMenu/issues/27]#27[/url])
+- 'default' can now be a function in addition to a static value ([url=https://github.com/sirinsidiator/ESO-LibAddonMenu/issues/23]#23[/url])
+- all labels (name, tooltip, warning, etc.) can now be a string id or function in addition to a static string ([url=https://github.com/sirinsidiator/ESO-LibAddonMenu/issues/22]#22[/url])
+- updated LibStub to r4
+
 2.0 r19
 - made icon picker choicesTooltips array optional
 - added support for custom panel objects without a GetWidth method (partially fixes [url=https://github.com/sirinsidiator/ESO-LibAddonMenu/pull/26]#26[/url])
