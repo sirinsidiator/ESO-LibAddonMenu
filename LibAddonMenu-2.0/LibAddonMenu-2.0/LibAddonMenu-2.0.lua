@@ -525,13 +525,15 @@ local function CreateAddonSettingsMenuEntry()
 	--Russian for TERAB1T's RuESO addon, which creates an "ru" locale
 	--game font does not support Cyrillic, so they are using custom fonts + extended latin charset
 	--Spanish provided by Luisen75 for their translation project
-	local controlPanelNames = {
-		en = "Addon Settings",
-		fr = "Extensions",
-		de = "Erweiterungen",
-		ru = "Îacòpoéêè äoïoìîeîèé",
-		es = "Configura Addons",
-	}
+	--Japanese provided by k0ta0uchi
+    local controlPanelNames = {
+        en = "Addon Settings",
+        fr = "Extensions",
+        de = "Erweiterungen",
+        ru = "Îacòpoéêè äoïoìîeîèé",
+        es = "Configura Addons",
+        jp = "アドオン設定",
+    }
 
 	local panelData = {
 		id = KEYBOARD_OPTIONS.currentPanelId,
