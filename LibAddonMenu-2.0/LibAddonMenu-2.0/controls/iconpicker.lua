@@ -18,7 +18,7 @@
 	reference = "MyAddonIconPicker"	-- unique global reference to control (optional)
 }	]]
 
-local widgetVersion = 5
+local widgetVersion = 6
 local LAM = LibStub("LibAddonMenu-2.0")
 if not LAM:RegisterWidget("iconpicker", widgetVersion) then return end
 

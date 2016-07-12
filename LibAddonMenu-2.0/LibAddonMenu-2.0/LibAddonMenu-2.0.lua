@@ -43,7 +43,7 @@ local addonToOptionsMap = {}
 local optionsCreated = {}
 lam.widgets = lam.widgets or {}
 local widgets = lam.widgets
-lam.util = {}
+lam.util = lam.util or {}
 local util = lam.util
 
 local function GetDefaultValue(default)
