@@ -110,11 +110,18 @@ local function CreateLabelAndContainerControl(parent, controlData, controlName)
 	return control
 end
 
+local function RequestRefreshIfNeeded(control)
+    if control.panel.data.registerForRefresh then
+        cm:FireCallbacks("LAM-RefreshPanel", control)
+    end
+end
+
 util.GetTooltipText = GetStringFromValue -- deprecated, use util.GetStringFromValue instead
 util.GetStringFromValue = GetStringFromValue
 util.GetDefaultValue = GetDefaultValue
 util.CreateBaseControl = CreateBaseControl
 util.CreateLabelAndContainerControl = CreateLabelAndContainerControl
+util.RequestRefreshIfNeeded = RequestRefreshIfNeeded
 
 local ADDON_DATA_TYPE = 1
 local RESELECTING_DURING_REBUILD = true

@@ -12,7 +12,7 @@
 }	]]
 
 
-local widgetVersion = 10
+local widgetVersion = 11
 local LAM = LibStub("LibAddonMenu-2.0")
 if not LAM:RegisterWidget("colorpicker", widgetVersion) then return end
 
@@ -46,9 +46,7 @@ local function UpdateValue(control, forceDefault, valueR, valueG, valueB, valueA
 	elseif valueR and valueG and valueB then
 		control.data.setFunc(valueR, valueG, valueB, valueA or 1)
 		--after setting this value, let's refresh the others to see if any should be disabled or have their settings changed
-		if control.panel.data.registerForRefresh then
-			cm:FireCallbacks("LAM-RefreshPanel", control)
-		end
+		LAM.util.RequestRefreshIfNeeded(control)
 	else
 		valueR, valueG, valueB, valueA = control.data.getFunc()
 	end

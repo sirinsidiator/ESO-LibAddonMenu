@@ -16,7 +16,7 @@
 }	]]
 
 
-local widgetVersion = 9
+local widgetVersion = 10
 local LAM = LibStub("LibAddonMenu-2.0")
 if not LAM:RegisterWidget("slider", widgetVersion) then return end
 
@@ -56,9 +56,7 @@ local function UpdateValue(control, forceDefault, value)
 	elseif value and value >= control.data.min and value <= control.data.max then
 		control.data.setFunc(value)
 		--after setting this value, let's refresh the others to see if any should be disabled or have their settings changed
-		if control.panel.data.registerForRefresh then
-			cm:FireCallbacks("LAM-RefreshPanel", control)
-		end
+		LAM.util.RequestRefreshIfNeeded(control)
 	else
 		value = control.data.getFunc()
 	end

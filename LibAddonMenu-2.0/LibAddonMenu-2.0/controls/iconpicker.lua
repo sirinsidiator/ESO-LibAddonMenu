@@ -265,9 +265,7 @@ local function UpdateChoices(control, choices, choicesTooltips)
 			iconPicker:AddIcon(choices[i], function(self, texture)
 				control.icon:SetTexture(texture)
 				data.setFunc(texture)
-				if control.panel.data.registerForRefresh then
-					cm:FireCallbacks("LAM-RefreshPanel", control)
-				end
+				LAM.util.RequestRefreshIfNeeded(control)
 			end, LAM.util.GetStringFromValue(choicesTooltips[i]))
 			addedChoices[texture] = true
 		end
@@ -324,9 +322,7 @@ local function UpdateValue(control, forceDefault, value)
 	elseif value then
 		control.data.setFunc(value)
 		--after setting this value, let's refresh the others to see if any should be disabled or have their settings changed
-		if control.panel.data.registerForRefresh then
-			cm:FireCallbacks("LAM-RefreshPanel", control)
-		end
+		LAM.util.RequestRefreshIfNeeded(control)
 	else
 		value = control.data.getFunc()
 		control.icon:SetTexture(value)

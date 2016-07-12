@@ -11,7 +11,7 @@
 }	]]
 
 
-local widgetVersion = 9
+local widgetVersion = 10
 local LAM = LibStub("LibAddonMenu-2.0")
 if not LAM:RegisterWidget("button", widgetVersion) then return end
 
@@ -64,9 +64,7 @@ function LAMCreateControl.button(parent, buttonData, controlName)
 	button:SetHandler("OnMouseExit", ZO_Options_OnMouseExit)
 	button:SetHandler("OnClicked", function(self, ...)
 		buttonData.func(self, ...)
-		if control.panel.data.registerForRefresh then
-			cm:FireCallbacks("LAM-RefreshPanel", control)
-		end
+		LAM.util.RequestRefreshIfNeeded(control)
 	end)
 
 	if buttonData.warning then
