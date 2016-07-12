@@ -52,6 +52,7 @@ local function ForceDefaults(panel)
 
 	cm:FireCallbacks("LAM-RefreshPanel", panel)
 end
+
 ESO_Dialogs["LAM_DEFAULTS"] = {
 	title = {
 		text = SI_INTERFACE_OPTIONS_RESET_TO_DEFAULT_TOOLTIP,

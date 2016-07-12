@@ -16,8 +16,6 @@ local LAM = LibStub("LibAddonMenu-2.0")
 if not LAM:RegisterWidget("button", widgetVersion) then return end
 
 local wm = WINDOW_MANAGER
-local cm = CALLBACK_MANAGER
-local tinsert = table.insert
 
 local function UpdateDisabled(control)
 	local disable
@@ -76,12 +74,9 @@ function LAMCreateControl.button(parent, buttonData, controlName)
 	if buttonData.disabled ~= nil then
 		control.UpdateDisabled = UpdateDisabled
 		control:UpdateDisabled()
-
-		--this is here because buttons don't have an UpdateValue method
-		if control.panel.data.registerForRefresh then	--if our parent window wants to refresh controls, then add this to the list
-			tinsert(control.panel.controlsToRefresh, control)
-		end
 	end
+
+	LAM.util.RegisterForRefreshIfNeeded(control)
 
 	return control
 end

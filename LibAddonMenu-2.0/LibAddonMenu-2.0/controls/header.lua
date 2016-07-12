@@ -6,12 +6,11 @@
 }	]]
 
 
-local widgetVersion = 7
+local widgetVersion = 8
 local LAM = LibStub("LibAddonMenu-2.0")
 if not LAM:RegisterWidget("header", widgetVersion) then return end
 
 local wm = WINDOW_MANAGER
-local tinsert = table.insert
 
 local function UpdateValue(control)
 	control.header:SetText(LAM.util.GetStringFromValue(control.data.name))
@@ -37,9 +36,7 @@ function LAMCreateControl.header(parent, headerData, controlName)
 
 	control.UpdateValue = UpdateValue
 
-	if control.panel.data.registerForRefresh or control.panel.data.registerForDefaults then	--if our parent window wants to refresh controls, then add this to the list
-		tinsert(control.panel.controlsToRefresh, control)
-	end
+	LAM.util.RegisterForRefreshIfNeeded(control)
 
 	return control
 end

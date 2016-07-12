@@ -17,8 +17,7 @@ local LAM = LibStub("LibAddonMenu-2.0")
 if not LAM:RegisterWidget("checkbox", widgetVersion) then return end
 
 local wm = WINDOW_MANAGER
-local cm = CALLBACK_MANAGER
-local tinsert = table.insert
+
 --label
 local enabledColor = ZO_DEFAULT_ENABLED_COLOR
 local enabledHLcolor = ZO_HIGHLIGHT_TEXT
@@ -134,9 +133,7 @@ function LAMCreateControl.checkbox(parent, checkboxData, controlName)
 	control.UpdateValue = UpdateValue
 	control:UpdateValue()
 
-	if control.panel.data.registerForRefresh or control.panel.data.registerForDefaults then	--if our parent window wants to refresh controls, then add this to the list
-		tinsert(control.panel.controlsToRefresh, control)
-	end
+    LAM.util.RegisterForRefreshIfNeeded(control)
 
 	return control
 end

@@ -116,12 +116,21 @@ local function RequestRefreshIfNeeded(control)
     end
 end
 
+local function RegisterForRefreshIfNeeded(control)
+    -- if our parent window wants to refresh controls, then add this to the list
+    local panelData = control.panel.data
+    if panelData.registerForRefresh or panelData.registerForDefaults then
+        tinsert(control.panel.controlsToRefresh, control)
+    end
+end
+
 util.GetTooltipText = GetStringFromValue -- deprecated, use util.GetStringFromValue instead
 util.GetStringFromValue = GetStringFromValue
 util.GetDefaultValue = GetDefaultValue
 util.CreateBaseControl = CreateBaseControl
 util.CreateLabelAndContainerControl = CreateLabelAndContainerControl
 util.RequestRefreshIfNeeded = RequestRefreshIfNeeded
+util.RegisterForRefreshIfNeeded = RegisterForRefreshIfNeeded
 
 local ADDON_DATA_TYPE = 1
 local RESELECTING_DURING_REBUILD = true
