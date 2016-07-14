@@ -18,16 +18,12 @@ if not LAM:RegisterWidget("button", widgetVersion) then return end
 local wm = WINDOW_MANAGER
 
 local function UpdateDisabled(control)
-    local disable
-    if type(control.data.disabled) == "function" then
-        disable = control.data.disabled()
-    else
-        disable = control.data.disabled
+    local disable = control.data.disabled
+    if type(disable) == "function" then
+        disable = disable()
     end
-
     control.button:SetEnabled(not disable)
 end
-
 
 --controlName is optional
 local MIN_HEIGHT = 28 -- default_button height

@@ -24,14 +24,12 @@ local function RefreshPanel(control)
     local panelControls = panel.controlsToRefresh
 
     for i = 1, #panelControls do
-        local updateControl = panelControls[i]
-        if  updateControl ~= control then
-            if updateControl.UpdateValue then
-                updateControl:UpdateValue()
-            end
-            if updateControl.UpdateDisabled then
-                updateControl:UpdateDisabled()
-            end
+        local updateControl = panelControls[i] 
+        if updateControl ~= control and updateControl.UpdateValue then
+            updateControl:UpdateValue()
+        end
+        if updateControl.UpdateDisabled then
+            updateControl:UpdateDisabled()
         end
     end
 end
