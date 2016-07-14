@@ -38,9 +38,14 @@ local cm = CALLBACK_MANAGER
 local tconcat = table.concat
 local tinsert = table.insert
 
+local MIN_HEIGHT = 26
+local HALF_WIDTH_LINE_SPACING = 2
+local OPTIONS_CREATION_RUNNING = 1
+local OPTIONS_CREATED = 2
+
 local addonsForList = {}
 local addonToOptionsMap = {}
-local optionsCreated = {}
+local optionsState = {}
 lam.widgets = lam.widgets or {}
 local widgets = lam.widgets
 lam.util = lam.util or {}
@@ -74,8 +79,6 @@ local function CreateBaseControl(parent, controlData, controlName)
     return control
 end
 
-local MIN_HEIGHT = 26
-local HALF_WIDTH_LINE_SPACING = 2
 local function CreateLabelAndContainerControl(parent, controlData, controlName)
     local control = CreateBaseControl(parent, controlData, controlName)
     local width = control:GetWidth()
@@ -354,8 +357,20 @@ end
 --controls anchoring of these controls in the panel
 local function CreateOptionsControls(panel)
     local addonID = panel:GetName()
-    local optionsTable = addonToOptionsMap[addonID]
+    if(optionsState[addonID] == OPTIONS_CREATED) then
+        return false
+    elseif(optionsState[addonID] == OPTIONS_CREATION_RUNNING) then
+        return true
+    end
+    optionsState[addonID] = OPTIONS_CREATION_RUNNING
 
+    local function CreationFinished()
+        optionsState[addonID] = OPTIONS_CREATED
+        cm:FireCallbacks("LAM-PanelControlsCreated", panel)
+        OpenCurrentPanel()
+    end
+
+    local optionsTable = addonToOptionsMap[addonID]
     if optionsTable then
         local function CreateAndAnchorWidget(parent, widgetData, offsetX, offsetY, anchorTarget, wasHalf)
             local widget
@@ -439,9 +454,7 @@ local function CreateOptionsControls(panel)
                     zo_callLater(DoCreateSettings, THROTTLE_TIMEOUT)
                 end
             else
-                optionsCreated[addonID] = true
-                cm:FireCallbacks("LAM-PanelControlsCreated", panel)
-                OpenCurrentPanel()
+                CreationFinished()
             end
         end
 
@@ -450,12 +463,11 @@ local function CreateOptionsControls(panel)
         end
         DoCreateSettings()
     else
-        optionsCreated[addonID] = true
-        cm:FireCallbacks("LAM-PanelControlsCreated", panel)
-        OpenCurrentPanel()
+        CreationFinished()
     end
-end
 
+    return true
+end
 
 --INTERNAL FUNCTION
 --handles switching between panels
@@ -470,9 +482,7 @@ local function ToggleAddonPanels(panel) --called in OnShow of newly shown panel
     -- refresh visible rows to reflect panel IsHidden status
     ZO_ScrollList_RefreshVisible(lam.addonList)
 
-    if not optionsCreated[panel:GetName()] then --if this is the first time opening this panel, create these options
-        CreateOptionsControls(panel)
-    else
+    if not CreateOptionsControls(panel) then
         OpenCurrentPanel()
     end
 
