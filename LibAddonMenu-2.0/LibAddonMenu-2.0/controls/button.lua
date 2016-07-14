@@ -6,10 +6,10 @@
     width = "full", --or "half" (optional)
     disabled = function() return db.someBooleanSetting end, --or boolean (optional)
     icon = "icon\\path.dds", --(optional)
+    isDangerous = false, -- boolean, if set to true, the button text will be red and a confirmation dialog with the button label and warning text will show on click before the callback is executed (optional)
     warning = "Will need to reload the UI.", --(optional)
     reference = "MyAddonButton", -- unique global reference to control (optional)
 } ]]
-
 
 local widgetVersion = 10
 local LAM = LibStub("LibAddonMenu-2.0")
@@ -49,6 +49,7 @@ function LAMCreateControl.button(parent, buttonData, controlName)
         control.button = wm:CreateControlFromVirtual(nil, control, "ZO_DefaultButton")
         control.button:SetWidth(width / 3)
         control.button:SetText(LAM.util.GetStringFromValue(buttonData.name))
+        if buttonData.isDangerous then control.button:SetNormalFontColor(ZO_ERROR_COLOR:UnpackRGBA()) end
     end
     local button = control.button
     button:SetAnchor(control.isHalfWidth and CENTER or RIGHT)
@@ -56,9 +57,20 @@ function LAMCreateControl.button(parent, buttonData, controlName)
     button.data = {tooltipText = LAM.util.GetStringFromValue(buttonData.tooltip)}
     button:SetHandler("OnMouseEnter", ZO_Options_OnMouseEnter)
     button:SetHandler("OnMouseExit", ZO_Options_OnMouseExit)
-    button:SetHandler("OnClicked", function(self, ...)
-        buttonData.func(self, ...)
-        LAM.util.RequestRefreshIfNeeded(control)
+    button:SetHandler("OnClicked", function(...)
+        local args = {...}
+        local function callback()
+            buttonData.func(unpack(args))
+            LAM.util.RequestRefreshIfNeeded(control)
+        end
+
+        if(buttonData.isDangerous) then
+            local title = LAM.util.GetStringFromValue(buttonData.name)
+            local body = LAM.util.GetStringFromValue(buttonData.warning)
+            LAM.util.ShowConfirmationDialog(title, body, callback)
+        else
+            callback()
+        end
     end)
 
     if buttonData.warning then

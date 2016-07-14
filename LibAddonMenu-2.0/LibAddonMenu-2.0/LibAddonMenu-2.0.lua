@@ -127,6 +127,32 @@ local function RegisterForRefreshIfNeeded(control)
     end
 end
 
+ESO_Dialogs["LAM_CONFIRM_DIALOG"] = {
+    canQueue = true,
+    title = {
+        text = "",
+    },
+    mainText = {
+        text = "",
+    },
+    buttons = {
+        [1] = {
+            text = SI_DIALOG_CONFIRM,
+            callback = function(dialog) end,
+        },
+        [2] = {
+            text = SI_DIALOG_CANCEL,
+        }
+    }
+}
+local function ShowConfirmationDialog(title, body, callback)
+    local dialog = ESO_Dialogs["LAM_CONFIRM_DIALOG"]
+    dialog.title.text = title
+    dialog.mainText.text = body
+    dialog.buttons[1].callback = callback
+    ZO_Dialogs_ShowDialog("LAM_CONFIRM_DIALOG")
+end
+
 util.GetTooltipText = GetStringFromValue -- deprecated, use util.GetStringFromValue instead
 util.GetStringFromValue = GetStringFromValue
 util.GetDefaultValue = GetDefaultValue
@@ -134,6 +160,7 @@ util.CreateBaseControl = CreateBaseControl
 util.CreateLabelAndContainerControl = CreateLabelAndContainerControl
 util.RequestRefreshIfNeeded = RequestRefreshIfNeeded
 util.RegisterForRefreshIfNeeded = RegisterForRefreshIfNeeded
+util.ShowConfirmationDialog = ShowConfirmationDialog
 
 local ADDON_DATA_TYPE = 1
 local RESELECTING_DURING_REBUILD = true
