@@ -126,12 +126,12 @@ function LAMCreateControl.checkbox(parent, checkboxData, controlName)
 
     control.data.tooltipText = LAM.util.GetStringFromValue(checkboxData.tooltip)
 
+    control.UpdateValue = UpdateValue
+    control:UpdateValue()
     if checkboxData.disabled ~= nil then
         control.UpdateDisabled = UpdateDisabled
         control:UpdateDisabled()
     end
-    control.UpdateValue = UpdateValue
-    control:UpdateValue()
 
     LAM.util.RegisterForRefreshIfNeeded(control)
 

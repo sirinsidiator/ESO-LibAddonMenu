@@ -109,14 +109,14 @@ function LAMCreateControl.dropdown(parent, dropdownData, controlName)
         control.warning.data = {tooltipText = LAM.util.GetStringFromValue(dropdownData.warning)}
     end
 
-    if dropdownData.disabled ~= nil then
-        control.UpdateDisabled = UpdateDisabled
-        control:UpdateDisabled()
-    end
     control.UpdateChoices = UpdateChoices
     control:UpdateChoices(dropdownData.choices)
     control.UpdateValue = UpdateValue
     control:UpdateValue()
+    if dropdownData.disabled ~= nil then
+        control.UpdateDisabled = UpdateDisabled
+        control:UpdateDisabled()
+    end
 
     LAM.util.RegisterForRefreshIfNeeded(control)
 

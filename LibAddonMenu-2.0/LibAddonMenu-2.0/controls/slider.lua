@@ -146,12 +146,13 @@ function LAMCreateControl.slider(parent, sliderData, controlName)
         control.warning.data = {tooltipText = LAM.util.GetStringFromValue(sliderData.warning)}
     end
 
+    control.UpdateValue = UpdateValue
+    control:UpdateValue()
+
     if sliderData.disabled ~= nil then
         control.UpdateDisabled = UpdateDisabled
         control:UpdateDisabled()
     end
-    control.UpdateValue = UpdateValue
-    control:UpdateValue()
 
     LAM.util.RegisterForRefreshIfNeeded(control)
 

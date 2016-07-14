@@ -140,12 +140,12 @@ function LAMCreateControl.editbox(parent, editboxData, controlName)
         control.warning.data = {tooltipText = LAM.util.GetStringFromValue(editboxData.warning)}
     end
 
+    control.UpdateValue = UpdateValue
+    control:UpdateValue()
     if editboxData.disabled ~= nil then
         control.UpdateDisabled = UpdateDisabled
         control:UpdateDisabled()
     end
-    control.UpdateValue = UpdateValue
-    control:UpdateValue()
 
     LAM.util.RegisterForRefreshIfNeeded(control)
 

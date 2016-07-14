@@ -414,11 +414,6 @@ function LAMCreateControl.iconpicker(parent, iconpickerData, controlName)
         control.warning.data = {tooltipText = LAM.util.GetStringFromValue(iconpickerData.warning)}
     end
 
-    if iconpickerData.disabled ~= nil then
-        control.UpdateDisabled = UpdateDisabled
-        control:UpdateDisabled()
-    end
-
     control.UpdateChoices = UpdateChoices
     control.UpdateValue = UpdateValue
     control:UpdateValue()
@@ -426,6 +421,11 @@ function LAMCreateControl.iconpicker(parent, iconpickerData, controlName)
     control:SetColor()
     control.SetIconSize = SetIconSize
     control:SetIconSize(iconSize)
+
+    if iconpickerData.disabled ~= nil then
+        control.UpdateDisabled = UpdateDisabled
+        control:UpdateDisabled()
+    end
 
     LAM.util.RegisterForRefreshIfNeeded(control)
 
