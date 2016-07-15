@@ -5,6 +5,7 @@
     setFunc = function(value) db.var = value doStuff() end,
     min = 0,
     max = 20,
+    clampInput = true, -- boolean, if set to false the input field won't clamp to min and max and allow any number.
     step = 1, --(optional)
     decimals = 0, --(optional)
     autoselect = false, -- boolean, automatically select everything in the text input field when it gains focus (optional)
@@ -129,11 +130,15 @@ function LAMCreateControl.slider(parent, sliderData, controlName)
     end
     slidervalue:SetHandler("OnEscape", function(self)
         self:LoseFocus()
-        control:UpdateValue()
     end)
     slidervalue:SetHandler("OnEnter", function(self)
-        self:LoseFocus()
         control:UpdateValue(false, tonumber(self:GetText()))
+        self:LoseFocus()
+    end)
+    slidervalue:SetHandler("OnFocusLost", function(self)
+        local value = sliderData.getFunc()
+        slidervalue:SetText(value)
+        slider:SetValue(value)
     end)
     if(sliderData.autoselect) then
         ZO_PreHookHandler(slidervalue, "OnFocusGained", function(self)
