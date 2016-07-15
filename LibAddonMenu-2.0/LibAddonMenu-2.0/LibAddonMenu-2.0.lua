@@ -42,6 +42,7 @@ local MIN_HEIGHT = 26
 local HALF_WIDTH_LINE_SPACING = 2
 local OPTIONS_CREATION_RUNNING = 1
 local OPTIONS_CREATED = 2
+local LAM_CONFIRM_DIALOG = "LAM_CONFIRM_DIALOG"
 
 local addonsForList = {}
 local addonToOptionsMap = {}
@@ -127,30 +128,36 @@ local function RegisterForRefreshIfNeeded(control)
     end
 end
 
-ESO_Dialogs["LAM_CONFIRM_DIALOG"] = {
-    canQueue = true,
-    title = {
-        text = "",
-    },
-    mainText = {
-        text = "",
-    },
-    buttons = {
-        [1] = {
-            text = SI_DIALOG_CONFIRM,
-            callback = function(dialog) end,
-        },
-        [2] = {
-            text = SI_DIALOG_CANCEL,
+local function GetConfirmDialog()
+    if(not ESO_Dialogs[LAM_CONFIRM_DIALOG]) then
+        ESO_Dialogs[LAM_CONFIRM_DIALOG] = {
+            canQueue = true,
+            title = {
+                text = "",
+            },
+            mainText = {
+                text = "",
+            },
+            buttons = {
+                [1] = {
+                    text = SI_DIALOG_CONFIRM,
+                    callback = function(dialog) end,
+                },
+                [2] = {
+                    text = SI_DIALOG_CANCEL,
+                }
+            }
         }
-    }
-}
+    end
+    return ESO_Dialogs[LAM_CONFIRM_DIALOG]
+end
+
 local function ShowConfirmationDialog(title, body, callback)
-    local dialog = ESO_Dialogs["LAM_CONFIRM_DIALOG"]
+    local dialog = GetConfirmDialog()
     dialog.title.text = title
     dialog.mainText.text = body
     dialog.buttons[1].callback = callback
-    ZO_Dialogs_ShowDialog("LAM_CONFIRM_DIALOG")
+    ZO_Dialogs_ShowDialog(LAM_CONFIRM_DIALOG)
 end
 
 util.GetTooltipText = GetStringFromValue -- deprecated, use util.GetStringFromValue instead
