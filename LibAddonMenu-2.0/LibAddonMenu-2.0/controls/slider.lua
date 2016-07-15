@@ -8,6 +8,7 @@
     step = 1, --(optional)
     decimals = 0, --(optional)
     autoselect = false, -- boolean, automatically select everything in the text input field when it gains focus (optional)
+    inputLocation = "below", -- or "right", determines where the input field is shown. This should not be used within the addon menu and is for custom sliders (optional) 
     tooltip = "Slider's tooltip text.", -- or string id or function returning a string (optional)
     width = "full", --or "half" (optional)
     disabled = function() return db.someBooleanSetting end, --or boolean (optional)
@@ -66,13 +67,18 @@ end
 
 function LAMCreateControl.slider(parent, sliderData, controlName)
     local control = LAM.util.CreateLabelAndContainerControl(parent, sliderData, controlName)
+    local isInputOnRight = sliderData.inputLocation == "right" 
 
     --skipping creating the backdrop...  Is this the actual slider texture?
     control.slider = wm:CreateControl(nil, control.container, CT_SLIDER)
     local slider = control.slider
     slider:SetAnchor(TOPLEFT)
-    slider:SetAnchor(TOPRIGHT)
     slider:SetHeight(14)
+    if(isInputOnRight) then
+        slider:SetAnchor(TOPRIGHT, nil, nil, -60)
+    else
+        slider:SetAnchor(TOPRIGHT)
+    end
     slider:SetMouseEnabled(true)
     slider:SetOrientation(ORIENTATION_HORIZONTAL)
     --put nil for highlighted texture file path, and what look to be texture coords
@@ -88,7 +94,7 @@ function LAMCreateControl.slider(parent, sliderData, controlName)
     bg:SetCenterColor(0, 0, 0)
     bg:SetAnchor(TOPLEFT, slider, TOPLEFT, 0, 4)
     bg:SetAnchor(BOTTOMRIGHT, slider, BOTTOMRIGHT, 0, -4)
-    bg:SetEdgeTexture("EsoUI\\Art\\Tooltips\\UI-SliderBackdrop.dds", 32, 4)
+    bg:SetEdgeTexture("EsoUI\\Art\\Tooltips\\UI-SliderBackdrop.dds", 32, 4) 
 
     control.minText = wm:CreateControl(nil, slider, CT_LABEL)
     local minText = control.minText
@@ -103,15 +109,24 @@ function LAMCreateControl.slider(parent, sliderData, controlName)
     maxText:SetText(sliderData.max)
 
     control.slidervalueBG = wm:CreateControlFromVirtual(nil, slider, "ZO_EditBackdrop")
-    control.slidervalueBG:SetDimensions(50, 16)
-    control.slidervalueBG:SetAnchor(TOP, slider, BOTTOM, 0, 0)
+    if(isInputOnRight) then
+        control.slidervalueBG:SetDimensions(60, 26)
+        control.slidervalueBG:SetAnchor(LEFT, slider, RIGHT, 5, 0)
+    else
+        control.slidervalueBG:SetDimensions(50, 16)
+        control.slidervalueBG:SetAnchor(TOP, slider, BOTTOM, 0, 0)
+    end
     control.slidervalue = wm:CreateControlFromVirtual(nil, control.slidervalueBG, "ZO_DefaultEditForBackdrop")
     local slidervalue = control.slidervalue
     slidervalue:ClearAnchors()
     slidervalue:SetAnchor(TOPLEFT, control.slidervalueBG, TOPLEFT, 3, 1)
     slidervalue:SetAnchor(BOTTOMRIGHT, control.slidervalueBG, BOTTOMRIGHT, -3, -1)
     slidervalue:SetTextType(TEXT_TYPE_NUMERIC)
-    slidervalue:SetFont("ZoFontGameSmall")
+    if(isInputOnRight) then
+        slidervalue:SetFont("ZoFontGameLarge")
+    else
+        slidervalue:SetFont("ZoFontGameSmall")
+    end
     slidervalue:SetHandler("OnEscape", function(self)
         self:LoseFocus()
         control:UpdateValue()
