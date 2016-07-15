@@ -7,6 +7,7 @@
     max = 20,
     step = 1, --(optional)
     decimals = 0, --(optional)
+    autoselect = false, -- boolean, automatically select everything in the text input field when it gains focus (optional)
     tooltip = "Slider's tooltip text.", -- or string id or function returning a string (optional)
     width = "full", --or "half" (optional)
     disabled = function() return db.someBooleanSetting end, --or boolean (optional)
@@ -119,6 +120,11 @@ function LAMCreateControl.slider(parent, sliderData, controlName)
         self:LoseFocus()
         control:UpdateValue(false, tonumber(self:GetText()))
     end)
+    if(sliderData.autoselect) then
+        ZO_PreHookHandler(slidervalue, "OnFocusGained", function(self)
+            self:SelectAll()
+        end)
+    end
     local function RoundDecimalToPlace(d, place)
         return tonumber(strformat("%." .. tostring(place) .. "f", d))
     end
