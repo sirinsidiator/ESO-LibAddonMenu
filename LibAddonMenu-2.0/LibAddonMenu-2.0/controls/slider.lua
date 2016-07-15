@@ -5,10 +5,10 @@
     setFunc = function(value) db.var = value doStuff() end,
     min = 0,
     max = 20,
-    clampInput = true, -- boolean, if set to false the input field won't clamp to min and max and allow any number.
     step = 1, --(optional)
-    decimals = 0, --(optional)
-    autoselect = false, -- boolean, automatically select everything in the text input field when it gains focus (optional)
+    clampInput = true, -- boolean, if set to false the input won't clamp to min and max and allow any number instead (optional)
+    decimals = 0, -- when specified the input value is rounded to the specified number of decimals (optional)
+    autoSelect = false, -- boolean, automatically select everything in the text input field when it gains focus (optional)
     inputLocation = "below", -- or "right", determines where the input field is shown. This should not be used within the addon menu and is for custom sliders (optional) 
     tooltip = "Slider's tooltip text.", -- or string id or function returning a string (optional)
     width = "full", --or "half" (optional)
@@ -18,13 +18,16 @@
     reference = "MyAddonSlider" -- unique global reference to control (optional)
 } ]]
 
-
 local widgetVersion = 10
 local LAM = LibStub("LibAddonMenu-2.0")
 if not LAM:RegisterWidget("slider", widgetVersion) then return end
 
 local wm = WINDOW_MANAGER
 local strformat = string.format
+
+local function RoundDecimalToPlace(d, place)
+    return tonumber(strformat("%." .. tostring(place) .. "f", d))
+end
 
 local function UpdateDisabled(control)
     local disable
@@ -53,7 +56,13 @@ local function UpdateValue(control, forceDefault, value)
     if forceDefault then --if we are forcing defaults
         value = LAM.util.GetDefaultValue(control.data.default)
         control.data.setFunc(value)
-    elseif value and value >= control.data.min and value <= control.data.max then
+    elseif value then
+        if control.data.decimals then
+            value = RoundDecimalToPlace(value, control.data.decimals)
+        end
+        if control.data.clampInput ~= false then
+            value = math.max(math.min(value, control.data.max), control.data.min)
+        end
         control.data.setFunc(value)
         --after setting this value, let's refresh the others to see if any should be disabled or have their settings changed
         LAM.util.RequestRefreshIfNeeded(control)
@@ -64,7 +73,6 @@ local function UpdateValue(control, forceDefault, value)
     control.slider:SetValue(value)
     control.slidervalue:SetText(value)
 end
-
 
 function LAMCreateControl.slider(parent, sliderData, controlName)
     local control = LAM.util.CreateLabelAndContainerControl(parent, sliderData, controlName)
@@ -128,38 +136,50 @@ function LAMCreateControl.slider(parent, sliderData, controlName)
     else
         slidervalue:SetFont("ZoFontGameSmall")
     end
+
+    local isHandlingChange = false
+    local function HandleValueChanged(value)
+        if isHandlingChange then return end
+        if sliderData.decimals then
+            value = RoundDecimalToPlace(value, sliderData.decimals)
+        end
+        isHandlingChange = true
+        slider:SetValue(value)
+        slidervalue:SetText(value)
+        isHandlingChange = false
+    end
+
     slidervalue:SetHandler("OnEscape", function(self)
+        HandleValueChanged(sliderData.getFunc())
         self:LoseFocus()
     end)
     slidervalue:SetHandler("OnEnter", function(self)
-        control:UpdateValue(false, tonumber(self:GetText()))
         self:LoseFocus()
     end)
     slidervalue:SetHandler("OnFocusLost", function(self)
-        local value = sliderData.getFunc()
-        slidervalue:SetText(value)
-        slider:SetValue(value)
+        local value = tonumber(self:GetText())
+        control:UpdateValue(false, value)
     end)
-    if(sliderData.autoselect) then
+    slidervalue:SetHandler("OnTextChanged", function(self)
+        local value = tonumber(self:GetText())
+        if(value) then
+            HandleValueChanged(value)
+        end
+    end)
+    if(sliderData.autoSelect) then
         ZO_PreHookHandler(slidervalue, "OnFocusGained", function(self)
             self:SelectAll()
         end)
     end
-    local function RoundDecimalToPlace(d, place)
-        return tonumber(strformat("%." .. tostring(place) .. "f", d))
-    end
+
     local range = maxValue - minValue
     slider:SetValueStep(sliderData.step or 1)
     slider:SetHandler("OnValueChanged", function(self, value, eventReason)
         if eventReason == EVENT_REASON_SOFTWARE then return end
-        local new_value = sliderData.decimals and RoundDecimalToPlace(value, sliderData.decimals) or value
-        self:SetValue(new_value) --do we actually need this line?
-        slidervalue:SetText(new_value)
+        HandleValueChanged(value)
     end)
     slider:SetHandler("OnSliderReleased", function(self, value)
-        --sliderData.setFunc(value)
-        local new_value = sliderData.decimals and RoundDecimalToPlace(value, sliderData.decimals) or value
-        control:UpdateValue(false, new_value) --does this work here instead?
+        control:UpdateValue(false, value)
     end)
     slider:SetHandler("OnMouseWheel", function(self, value)
         local new_value = (tonumber(slidervalue:GetText()) or sliderData.min or 0) + ((sliderData.step or 1) * value)
