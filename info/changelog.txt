@@ -1,3 +1,17 @@
+2.0 r21
+- fixed panel creation starting more than once when switching between different addon panels quickly ([url=https://github.com/sirinsidiator/ESO-LibAddonMenu/issues/40]#40[/url])
+- fixed LAM.util getting wiped with each version load causing errors for many players ([url=https://github.com/sirinsidiator/ESO-LibAddonMenu/issues/44]#44[/url])
+- fixed disabled controls not having the correct label color in some cases ([url=https://github.com/sirinsidiator/ESO-LibAddonMenu/issues/41]#41[/url])
+- fixed controls not updating their own disabled state when their value changes ([url=https://github.com/sirinsidiator/ESO-LibAddonMenu/issues/51]#51[/url])
+- added Japanese translation (thanks k0ta0uchi) ([url=https://github.com/sirinsidiator/ESO-LibAddonMenu/issues/45]#45[/url])
+- added isDangerous flag for button controls ([url=https://github.com/sirinsidiator/ESO-LibAddonMenu/issues/50]#50[/url])
+[INDENT]- when set to true it changes the text color of the button to red and opens a dialog which shows the label and the warning text before running the callback[/INDENT]
+- added new options for sliders and fixed some bugs ([url=https://github.com/sirinsidiator/ESO-LibAddonMenu/issues/49]#49[/url])
+[INDENT]- autoSelect (boolean): when set to true it makes the input field select all text when it gains focus
+- inputLocation (string): setting it to "right" will move the input field to the right side of the slider and make it slightly bigger. For aesthetic reasons this should only be used in custom panels and not in the addon menu
+- clampInput (boolean): true by default and if set to false it allows the input values of the slider to exceed the min and max value[/INDENT]
+- for other internal code changes take a look at the [URL="https://github.com/sirinsidiator/ESO-LibAddonMenu/commits/master"]git history[/URL]
+
 2.0 r20
 - fixed empty panels not firing LAM-PanelControlsCreated ([url=https://github.com/sirinsidiator/ESO-LibAddonMenu/issues/32]#32[/url])
 - removed height constraint of 2500 from submenus ([url=https://github.com/sirinsidiator/ESO-LibAddonMenu/issues/34]#34[/url])
