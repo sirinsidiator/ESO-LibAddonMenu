@@ -96,7 +96,7 @@ function LAMCreateControl.slider(parent, sliderData, controlName)
     local maxValue = sliderData.max
     slider:SetMinMax(minValue, maxValue)
     slider:SetHandler("OnMouseEnter", function() ZO_Options_OnMouseEnter(control) end)
-    slider:SetHandler("OnMouseEnter", function() ZO_Options_OnMouseExit(control) end)
+    slider:SetHandler("OnMouseExit", function() ZO_Options_OnMouseExit(control) end)
 
     slider.bg = wm:CreateControl(nil, slider, CT_BACKDROP)
     local bg = slider.bg
