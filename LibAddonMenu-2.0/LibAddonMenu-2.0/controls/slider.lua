@@ -18,7 +18,7 @@
     reference = "MyAddonSlider" -- unique global reference to control (optional)
 } ]]
 
-local widgetVersion = 10
+local widgetVersion = 11
 local LAM = LibStub("LibAddonMenu-2.0")
 if not LAM:RegisterWidget("slider", widgetVersion) then return end
 
@@ -96,7 +96,7 @@ function LAMCreateControl.slider(parent, sliderData, controlName)
     local maxValue = sliderData.max
     slider:SetMinMax(minValue, maxValue)
     slider:SetHandler("OnMouseEnter", function() ZO_Options_OnMouseEnter(control) end)
-    slider:SetHandler("OnMouseEnter", function() ZO_Options_OnMouseExit(control) end)
+    slider:SetHandler("OnMouseExit", function() ZO_Options_OnMouseExit(control) end)
 
     slider.bg = wm:CreateControl(nil, slider, CT_BACKDROP)
     local bg = slider.bg
