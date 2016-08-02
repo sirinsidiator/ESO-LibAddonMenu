@@ -18,7 +18,7 @@
     reference = "MyAddonIconPicker" -- unique global reference to control (optional)
 } ]]
 
-local widgetVersion = 6
+local widgetVersion = 7
 local LAM = LibStub("LibAddonMenu-2.0")
 if not LAM:RegisterWidget("iconpicker", widgetVersion) then return end
 
@@ -327,16 +327,6 @@ local function UpdateValue(control, forceDefault, value)
     end
 end
 
-local function UpdateWarning(control)
-    local warning = LAM.util.GetStringFromValue(control.data.warning)
-    if not warning then
-        control.warning:SetHidden(true)
-    else
-        control.warning.data = {tooltipText = warning}
-        control.warning:SetHidden(false)
-    end
-end
-
 local MIN_HEIGHT = 26
 local HALF_WIDTH_LINE_SPACING = 2
 local function SetIconSize(control, size)
@@ -421,7 +411,7 @@ function LAMCreateControl.iconpicker(parent, iconpickerData, controlName)
     if iconpickerData.warning ~= nil then
         control.warning = wm:CreateControlFromVirtual(nil, control, "ZO_Options_WarningIcon")
         control.warning:SetAnchor(RIGHT, control.container, LEFT, -5, 0)
-        control.UpdateWarning = UpdateWarning
+        control.UpdateWarning = LAM.util.UpdateWarning
         control:UpdateWarning()
     end
 

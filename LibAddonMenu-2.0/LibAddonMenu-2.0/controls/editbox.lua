@@ -14,7 +14,7 @@
 } ]]
 
 
-local widgetVersion = 12
+local widgetVersion = 13
 local LAM = LibStub("LibAddonMenu-2.0")
 if not LAM:RegisterWidget("editbox", widgetVersion) then return end
 
@@ -51,16 +51,6 @@ local function UpdateValue(control, forceDefault, value)
     else
         value = control.data.getFunc()
         control.editbox:SetText(value)
-    end
-end
-
-local function UpdateWarning(control)
-    local warning = LAM.util.GetStringFromValue(control.data.warning)
-    if not warning then
-        control.warning:SetHidden(true)
-    else
-        control.warning.data = {tooltipText = warning}
-        control.warning:SetHidden(false)
     end
 end
 
@@ -147,7 +137,7 @@ function LAMCreateControl.editbox(parent, editboxData, controlName)
         else
             control.warning:SetAnchor(TOPRIGHT, control.bg, TOPLEFT, -5, 0)
         end
-        control.UpdateWarning = UpdateWarning
+        control.UpdateWarning = LAM.util.UpdateWarning
         control:UpdateWarning()
     end
 

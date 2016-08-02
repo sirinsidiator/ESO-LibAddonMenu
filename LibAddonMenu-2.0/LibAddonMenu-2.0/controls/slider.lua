@@ -74,16 +74,6 @@ local function UpdateValue(control, forceDefault, value)
     control.slidervalue:SetText(value)
 end
 
-local function UpdateWarning(control)
-    local warning = LAM.util.GetStringFromValue(control.data.warning)
-    if not warning then
-        control.warning:SetHidden(true)
-    else
-        control.warning.data = {tooltipText = warning}
-        control.warning:SetHidden(false)
-    end
-end
-
 function LAMCreateControl.slider(parent, sliderData, controlName)
     local control = LAM.util.CreateLabelAndContainerControl(parent, sliderData, controlName)
     local isInputOnRight = sliderData.inputLocation == "right" 
@@ -199,7 +189,7 @@ function LAMCreateControl.slider(parent, sliderData, controlName)
     if sliderData.warning ~= nil then
         control.warning = wm:CreateControlFromVirtual(nil, control, "ZO_Options_WarningIcon")
         control.warning:SetAnchor(RIGHT, slider, LEFT, -5, 0)
-        control.UpdateWarning = UpdateWarning
+        control.UpdateWarning = LAM.util.UpdateWarning
         control:UpdateWarning()
     end
 

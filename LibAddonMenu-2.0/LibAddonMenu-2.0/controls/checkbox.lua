@@ -12,7 +12,7 @@
 } ]]
 
 
-local widgetVersion = 12
+local widgetVersion = 13
 local LAM = LibStub("LibAddonMenu-2.0")
 if not LAM:RegisterWidget("checkbox", widgetVersion) then return end
 
@@ -70,16 +70,6 @@ local function UpdateValue(control, forceDefault, value)
     ToggleCheckbox(control)
 end
 
-local function UpdateWarning(control)
-    local warning = LAM.util.GetStringFromValue(control.data.warning)
-    if not warning then
-        control.warning:SetHidden(true)
-    else
-        control.warning.data = {tooltipText = warning}
-        control.warning:SetHidden(false)
-    end
-end
-
 local function OnMouseEnter(control)
     ZO_Options_OnMouseEnter(control)
 
@@ -131,7 +121,7 @@ function LAMCreateControl.checkbox(parent, checkboxData, controlName)
     if checkboxData.warning ~= nil then
         control.warning = wm:CreateControlFromVirtual(nil, control, "ZO_Options_WarningIcon")
         control.warning:SetAnchor(RIGHT, checkbox, LEFT, -5, 0)
-        control.UpdateWarning = UpdateWarning
+        control.UpdateWarning = LAM.util.UpdateWarning
         control:UpdateWarning()
     end
 

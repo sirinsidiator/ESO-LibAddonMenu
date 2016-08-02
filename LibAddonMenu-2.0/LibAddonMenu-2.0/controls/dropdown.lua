@@ -14,7 +14,7 @@
 } ]]
 
 
-local widgetVersion = 13
+local widgetVersion = 14
 local LAM = LibStub("LibAddonMenu-2.0")
 if not LAM:RegisterWidget("dropdown", widgetVersion) then return end
 
@@ -48,16 +48,6 @@ local function UpdateValue(control, forceDefault, value)
     else
         value = control.data.getFunc()
         control.dropdown:SetSelectedItem(value)
-    end
-end
-
-local function UpdateWarning(control)
-    local warning = LAM.util.GetStringFromValue(control.data.warning)
-    if not warning then
-        control.warning:SetHidden(true)
-    else
-        control.warning.data = {tooltipText = warning}
-        control.warning:SetHidden(false)
     end
 end
 
@@ -116,7 +106,7 @@ function LAMCreateControl.dropdown(parent, dropdownData, controlName)
     if dropdownData.warning ~= nil then
         control.warning = wm:CreateControlFromVirtual(nil, control, "ZO_Options_WarningIcon")
         control.warning:SetAnchor(RIGHT, combobox, LEFT, -5, 0)
-        control.UpdateWarning = UpdateWarning
+        control.UpdateWarning = LAM.util.UpdateWarning
         control:UpdateWarning()
     end
 

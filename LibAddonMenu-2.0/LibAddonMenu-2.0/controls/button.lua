@@ -11,7 +11,7 @@
     reference = "MyAddonButton", -- unique global reference to control (optional)
 } ]]
 
-local widgetVersion = 10
+local widgetVersion = 11
 local LAM = LibStub("LibAddonMenu-2.0")
 if not LAM:RegisterWidget("button", widgetVersion) then return end
 
@@ -23,16 +23,6 @@ local function UpdateDisabled(control)
         disable = disable()
     end
     control.button:SetEnabled(not disable)
-end
-
-local function UpdateWarning(control)
-    local warning = LAM.util.GetStringFromValue(control.data.warning)
-    if not warning then
-        control.warning:SetHidden(true)
-    else
-        control.warning.data = {tooltipText = warning}
-        control.warning:SetHidden(false)
-    end
 end
 
 --controlName is optional
@@ -86,7 +76,7 @@ function LAMCreateControl.button(parent, buttonData, controlName)
     if buttonData.warning ~= nil then
         control.warning = wm:CreateControlFromVirtual(nil, control, "ZO_Options_WarningIcon")
         control.warning:SetAnchor(RIGHT, button, LEFT, -5, 0)
-        control.UpdateWarning = UpdateWarning
+        control.UpdateWarning = LAM.util.UpdateWarning
         control:UpdateWarning()
     end
 
