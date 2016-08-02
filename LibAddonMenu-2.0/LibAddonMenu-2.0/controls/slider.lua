@@ -161,7 +161,9 @@ function LAMCreateControl.slider(parent, sliderData, controlName)
         control:UpdateValue(false, value)
     end)
     slidervalue:SetHandler("OnTextChanged", function(self)
-        local value = tonumber(self:GetText())
+        local input = self:GetText()
+        if(#input > 1 and not input:sub(-1):match("[0-9]")) then return end
+        local value = tonumber(input)
         if(value) then
             HandleValueChanged(value)
         end
