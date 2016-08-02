@@ -31,6 +31,9 @@ local function RefreshPanel(control)
         if updateControl.UpdateDisabled then
             updateControl:UpdateDisabled()
         end
+        if updateControl.UpdateWarning then
+            updateControl:UpdateWarning()
+        end
     end
 end
 

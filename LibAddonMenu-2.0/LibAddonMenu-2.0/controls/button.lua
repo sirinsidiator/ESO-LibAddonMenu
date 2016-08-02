@@ -25,6 +25,16 @@ local function UpdateDisabled(control)
     control.button:SetEnabled(not disable)
 end
 
+local function UpdateWarning(control)
+    local warning = LAM.util.GetStringFromValue(control.data.warning)
+    if not warning then
+        control.warning:SetHidden(true)
+    else
+        control.warning.data = {tooltipText = warning}
+        control.warning:SetHidden(false)
+    end
+end
+
 --controlName is optional
 local MIN_HEIGHT = 28 -- default_button height
 local HALF_WIDTH_LINE_SPACING = 2
@@ -73,10 +83,11 @@ function LAMCreateControl.button(parent, buttonData, controlName)
         end
     end)
 
-    if buttonData.warning then
+    if buttonData.warning ~= nil then
         control.warning = wm:CreateControlFromVirtual(nil, control, "ZO_Options_WarningIcon")
         control.warning:SetAnchor(RIGHT, button, LEFT, -5, 0)
-        control.warning.data = {tooltipText = LAM.util.GetStringFromValue(buttonData.warning)}
+        control.UpdateWarning = UpdateWarning
+        control:UpdateWarning()
     end
 
     if buttonData.disabled ~= nil then

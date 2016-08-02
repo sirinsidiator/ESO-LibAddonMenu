@@ -51,6 +51,16 @@ local function UpdateValue(control, forceDefault, value)
     end
 end
 
+local function UpdateWarning(control)
+    local warning = LAM.util.GetStringFromValue(control.data.warning)
+    if not warning then
+        control.warning:SetHidden(true)
+    else
+        control.warning.data = {tooltipText = warning}
+        control.warning:SetHidden(false)
+    end
+end
+
 local function DropdownCallback(control, choiceText, choice)
     choice.control:UpdateValue(false, choiceText)
 end
@@ -103,10 +113,11 @@ function LAMCreateControl.dropdown(parent, dropdownData, controlName)
         dropdown:SetSortOrder(sortOrder == "up" and ZO_SORT_ORDER_UP or ZO_SORT_ORDER_DOWN, sortType == "name" and ZO_SORT_BY_NAME or ZO_SORT_BY_NAME_NUMERIC)
     end
 
-    if dropdownData.warning then
+    if dropdownData.warning ~= nil then
         control.warning = wm:CreateControlFromVirtual(nil, control, "ZO_Options_WarningIcon")
         control.warning:SetAnchor(RIGHT, combobox, LEFT, -5, 0)
-        control.warning.data = {tooltipText = LAM.util.GetStringFromValue(dropdownData.warning)}
+        control.UpdateWarning = UpdateWarning
+        control:UpdateWarning()
     end
 
     control.UpdateChoices = UpdateChoices

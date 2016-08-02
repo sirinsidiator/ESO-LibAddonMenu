@@ -70,6 +70,16 @@ local function UpdateValue(control, forceDefault, value)
     ToggleCheckbox(control)
 end
 
+local function UpdateWarning(control)
+    local warning = LAM.util.GetStringFromValue(control.data.warning)
+    if not warning then
+        control.warning:SetHidden(true)
+    else
+        control.warning.data = {tooltipText = warning}
+        control.warning:SetHidden(false)
+    end
+end
+
 local function OnMouseEnter(control)
     ZO_Options_OnMouseEnter(control)
 
@@ -118,10 +128,11 @@ function LAMCreateControl.checkbox(parent, checkboxData, controlName)
     control.checkedText = GetString(SI_CHECK_BUTTON_ON):upper()
     control.uncheckedText = GetString(SI_CHECK_BUTTON_OFF):upper()
 
-    if checkboxData.warning then
+    if checkboxData.warning ~= nil then
         control.warning = wm:CreateControlFromVirtual(nil, control, "ZO_Options_WarningIcon")
         control.warning:SetAnchor(RIGHT, checkbox, LEFT, -5, 0)
-        control.warning.data = {tooltipText = LAM.util.GetStringFromValue(checkboxData.warning)}
+        control.UpdateWarning = UpdateWarning
+        control:UpdateWarning()
     end
 
     control.data.tooltipText = LAM.util.GetStringFromValue(checkboxData.tooltip)

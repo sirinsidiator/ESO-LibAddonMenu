@@ -51,6 +51,16 @@ local function UpdateValue(control, forceDefault, valueR, valueG, valueB, valueA
     control.thumb:SetColor(valueR, valueG, valueB, valueA or 1)
 end
 
+local function UpdateWarning(control)
+    local warning = LAM.util.GetStringFromValue(control.data.warning)
+    if not warning then
+        control.warning:SetHidden(true)
+    else
+        control.warning.data = {tooltipText = warning}
+        control.warning:SetHidden(false)
+    end
+end
+
 function LAMCreateControl.colorpicker(parent, colorpickerData, controlName)
     local control = LAM.util.CreateLabelAndContainerControl(parent, colorpickerData, controlName)
 
@@ -82,10 +92,11 @@ function LAMCreateControl.colorpicker(parent, colorpickerData, controlName)
         end
     end)
 
-    if colorpickerData.warning then
+    if colorpickerData.warning ~= nil then
         control.warning = wm:CreateControlFromVirtual(nil, control, "ZO_Options_WarningIcon")
         control.warning:SetAnchor(RIGHT, control.color, LEFT, -5, 0)
-        control.warning.data = {tooltipText = LAM.util.GetStringFromValue(colorpickerData.warning)}
+        control.UpdateWarning = UpdateWarning
+        control:UpdateWarning()
     end
 
     control.data.tooltipText = LAM.util.GetStringFromValue(colorpickerData.tooltip)

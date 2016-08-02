@@ -54,6 +54,16 @@ local function UpdateValue(control, forceDefault, value)
     end
 end
 
+local function UpdateWarning(control)
+    local warning = LAM.util.GetStringFromValue(control.data.warning)
+    if not warning then
+        control.warning:SetHidden(true)
+    else
+        control.warning.data = {tooltipText = warning}
+        control.warning:SetHidden(false)
+    end
+end
+
 local MIN_HEIGHT = 24
 local HALF_WIDTH_LINE_SPACING = 2
 function LAMCreateControl.editbox(parent, editboxData, controlName)
@@ -130,14 +140,15 @@ function LAMCreateControl.editbox(parent, editboxData, controlName)
     editbox:SetAnchor(TOPLEFT, container, TOPLEFT, 2, 2)
     editbox:SetAnchor(BOTTOMRIGHT, container, BOTTOMRIGHT, -2, -2)
 
-    if editboxData.warning then
+    if editboxData.warning ~= nil then
         control.warning = wm:CreateControlFromVirtual(nil, control, "ZO_Options_WarningIcon")
         if editboxData.isExtraWide then
             control.warning:SetAnchor(BOTTOMRIGHT, control.bg, TOPRIGHT, 2, 0)
         else
             control.warning:SetAnchor(TOPRIGHT, control.bg, TOPLEFT, -5, 0)
         end
-        control.warning.data = {tooltipText = LAM.util.GetStringFromValue(editboxData.warning)}
+        control.UpdateWarning = UpdateWarning
+        control:UpdateWarning()
     end
 
     control.UpdateValue = UpdateValue
