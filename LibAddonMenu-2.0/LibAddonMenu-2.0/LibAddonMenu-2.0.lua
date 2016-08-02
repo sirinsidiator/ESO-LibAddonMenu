@@ -120,11 +120,19 @@ local function RequestRefreshIfNeeded(control)
     end
 end
 
+local function GetTopPanel(panel)
+    while panel.panel and panel.panel ~= panel do
+        panel = panel.panel
+    end
+    return panel
+end
+
 local function RegisterForRefreshIfNeeded(control)
     -- if our parent window wants to refresh controls, then add this to the list
-    local panelData = control.panel.data
+    local panel = GetTopPanel(control.panel)
+    local panelData = panel.data
     if panelData.registerForRefresh or panelData.registerForDefaults then
-        tinsert(control.panel.controlsToRefresh, control)
+        tinsert(panel.controlsToRefresh, control)
     end
 end
 
