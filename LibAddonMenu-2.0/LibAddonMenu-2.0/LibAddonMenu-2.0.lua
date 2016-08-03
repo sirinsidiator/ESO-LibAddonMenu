@@ -592,14 +592,13 @@ end
 --creates LAM's Addon Settings entry in ZO_GameMenu
 local function CreateAddonSettingsMenuEntry()
     --Russian for TERAB1T's RuESO addon, which creates an "ru" locale
-    --game font does not support Cyrillic, so they are using custom fonts + extended latin charset
     --Spanish provided by Luisen75 for their translation project
     --Japanese provided by k0ta0uchi
     local controlPanelNames = {
         en = "Addon Settings",
         fr = "Extensions",
         de = "Erweiterungen",
-        ru = "Îacòpoéêè äoïoìîeîèé",
+        ru = "Настройки дополнений",
         es = "Configura Addons",
         jp = "アドオン設定",
     }
