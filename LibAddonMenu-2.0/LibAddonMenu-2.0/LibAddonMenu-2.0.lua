@@ -175,6 +175,7 @@ util.CreateBaseControl = CreateBaseControl
 util.CreateLabelAndContainerControl = CreateLabelAndContainerControl
 util.RequestRefreshIfNeeded = RequestRefreshIfNeeded
 util.RegisterForRefreshIfNeeded = RegisterForRefreshIfNeeded
+util.GetTopPanel = GetTopPanel
 util.ShowConfirmationDialog = ShowConfirmationDialog
 
 local ADDON_DATA_TYPE = 1
