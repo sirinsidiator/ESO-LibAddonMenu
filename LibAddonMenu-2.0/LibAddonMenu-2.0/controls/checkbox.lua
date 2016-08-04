@@ -12,7 +12,7 @@
 } ]]
 
 
-local widgetVersion = 12
+local widgetVersion = 13
 local LAM = LibStub("LibAddonMenu-2.0")
 if not LAM:RegisterWidget("checkbox", widgetVersion) then return end
 
@@ -118,10 +118,11 @@ function LAMCreateControl.checkbox(parent, checkboxData, controlName)
     control.checkedText = GetString(SI_CHECK_BUTTON_ON):upper()
     control.uncheckedText = GetString(SI_CHECK_BUTTON_OFF):upper()
 
-    if checkboxData.warning then
+    if checkboxData.warning ~= nil then
         control.warning = wm:CreateControlFromVirtual(nil, control, "ZO_Options_WarningIcon")
         control.warning:SetAnchor(RIGHT, checkbox, LEFT, -5, 0)
-        control.warning.data = {tooltipText = LAM.util.GetStringFromValue(checkboxData.warning)}
+        control.UpdateWarning = LAM.util.UpdateWarning
+        control:UpdateWarning()
     end
 
     control.data.tooltipText = LAM.util.GetStringFromValue(checkboxData.tooltip)

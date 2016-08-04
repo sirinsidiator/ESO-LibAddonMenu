@@ -12,7 +12,7 @@
 } ]]
 
 
-local widgetVersion = 11
+local widgetVersion = 12
 local LAM = LibStub("LibAddonMenu-2.0")
 if not LAM:RegisterWidget("colorpicker", widgetVersion) then return end
 
@@ -82,10 +82,11 @@ function LAMCreateControl.colorpicker(parent, colorpickerData, controlName)
         end
     end)
 
-    if colorpickerData.warning then
+    if colorpickerData.warning ~= nil then
         control.warning = wm:CreateControlFromVirtual(nil, control, "ZO_Options_WarningIcon")
         control.warning:SetAnchor(RIGHT, control.color, LEFT, -5, 0)
-        control.warning.data = {tooltipText = LAM.util.GetStringFromValue(colorpickerData.warning)}
+        control.UpdateWarning = LAM.util.UpdateWarning
+        control:UpdateWarning()
     end
 
     control.data.tooltipText = LAM.util.GetStringFromValue(colorpickerData.tooltip)

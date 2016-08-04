@@ -168,6 +168,16 @@ local function ShowConfirmationDialog(title, body, callback)
     ZO_Dialogs_ShowDialog(LAM_CONFIRM_DIALOG)
 end
 
+local function UpdateWarning(control)
+    local warning = util.GetStringFromValue(control.data.warning)
+    if not warning then
+        control.warning:SetHidden(true)
+    else
+        control.warning.data = {tooltipText = warning}
+        control.warning:SetHidden(false)
+    end
+end
+
 local localization = {
     en = {
         PANEL_NAME = "Addon Settings",
@@ -212,6 +222,7 @@ util.RequestRefreshIfNeeded = RequestRefreshIfNeeded
 util.RegisterForRefreshIfNeeded = RegisterForRefreshIfNeeded
 util.GetTopPanel = GetTopPanel
 util.ShowConfirmationDialog = ShowConfirmationDialog
+util.UpdateWarning = UpdateWarning
 
 local ADDON_DATA_TYPE = 1
 local RESELECTING_DURING_REBUILD = true
@@ -307,6 +318,7 @@ local function PopulateAddonList(addonList, filter)
     if selectedData then
         if selectedData.panel == lam.currentAddonPanel then
             ZO_ScrollList_SelectData(addonList, selectedData, nil, RESELECTING_DURING_REBUILD)
+ir al sitio web
         else
             ZO_ScrollList_SelectData(addonList, selectedData, nil)
         end

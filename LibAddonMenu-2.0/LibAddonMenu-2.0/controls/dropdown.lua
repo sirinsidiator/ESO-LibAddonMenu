@@ -14,7 +14,7 @@
 } ]]
 
 
-local widgetVersion = 13
+local widgetVersion = 14
 local LAM = LibStub("LibAddonMenu-2.0")
 if not LAM:RegisterWidget("dropdown", widgetVersion) then return end
 
@@ -103,10 +103,11 @@ function LAMCreateControl.dropdown(parent, dropdownData, controlName)
         dropdown:SetSortOrder(sortOrder == "up" and ZO_SORT_ORDER_UP or ZO_SORT_ORDER_DOWN, sortType == "name" and ZO_SORT_BY_NAME or ZO_SORT_BY_NAME_NUMERIC)
     end
 
-    if dropdownData.warning then
+    if dropdownData.warning ~= nil then
         control.warning = wm:CreateControlFromVirtual(nil, control, "ZO_Options_WarningIcon")
         control.warning:SetAnchor(RIGHT, combobox, LEFT, -5, 0)
-        control.warning.data = {tooltipText = LAM.util.GetStringFromValue(dropdownData.warning)}
+        control.UpdateWarning = LAM.util.UpdateWarning
+        control:UpdateWarning()
     end
 
     control.UpdateChoices = UpdateChoices

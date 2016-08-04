@@ -188,10 +188,11 @@ function LAMCreateControl.slider(parent, sliderData, controlName)
         control:UpdateValue(false, new_value)
     end)
 
-    if sliderData.warning then
+    if sliderData.warning ~= nil then
         control.warning = wm:CreateControlFromVirtual(nil, control, "ZO_Options_WarningIcon")
         control.warning:SetAnchor(RIGHT, slider, LEFT, -5, 0)
-        control.warning.data = {tooltipText = LAM.util.GetStringFromValue(sliderData.warning)}
+        control.UpdateWarning = LAM.util.UpdateWarning
+        control:UpdateWarning()
     end
 
     control.UpdateValue = UpdateValue

@@ -14,7 +14,7 @@
 } ]]
 
 
-local widgetVersion = 12
+local widgetVersion = 13
 local LAM = LibStub("LibAddonMenu-2.0")
 if not LAM:RegisterWidget("editbox", widgetVersion) then return end
 
@@ -130,14 +130,15 @@ function LAMCreateControl.editbox(parent, editboxData, controlName)
     editbox:SetAnchor(TOPLEFT, container, TOPLEFT, 2, 2)
     editbox:SetAnchor(BOTTOMRIGHT, container, BOTTOMRIGHT, -2, -2)
 
-    if editboxData.warning then
+    if editboxData.warning ~= nil then
         control.warning = wm:CreateControlFromVirtual(nil, control, "ZO_Options_WarningIcon")
         if editboxData.isExtraWide then
             control.warning:SetAnchor(BOTTOMRIGHT, control.bg, TOPRIGHT, 2, 0)
         else
             control.warning:SetAnchor(TOPRIGHT, control.bg, TOPLEFT, -5, 0)
         end
-        control.warning.data = {tooltipText = LAM.util.GetStringFromValue(editboxData.warning)}
+        control.UpdateWarning = LAM.util.UpdateWarning
+        control:UpdateWarning()
     end
 
     control.UpdateValue = UpdateValue
