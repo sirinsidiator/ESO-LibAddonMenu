@@ -23,3 +23,4 @@ LibAddonMenu-2.0\controls\header.lua
 LibAddonMenu-2.0\controls\slider.lua
 LibAddonMenu-2.0\controls\texture.lua
 LibAddonMenu-2.0\controls\iconpicker.lua
+LibAddonMenu-2.0\controls\divider.lua
