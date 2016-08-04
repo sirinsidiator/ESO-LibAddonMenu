@@ -72,6 +72,9 @@ ESO_Dialogs["LAM_DEFAULTS"] = {
 
 local callbackRegistered = false
 LAMCreateControl.scrollCount = LAMCreateControl.scrollCount or 1
+local SEPARATOR = " - "
+local LINK_COLOR = ZO_ColorDef:New("5959D5")
+local LINK_MOUSE_OVER_COLOR = ZO_ColorDef:New("B8B8D3")
 
 function LAMCreateControl.panel(parent, panelData, controlName)
     local control = wm:CreateControl(controlName, parent, CT_CONTROL)
@@ -94,7 +97,27 @@ function LAMCreateControl.panel(parent, panelData, controlName)
         if panelData.version then
             output[#output + 1] = zo_strformat(LAM.util.L["VERSION"], LAM.util.GetStringFromValue(panelData.version))
         end
-        info:SetText(table.concat(output, " - "))
+        info:SetText(table.concat(output, SEPARATOR))
+    end
+
+    if panelData.website then
+        control.website = wm:CreateControl(nil, control, CT_BUTTON)
+        local website = control.website
+        website:SetClickSound("Click")
+        website:SetFont(LAM.util.L["PANEL_INFO_FONT"])
+        website:SetNormalFontColor(LINK_COLOR:UnpackRGBA())
+        website:SetMouseOverFontColor(LINK_MOUSE_OVER_COLOR:UnpackRGBA())
+        if(control.info) then
+            website:SetAnchor(TOPLEFT, control.info, TOPRIGHT, 0, 0)
+            website:SetText(string.format("|cffffff%s|r%s", SEPARATOR, LAM.util.L["WEBSITE"]))
+        else
+            website:SetAnchor(TOPLEFT, label, BOTTOMLEFT, 0, -2)
+            website:SetText(LAM.util.L["WEBSITE"])
+        end
+        website:SetDimensions(website:GetLabelControl():GetTextDimensions())
+        website:SetHandler("OnClicked", function()
+            RequestOpenUnsafeURL(panelData.website)
+        end)
     end
 
     control.container = wm:CreateControlFromVirtual("LAMAddonPanelContainer"..LAMCreateControl.scrollCount, control, "ZO_ScrollContainer")
