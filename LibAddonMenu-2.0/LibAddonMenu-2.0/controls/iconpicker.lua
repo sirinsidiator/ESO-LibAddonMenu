@@ -18,7 +18,7 @@
     reference = "MyAddonIconPicker" -- unique global reference to control (optional)
 } ]]
 
-local widgetVersion = 6
+local widgetVersion = 7
 local LAM = LibStub("LibAddonMenu-2.0")
 if not LAM:RegisterWidget("iconpicker", widgetVersion) then return end
 
@@ -304,7 +304,7 @@ local function UpdateDisabled(control)
         iconPicker:Clear()
     end
 
-    SetColor(control)
+    SetColor(control, control.icon.color)
     if disable then
         control.label:SetColor(ZO_DEFAULT_DISABLED_COLOR:UnpackRGBA())
     else
