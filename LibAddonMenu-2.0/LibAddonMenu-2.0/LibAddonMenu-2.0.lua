@@ -185,7 +185,7 @@ local localization = {
         WEBSITE = "Webseite besuchen",
     },
     ru = { -- provided by TERAB1T
-        PANEL_NAME = "дополнений",
+        PANEL_NAME = "Дополнения",
         VERSION = "Версия: <<X:1>>",
         WEBSITE = "Перейти на сайт",
         PANEL_INFO_FONT = "RuESO/fonts/Univers57.otf|14|soft-shadow-thin",
