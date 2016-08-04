@@ -168,6 +168,41 @@ local function ShowConfirmationDialog(title, body, callback)
     ZO_Dialogs_ShowDialog(LAM_CONFIRM_DIALOG)
 end
 
+local localization = {
+    en = {
+        PANEL_NAME = "Addon Settings",
+        AUTHOR = string.format("%s: <<X:1>>", GetString(SI_ADDON_MANAGER_AUTHOR)), -- "Author: <<X:1>>"
+        VERSION = "Version: <<X:1>>",
+        WEBSITE = "Visit Website",
+        PANEL_INFO_FONT = "$(CHAT_FONT)|14|soft-shadow-thin",
+    },
+    fr = { -- provided by ?
+        PANEL_NAME = "Extensions",
+        WEBSITE = "Visitez le site Web", -- TODO Google Translate placeholder
+    },
+    de = { -- provided by sirinsidiator
+        PANEL_NAME = "Erweiterungen",
+        WEBSITE = "Webseite besuchen",
+    },
+    ru = { -- provided by TERAB1T
+        PANEL_NAME = "дополнений",
+        VERSION = "Версия: <<X:1>>",
+        WEBSITE = "Перейти на сайт",
+        PANEL_INFO_FONT = "RuESO/fonts/Univers57.otf|14|soft-shadow-thin",
+    },
+    es = { -- provided by Luisen75
+        PANEL_NAME = "Configura Addons",
+        VERSION = "Versión: <<X:1>>", -- TODO Google Translate placeholder
+        WEBSITE = "Visita el sitio web", -- TODO Google Translate placeholder
+    },
+    jp = { -- provided by k0ta0uchi
+        PANEL_NAME = "アドオン設定",
+        VERSION = "版: <<X:1>>", -- TODO Google Translate placeholder
+        WEBSITE = "ウェブサイトにアクセス", -- TODO Google Translate placeholder
+    },
+}
+
+util.L = ZO_ShallowTableCopy(localization[GetCVar("Language.2")], localization["en"])
 util.GetTooltipText = GetStringFromValue -- deprecated, use util.GetStringFromValue instead
 util.GetStringFromValue = GetStringFromValue
 util.GetDefaultValue = GetDefaultValue
@@ -587,25 +622,12 @@ function lam:RegisterOptionControls(addonID, optionsTable) --optionsTable = {sli
     addonToOptionsMap[addonID] = optionsTable
 end
 
-
 --INTERNAL FUNCTION
 --creates LAM's Addon Settings entry in ZO_GameMenu
 local function CreateAddonSettingsMenuEntry()
-    --Russian for TERAB1T's RuESO addon, which creates an "ru" locale
-    --Spanish provided by Luisen75 for their translation project
-    --Japanese provided by k0ta0uchi
-    local controlPanelNames = {
-        en = "Addon Settings",
-        fr = "Extensions",
-        de = "Erweiterungen",
-        ru = "Настройки дополнений",
-        es = "Configura Addons",
-        jp = "アドオン設定",
-    }
-
     local panelData = {
         id = KEYBOARD_OPTIONS.currentPanelId,
-        name = controlPanelNames[GetCVar("Language.2")] or controlPanelNames["en"],
+        name = util.L["PANEL_NAME"],
     }
 
     KEYBOARD_OPTIONS.currentPanelId = panelData.id + 1
