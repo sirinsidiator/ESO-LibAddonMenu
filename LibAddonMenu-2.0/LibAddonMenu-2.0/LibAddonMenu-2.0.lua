@@ -120,11 +120,19 @@ local function RequestRefreshIfNeeded(control)
     end
 end
 
+local function GetTopPanel(panel)
+    while panel.panel and panel.panel ~= panel do
+        panel = panel.panel
+    end
+    return panel
+end
+
 local function RegisterForRefreshIfNeeded(control)
     -- if our parent window wants to refresh controls, then add this to the list
-    local panelData = control.panel.data
+    local panel = GetTopPanel(control.panel)
+    local panelData = panel.data
     if panelData.registerForRefresh or panelData.registerForDefaults then
-        tinsert(control.panel.controlsToRefresh, control)
+        tinsert(panel.controlsToRefresh, control)
     end
 end
 
@@ -170,6 +178,41 @@ local function UpdateWarning(control)
     end
 end
 
+local localization = {
+    en = {
+        PANEL_NAME = "Addon Settings",
+        AUTHOR = string.format("%s: <<X:1>>", GetString(SI_ADDON_MANAGER_AUTHOR)), -- "Author: <<X:1>>"
+        VERSION = "Version: <<X:1>>",
+        WEBSITE = "Visit Website",
+        PANEL_INFO_FONT = "$(CHAT_FONT)|14|soft-shadow-thin",
+    },
+    fr = { -- provided by ?
+        PANEL_NAME = "Extensions",
+        WEBSITE = "Visitez le site Web", -- TODO Google Translate placeholder
+    },
+    de = { -- provided by sirinsidiator
+        PANEL_NAME = "Erweiterungen",
+        WEBSITE = "Webseite besuchen",
+    },
+    ru = { -- provided by TERAB1T
+        PANEL_NAME = "Дополнения",
+        VERSION = "Версия: <<X:1>>",
+        WEBSITE = "Перейти на сайт",
+        PANEL_INFO_FONT = "RuESO/fonts/Univers57.otf|14|soft-shadow-thin",
+    },
+    es = { -- provided by Luisen75
+        PANEL_NAME = "Configura Addons",
+        VERSION = "Versión: <<X:1>>", -- TODO Google Translate placeholder
+        WEBSITE = "Visita el sitio web", -- TODO Google Translate placeholder
+    },
+    jp = { -- provided by k0ta0uchi
+        PANEL_NAME = "アドオン設定",
+        VERSION = "版: <<X:1>>", -- TODO Google Translate placeholder
+        WEBSITE = "ウェブサイトにアクセス", -- TODO Google Translate placeholder
+    },
+}
+
+util.L = ZO_ShallowTableCopy(localization[GetCVar("Language.2")], localization["en"])
 util.GetTooltipText = GetStringFromValue -- deprecated, use util.GetStringFromValue instead
 util.GetStringFromValue = GetStringFromValue
 util.GetDefaultValue = GetDefaultValue
@@ -177,6 +220,7 @@ util.CreateBaseControl = CreateBaseControl
 util.CreateLabelAndContainerControl = CreateLabelAndContainerControl
 util.RequestRefreshIfNeeded = RequestRefreshIfNeeded
 util.RegisterForRefreshIfNeeded = RegisterForRefreshIfNeeded
+util.GetTopPanel = GetTopPanel
 util.ShowConfirmationDialog = ShowConfirmationDialog
 util.UpdateWarning = UpdateWarning
 
@@ -274,6 +318,7 @@ local function PopulateAddonList(addonList, filter)
     if selectedData then
         if selectedData.panel == lam.currentAddonPanel then
             ZO_ScrollList_SelectData(addonList, selectedData, nil, RESELECTING_DURING_REBUILD)
+ir al sitio web
         else
             ZO_ScrollList_SelectData(addonList, selectedData, nil)
         end
@@ -589,26 +634,12 @@ function lam:RegisterOptionControls(addonID, optionsTable) --optionsTable = {sli
     addonToOptionsMap[addonID] = optionsTable
 end
 
-
 --INTERNAL FUNCTION
 --creates LAM's Addon Settings entry in ZO_GameMenu
 local function CreateAddonSettingsMenuEntry()
-    --Russian for TERAB1T's RuESO addon, which creates an "ru" locale
-    --game font does not support Cyrillic, so they are using custom fonts + extended latin charset
-    --Spanish provided by Luisen75 for their translation project
-    --Japanese provided by k0ta0uchi
-    local controlPanelNames = {
-        en = "Addon Settings",
-        fr = "Extensions",
-        de = "Erweiterungen",
-        ru = "Îacòpoéêè äoïoìîeîèé",
-        es = "Configura Addons",
-        jp = "アドオン設定",
-    }
-
     local panelData = {
         id = KEYBOARD_OPTIONS.currentPanelId,
-        name = controlPanelNames[GetCVar("Language.2")] or controlPanelNames["en"],
+        name = util.L["PANEL_NAME"],
     }
 
     KEYBOARD_OPTIONS.currentPanelId = panelData.id + 1

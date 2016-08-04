@@ -12,7 +12,7 @@
 } ]]
 
 
-local widgetVersion = 10
+local widgetVersion = 11
 local LAM = LibStub("LibAddonMenu-2.0")
 if not LAM:RegisterWidget("panel", widgetVersion) then return end
 
@@ -20,11 +20,11 @@ local wm = WINDOW_MANAGER
 local cm = CALLBACK_MANAGER
 
 local function RefreshPanel(control)
-    local panel = control.panel or control --callback can be fired by a single control or by the panel showing
+    local panel = LAM.util.GetTopPanel(control) --callback can be fired by a single control, by the panel showing or by a nested submenu
     local panelControls = panel.controlsToRefresh
 
     for i = 1, #panelControls do
-        local updateControl = panelControls[i] 
+        local updateControl = panelControls[i]
         if updateControl ~= control and updateControl.UpdateValue then
             updateControl:UpdateValue()
         end
@@ -75,6 +75,10 @@ ESO_Dialogs["LAM_DEFAULTS"] = {
 
 local callbackRegistered = false
 LAMCreateControl.scrollCount = LAMCreateControl.scrollCount or 1
+local SEPARATOR = " - "
+local LINK_COLOR = ZO_ColorDef:New("5959D5")
+local LINK_MOUSE_OVER_COLOR = ZO_ColorDef:New("B8B8D3")
+
 function LAMCreateControl.panel(parent, panelData, controlName)
     local control = wm:CreateControl(controlName, parent, CT_CONTROL)
 
@@ -86,15 +90,37 @@ function LAMCreateControl.panel(parent, panelData, controlName)
     if panelData.author or panelData.version then
         control.info = wm:CreateControl(nil, control, CT_LABEL)
         local info = control.info
-        info:SetFont("$(CHAT_FONT)|14|soft-shadow-thin")
+        info:SetFont(LAM.util.L["PANEL_INFO_FONT"])
         info:SetAnchor(TOPLEFT, label, BOTTOMLEFT, 0, -2)
-        if panelData.author and panelData.version then
-            info:SetText(string.format("Version: %s  -  %s: %s", LAM.util.GetStringFromValue(panelData.version), GetString(SI_ADDON_MANAGER_AUTHOR), LAM.util.GetStringFromValue(panelData.author)))
-        elseif panelData.author then
-            info:SetText(string.format("%s: %s", GetString(SI_ADDON_MANAGER_AUTHOR), LAM.util.GetStringFromValue(panelData.author)))
-        else
-            info:SetText("Version: " .. LAM.util.GetStringFromValue(panelData.version))
+
+        local output = {}
+        if panelData.author then
+            output[#output + 1] = zo_strformat(LAM.util.L["AUTHOR"], LAM.util.GetStringFromValue(panelData.author))
         end
+        if panelData.version then
+            output[#output + 1] = zo_strformat(LAM.util.L["VERSION"], LAM.util.GetStringFromValue(panelData.version))
+        end
+        info:SetText(table.concat(output, SEPARATOR))
+    end
+
+    if panelData.website then
+        control.website = wm:CreateControl(nil, control, CT_BUTTON)
+        local website = control.website
+        website:SetClickSound("Click")
+        website:SetFont(LAM.util.L["PANEL_INFO_FONT"])
+        website:SetNormalFontColor(LINK_COLOR:UnpackRGBA())
+        website:SetMouseOverFontColor(LINK_MOUSE_OVER_COLOR:UnpackRGBA())
+        if(control.info) then
+            website:SetAnchor(TOPLEFT, control.info, TOPRIGHT, 0, 0)
+            website:SetText(string.format("|cffffff%s|r%s", SEPARATOR, LAM.util.L["WEBSITE"]))
+        else
+            website:SetAnchor(TOPLEFT, label, BOTTOMLEFT, 0, -2)
+            website:SetText(LAM.util.L["WEBSITE"])
+        end
+        website:SetDimensions(website:GetLabelControl():GetTextDimensions())
+        website:SetHandler("OnClicked", function()
+            RequestOpenUnsafeURL(panelData.website)
+        end)
     end
 
     control.container = wm:CreateControlFromVirtual("LAMAddonPanelContainer"..LAMCreateControl.scrollCount, control, "ZO_ScrollContainer")
@@ -110,7 +136,6 @@ function LAMCreateControl.panel(parent, panelData, controlName)
         local defaultButton = control.defaultButton
         defaultButton:SetFont("ZoFontDialogKeybindDescription")
         defaultButton:SetHorizontalAlignment(TEXT_ALIGN_LEFT)
-        --defaultButton:SetText("Reset To Defaults")
         defaultButton:SetText(GetString(SI_OPTIONS_DEFAULTS))
         defaultButton:SetDimensions(200, 30)
         defaultButton:SetAnchor(TOPLEFT, control, BOTTOMLEFT, 0, 2)

@@ -304,7 +304,7 @@ local function UpdateDisabled(control)
         iconPicker:Clear()
     end
 
-    SetColor(control)
+    SetColor(control, control.icon.color)
     if disable then
         control.label:SetColor(ZO_DEFAULT_DISABLED_COLOR:UnpackRGBA())
     else
