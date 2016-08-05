@@ -43,7 +43,7 @@
         <copy todir="${addondir}">
             <fileset dir="${srcdir}" />
         </copy>
-        <replace file="${addondir}/${ant.project.name}.txt" token="VERSION_NUMBER" value="development" />
+        <replace file="${addondir}/${ant.project.name}.txt" token="VERSION_NUMBER" value="development" encoding="UTF-8" />
     </target>
 
     <target name="createArchive" depends="getIsCustomVersion,getCustomVersion,getVersion">
@@ -55,9 +55,9 @@
             </fileset>
         </copy>
 
-        <replace file="${tempdir}/${ant.project.name}/${ant.project.name}.txt" token="VERSION_NUMBER" value="${finalVersion}" />
-        <replace file="${tempdir}/${ant.project.name}/${ant.project.name}.txt" token="development.lua" value="" />
-        <replace file="${tempdir}/${ant.project.name}/${ant.project.name}/${ant.project.name}.lua" token="_LAM2_VERSION_NUMBER or -1" value="${finalVersion}" />
+        <replace file="${tempdir}/${ant.project.name}/${ant.project.name}.txt" token="VERSION_NUMBER" value="${finalVersion}" encoding="UTF-8" />
+        <replace file="${tempdir}/${ant.project.name}/${ant.project.name}.txt" token="development.lua" value="" encoding="UTF-8" />
+        <replace file="${tempdir}/${ant.project.name}/${ant.project.name}/${ant.project.name}.lua" token="_LAM2_VERSION_NUMBER or -1" value="${finalVersion}" encoding="UTF-8" />
 
         <zip destfile="${targetdir}/${ant.project.name}r${fileVersion}.zip">
             <fileset dir="${tempdir}" />
