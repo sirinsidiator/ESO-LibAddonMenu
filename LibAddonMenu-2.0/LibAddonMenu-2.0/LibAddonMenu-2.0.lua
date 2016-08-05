@@ -180,15 +180,15 @@ end
 
 local localization = {
     en = {
-        PANEL_NAME = "Addon Settings",
+        PANEL_NAME = "Addons",
         AUTHOR = string.format("%s: <<X:1>>", GetString(SI_ADDON_MANAGER_AUTHOR)), -- "Author: <<X:1>>"
         VERSION = "Version: <<X:1>>",
         WEBSITE = "Visit Website",
         PANEL_INFO_FONT = "$(CHAT_FONT)|14|soft-shadow-thin",
     },
-    fr = { -- provided by ?
+    fr = { -- provided by Ayantir
         PANEL_NAME = "Extensions",
-        WEBSITE = "Visitez le site Web", -- TODO Google Translate placeholder
+        WEBSITE = "Visiter le site Web",
     },
     de = { -- provided by sirinsidiator
         PANEL_NAME = "Erweiterungen",
@@ -200,15 +200,12 @@ local localization = {
         WEBSITE = "Перейти на сайт",
         PANEL_INFO_FONT = "RuESO/fonts/Univers57.otf|14|soft-shadow-thin",
     },
-    es = { -- provided by Luisen75
-        PANEL_NAME = "Configura Addons",
-        VERSION = "Versión: <<X:1>>", -- TODO Google Translate placeholder
-        WEBSITE = "Visita el sitio web", -- TODO Google Translate placeholder
+    es = { -- provided by silvereyes333
+        WEBSITE = "Vaya al sitio web",
     },
     jp = { -- provided by k0ta0uchi
         PANEL_NAME = "アドオン設定",
-        VERSION = "版: <<X:1>>", -- TODO Google Translate placeholder
-        WEBSITE = "ウェブサイトにアクセス", -- TODO Google Translate placeholder
+        WEBSITE = "ウェブサイトを見る",
     },
 }
 
@@ -318,7 +315,6 @@ local function PopulateAddonList(addonList, filter)
     if selectedData then
         if selectedData.panel == lam.currentAddonPanel then
             ZO_ScrollList_SelectData(addonList, selectedData, nil, RESELECTING_DURING_REBUILD)
-ir al sitio web
         else
             ZO_ScrollList_SelectData(addonList, selectedData, nil)
         end
