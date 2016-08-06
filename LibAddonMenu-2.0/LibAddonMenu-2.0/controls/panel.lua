@@ -4,6 +4,7 @@
     displayName = "My Longer Window Title",  -- or string id or function returning a string (optional) (can be useful for long addon names or if you want to colorize it)
     author = "Seerah",  -- or string id or function returning a string (optional)
     version = "2.0",  -- or string id or function returning a string (optional)
+    website = "http://www.esoui.com/downloads/info7-LibAddonMenu.html", -- URL of website where the addon can be updated (optional)
     keywords = "settings", -- additional keywords for search filter (it looks for matches in name..keywords..author) (optional)
     slashCommand = "/myaddon", -- will register a keybind to open to this panel (don't forget to include the slash!) (optional)
     registerForRefresh = true, --boolean (optional) (will refresh all options controls when a setting is changed and when the panel is shown)
