@@ -51,7 +51,8 @@ libs\LibAddonMenu-2.0\controls\editbox.lua
 libs\LibAddonMenu-2.0\controls\header.lua
 libs\LibAddonMenu-2.0\controls\slider.lua
 libs\LibAddonMenu-2.0\controls\texture.lua
-libs\LibAddonMenu-2.0\controls\iconpicker.lua[/CODE]
+libs\LibAddonMenu-2.0\controls\iconpicker.lua
+libs\LibAddonMenu-2.0\controls\divider.lua[/CODE]
 (Don't forget to also embed LibStub and have it listed to load prior to LibAddonMenu!)
 
 

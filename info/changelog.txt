@@ -1,3 +1,14 @@
+2.0 r22
+- fixed mouse exit events for sliders and textures ([url=https://github.com/sirinsidiator/ESO-LibAddonMenu/issues/52]#52[/url], thanks silvereyes333)
+- fixed decimal input on sliders ([url=https://github.com/sirinsidiator/ESO-LibAddonMenu/issues/54]#54[/url])
+- fixed icon picker not retaining color when disabled is toggled ([url=https://github.com/sirinsidiator/ESO-LibAddonMenu/issues/58]#58[/url])
+- fixed slider accepting mouse wheel input while being disabled ([url=https://github.com/sirinsidiator/ESO-LibAddonMenu/issues/60]#60[/url])
+- added support for nested submenus ([url=https://github.com/sirinsidiator/ESO-LibAddonMenu/issues/53]#53[/url])
+- added new divider widget ([url=https://github.com/sirinsidiator/ESO-LibAddonMenu/issues/56]#56[/url], thanks silvereyes333)
+- added new function "UpdateWarning" to controls which allows to refresh the warning text ([url=https://github.com/sirinsidiator/ESO-LibAddonMenu/issues/55]#55[/url], thanks silvereyes333)
+- added new property "website" to panels which will render a button in the panel to open the specified addon URL ([url=https://github.com/sirinsidiator/ESO-LibAddonMenu/issues/57]#57[/url])
+- updated localization ([url=https://github.com/sirinsidiator/ESO-LibAddonMenu/issues/59]#59[/url], thanks everyone who helped with it)
+
 2.0 r21
 - fixed panel creation starting more than once when switching between different addon panels quickly ([url=https://github.com/sirinsidiator/ESO-LibAddonMenu/issues/40]#40[/url])
 - fixed LAM.util getting wiped with each version load causing errors for many players ([url=https://github.com/sirinsidiator/ESO-LibAddonMenu/issues/44]#44[/url])
