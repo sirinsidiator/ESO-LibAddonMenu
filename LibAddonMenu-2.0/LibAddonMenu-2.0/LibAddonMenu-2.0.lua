@@ -207,6 +207,12 @@ local localization = {
         PANEL_NAME = "アドオン設定",
         WEBSITE = "ウェブサイトを見る",
     },
+    zh = { -- provided by bssthu
+        PANEL_NAME = "插件",
+        VERSION = "版本: <<X:1>>",
+        WEBSITE = "访问网站",
+        PANEL_INFO_FONT = "EsoZh/fonts/univers57.otf|14|soft-shadow-thin",
+    },
 }
 
 util.L = ZO_ShallowTableCopy(localization[GetCVar("Language.2")], localization["en"])
