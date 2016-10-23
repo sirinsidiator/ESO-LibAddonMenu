@@ -354,6 +354,7 @@ end
 local function OpenCurrentPanel()
     if(lam.currentAddonPanel and not lam.currentPanelOpened) then
         lam.currentPanelOpened = true
+        PushActionLayerByName("OptionsWindow")
         cm:FireCallbacks("LAM-PanelOpened", lam.currentAddonPanel)
     end
 end
@@ -361,6 +362,7 @@ end
 -- INTERNAL METHOD: fires the LAM-PanelClosed callback if not already done
 local function CloseCurrentPanel()
     if(lam.currentAddonPanel and lam.currentPanelOpened) then
+        RemoveActionLayerByName("OptionsWindow")
         lam.currentPanelOpened = false
         cm:FireCallbacks("LAM-PanelClosed", lam.currentAddonPanel)
     end

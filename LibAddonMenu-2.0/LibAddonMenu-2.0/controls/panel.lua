@@ -13,7 +13,7 @@
 } ]]
 
 
-local widgetVersion = 11
+local widgetVersion = 12
 local LAM = LibStub("LibAddonMenu-2.0")
 if not LAM:RegisterWidget("panel", widgetVersion) then return end
 
@@ -133,16 +133,13 @@ function LAMCreateControl.panel(parent, panelData, controlName)
     control.scroll:SetResizeToFitPadding(0, 20)
 
     if panelData.registerForDefaults then
-        control.defaultButton = wm:CreateControlFromVirtual(nil, control, "ZO_DefaultTextButton")
+        control.defaultButton = wm:CreateControlFromVirtual("$(parent)ResetToDefaultButton", control, "ZO_DialogButton")
         local defaultButton = control.defaultButton
-        defaultButton:SetFont("ZoFontDialogKeybindDescription")
-        defaultButton:SetHorizontalAlignment(TEXT_ALIGN_LEFT)
-        defaultButton:SetText(GetString(SI_OPTIONS_DEFAULTS))
-        defaultButton:SetDimensions(200, 30)
-        defaultButton:SetAnchor(TOPLEFT, control, BOTTOMLEFT, 0, 2)
-        defaultButton:SetHandler("OnClicked", function()
+
+        ZO_KeybindButtonTemplate_Setup(defaultButton, "OPTIONS_LOAD_DEFAULTS", function()
             ZO_Dialogs_ShowDialog("LAM_DEFAULTS", {control})
-        end)
+        end, GetString(SI_OPTIONS_DEFAULTS))
+        defaultButton:SetAnchor(TOPLEFT, control, BOTTOMLEFT, 0, 2)
     end
 
     if panelData.registerForRefresh and not callbackRegistered then --don't want to register our callback more than once
