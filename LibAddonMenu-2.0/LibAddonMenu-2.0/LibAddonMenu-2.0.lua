@@ -114,17 +114,20 @@ local function CreateLabelAndContainerControl(parent, controlData, controlName)
     return control
 end
 
-local function RequestRefreshIfNeeded(control)
-    if control.panel.data.registerForRefresh then
-        cm:FireCallbacks("LAM-RefreshPanel", control)
-    end
-end
-
 local function GetTopPanel(panel)
     while panel.panel and panel.panel ~= panel do
         panel = panel.panel
     end
     return panel
+end
+
+local function RequestRefreshIfNeeded(control)
+    -- if our parent window wants to refresh controls, then add this to the list
+    local panel = GetTopPanel(control.panel)
+    local panelData = panel.data
+    if panelData.registerForRefresh then
+        cm:FireCallbacks("LAM-RefreshPanel", control)
+    end
 end
 
 local function RegisterForRefreshIfNeeded(control)
