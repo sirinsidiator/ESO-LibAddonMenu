@@ -2,10 +2,11 @@
     type = "dropdown",
     name = "My Dropdown", -- or string id or function returning a string
     choices = {"table", "of", "choices"},
-    choiceValues = {"foo", 2, "three"}, -- if specified, these values will get passed to setFunc instead (optional)
+    choicesValues = {"foo", 2, "three"}, -- if specified, these values will get passed to setFunc instead (optional)
     getFunc = function() return db.var end,
     setFunc = function(var) db.var = var doStuff() end,
     tooltip = "Dropdown's tooltip text.", -- or string id or function returning a string (optional)
+    choicesTooltips = {"tooltip 1", "tooltip 2", "tooltip 3"}, -- or array of string ids or array of functions returning a string (optional)
     sort = "name-up", --or "name-down", "numeric-up", "numeric-down", "value-up", "value-down", "numericvalue-up", "numericvalue-down" (optional) - if not provided, list will not be sorted
     width = "full", --or "half" (optional)
     disabled = function() return db.someBooleanSetting end, --or boolean (optional)
@@ -68,23 +69,69 @@ local function DropdownCallback(control, choiceText, choice)
     choice.control:UpdateValue(false, choice.value or choiceText)
 end
 
-local function UpdateChoices(control, choices, choiceValues)
+local function SetupTooltips(comboBox, choicesTooltips)
+    local function ShowTooltip(control)
+        InitializeTooltip(InformationTooltip, control, TOPLEFT, 0, 0, BOTTOMRIGHT)
+        SetTooltipText(InformationTooltip, LAM.util.GetStringFromValue(control.tooltip))
+        InformationTooltipTopLevel:BringWindowToTop()
+    end
+    local function HideTooltip(control)
+        ClearTooltip(InformationTooltip)
+    end
+
+    -- allow for tooltips on the drop down entries
+    local originalShow = comboBox.ShowDropdownInternal
+    comboBox.ShowDropdownInternal = function(comboBox)
+        originalShow(comboBox)
+        local entries = ZO_Menu.items
+        for i = 1, #entries do
+            local entry = entries[i]
+            local control = entries[i].item
+            control.tooltip = choicesTooltips[i]
+            entry.onMouseEnter = control:GetHandler("OnMouseEnter")
+            entry.onMouseExit = control:GetHandler("OnMouseExit")
+            ZO_PreHookHandler(control, "OnMouseEnter", ShowTooltip)
+            ZO_PreHookHandler(control, "OnMouseExit", HideTooltip)
+        end
+    end
+
+    local originalHide = comboBox.HideDropdownInternal
+    comboBox.HideDropdownInternal = function(self)
+        local entries = ZO_Menu.items
+        for i = 1, #entries do
+            local entry = entries[i]
+            local control = entries[i].item
+            control:SetHandler("OnMouseEnter", entry.onMouseEnter)
+            control:SetHandler("OnMouseExit", entry.onMouseExit)
+            control.tooltip = nil
+        end
+        originalHide(self)
+    end
+end
+
+local function UpdateChoices(control, choices, choicesValues, choicesTooltips)
     control.dropdown:ClearItems() --remove previous choices --(need to call :SetSelectedItem()?)
     ZO_ClearTable(control.choices)
 
     --build new list of choices
     local choices = choices or control.data.choices
-    local choiceValues = choiceValues or control.data.choiceValues
+    local choicesValues = choicesValues or control.data.choicesValues
+    local choicesTooltips = choicesTooltips or control.data.choicesTooltips
 
-    if choiceValues then
-        assert(#choices == #choiceValues, "choices and choiceValues need to have the same size")
+    if choicesValues then
+        assert(#choices == #choicesValues, "choices and choicesValues need to have the same size")
+    end
+
+    if choicesTooltips then
+        assert(#choices == #choicesTooltips, "choices and choicesTooltips need to have the same size")
+        SetupTooltips(control.dropdown, choicesTooltips)
     end
 
     for i = 1, #choices do
         local entry = control.dropdown:CreateItemEntry(choices[i], DropdownCallback)
         entry.control = control
-        if choiceValues then
-            entry.value = choiceValues[i]
+        if choicesValues then
+            entry.value = choicesValues[i]
         end
         control.choices[entry.value or entry.name] = entry.name
         control.dropdown:AddItem(entry, not control.data.sort and ZO_COMBOBOX_SUPRESS_UPDATE) --if sort type/order isn't specified, then don't sort
@@ -136,7 +183,7 @@ function LAMCreateControl.dropdown(parent, dropdownData, controlName)
     if dropdownData.sort then
         local sortInfo = GrabSortingInfo(dropdownData.sort)
         control.m_sortType, control.m_sortOrder = SORT_TYPES[sortInfo[1]], SORT_ORDERS[sortInfo[2]]
-    elseif dropdownData.choiceValues then
+    elseif dropdownData.choicesValues then
         control.m_sortType, control.m_sortOrder = ZO_SORT_ORDER_UP, SORT_BY_VALUE
     end
 
@@ -148,7 +195,7 @@ function LAMCreateControl.dropdown(parent, dropdownData, controlName)
     end
 
     control.UpdateChoices = UpdateChoices
-    control:UpdateChoices(dropdownData.choices, dropdownData.choiceValues)
+    control:UpdateChoices(dropdownData.choices, dropdownData.choicesValues)
     control.UpdateValue = UpdateValue
     control:UpdateValue()
     if dropdownData.disabled ~= nil then
