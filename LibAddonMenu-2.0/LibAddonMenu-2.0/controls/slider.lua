@@ -13,12 +13,13 @@
     tooltip = "Slider's tooltip text.", -- or string id or function returning a string (optional)
     width = "full", --or "half" (optional)
     disabled = function() return db.someBooleanSetting end, --or boolean (optional)
-    warning = "Will need to reload the UI.", -- or string id or function returning a string (optional)
+    warning = "May cause permanent awesomeness.", -- or string id or function returning a string (optional)
+    requiresReload = false, -- boolean, if set to true, the warning text will contain a notice that changes are only applied after an UI reload and any change to the value will make the "Apply Settings" button appear on the panel which will reload the UI when pressed (optional)
     default = defaults.var, -- default value or function that returns the default value (optional)
     reference = "MyAddonSlider" -- unique global reference to control (optional)
 } ]]
 
-local widgetVersion = 11
+local widgetVersion = 12
 local LAM = LibStub("LibAddonMenu-2.0")
 if not LAM:RegisterWidget("slider", widgetVersion) then return end
 
@@ -189,7 +190,7 @@ function LAMCreateControl.slider(parent, sliderData, controlName)
         control:UpdateValue(false, new_value)
     end)
 
-    if sliderData.warning ~= nil then
+    if sliderData.warning ~= nil or sliderData.requiresReload then
         control.warning = wm:CreateControlFromVirtual(nil, control, "ZO_Options_WarningIcon")
         control.warning:SetAnchor(RIGHT, slider, LEFT, -5, 0)
         control.UpdateWarning = LAM.util.UpdateWarning
@@ -205,6 +206,7 @@ function LAMCreateControl.slider(parent, sliderData, controlName)
     end
 
     LAM.util.RegisterForRefreshIfNeeded(control)
+    LAM.util.RegisterForReloadIfNeeded(control)
 
     return control
 end

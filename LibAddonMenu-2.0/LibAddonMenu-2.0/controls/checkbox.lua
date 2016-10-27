@@ -6,13 +6,14 @@
     tooltip = "Checkbox's tooltip text.", -- or string id or function returning a string (optional)
     width = "full", -- or "half" (optional)
     disabled = function() return db.someBooleanSetting end, --or boolean (optional)
-    warning = "Will need to reload the UI.", -- or string id or function returning a string (optional)
+    warning = "May cause permanent awesomeness.", -- or string id or function returning a string (optional)
+    requiresReload = false, -- boolean, if set to true, the warning text will contain a notice that changes are only applied after an UI reload and any change to the value will make the "Apply Settings" button appear on the panel which will reload the UI when pressed (optional)
     default = defaults.var, -- a boolean or function that returns a boolean (optional)
     reference = "MyAddonCheckbox", -- unique global reference to control (optional)
 } ]]
 
 
-local widgetVersion = 13
+local widgetVersion = 14
 local LAM = LibStub("LibAddonMenu-2.0")
 if not LAM:RegisterWidget("checkbox", widgetVersion) then return end
 
@@ -118,7 +119,7 @@ function LAMCreateControl.checkbox(parent, checkboxData, controlName)
     control.checkedText = GetString(SI_CHECK_BUTTON_ON):upper()
     control.uncheckedText = GetString(SI_CHECK_BUTTON_OFF):upper()
 
-    if checkboxData.warning ~= nil then
+    if checkboxData.warning ~= nil or checkboxData.requiresReload then
         control.warning = wm:CreateControlFromVirtual(nil, control, "ZO_Options_WarningIcon")
         control.warning:SetAnchor(RIGHT, checkbox, LEFT, -5, 0)
         control.UpdateWarning = LAM.util.UpdateWarning
@@ -135,6 +136,7 @@ function LAMCreateControl.checkbox(parent, checkboxData, controlName)
     end
 
     LAM.util.RegisterForRefreshIfNeeded(control)
+    LAM.util.RegisterForReloadIfNeeded(control)
 
     return control
 end

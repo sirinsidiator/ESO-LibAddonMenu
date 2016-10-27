@@ -10,13 +10,14 @@
     sort = "name-up", --or "name-down", "numeric-up", "numeric-down", "value-up", "value-down", "numericvalue-up", "numericvalue-down" (optional) - if not provided, list will not be sorted
     width = "full", --or "half" (optional)
     disabled = function() return db.someBooleanSetting end, --or boolean (optional)
-    warning = "Will need to reload the UI.",  -- or string id or function returning a string (optional)
+    warning = "May cause permanent awesomeness.", -- or string id or function returning a string (optional)
+    requiresReload = false, -- boolean, if set to true, the warning text will contain a notice that changes are only applied after an UI reload and any change to the value will make the "Apply Settings" button appear on the panel which will reload the UI when pressed (optional)
     default = defaults.var, -- default value or function that returns the default value (optional)
     reference = "MyAddonDropdown" -- unique global reference to control (optional)
 } ]]
 
 
-local widgetVersion = 15
+local widgetVersion = 16
 local LAM = LibStub("LibAddonMenu-2.0")
 if not LAM:RegisterWidget("dropdown", widgetVersion) then return end
 
@@ -187,7 +188,7 @@ function LAMCreateControl.dropdown(parent, dropdownData, controlName)
         control.m_sortType, control.m_sortOrder = ZO_SORT_ORDER_UP, SORT_BY_VALUE
     end
 
-    if dropdownData.warning ~= nil then
+    if dropdownData.warning ~= nil or dropdownData.requiresReload then
         control.warning = wm:CreateControlFromVirtual(nil, control, "ZO_Options_WarningIcon")
         control.warning:SetAnchor(RIGHT, combobox, LEFT, -5, 0)
         control.UpdateWarning = LAM.util.UpdateWarning
@@ -204,6 +205,7 @@ function LAMCreateControl.dropdown(parent, dropdownData, controlName)
     end
 
     LAM.util.RegisterForRefreshIfNeeded(control)
+    LAM.util.RegisterForReloadIfNeeded(control)
 
     return control
 end

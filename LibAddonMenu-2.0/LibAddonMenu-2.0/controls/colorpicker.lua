@@ -6,13 +6,14 @@
     tooltip = "Color Picker's tooltip text.", -- or string id or function returning a string (optional)
     width = "full", --or "half" (optional)
     disabled = function() return db.someBooleanSetting end, --or boolean (optional)
-    warning = "Will need to reload the UI.", -- or string id or function returning a string (optional)
+    warning = "May cause permanent awesomeness.", -- or string id or function returning a string (optional)
+    requiresReload = false, -- boolean, if set to true, the warning text will contain a notice that changes are only applied after an UI reload and any change to the value will make the "Apply Settings" button appear on the panel which will reload the UI when pressed (optional)
     default = {r = defaults.r, g = defaults.g, b = defaults.b, a = defaults.a}, --(optional) table of default color values (or default = defaultColor, where defaultColor is a table with keys of r, g, b[, a]) or a function that returns the color
     reference = "MyAddonColorpicker" -- unique global reference to control (optional)
 } ]]
 
 
-local widgetVersion = 12
+local widgetVersion = 13
 local LAM = LibStub("LibAddonMenu-2.0")
 if not LAM:RegisterWidget("colorpicker", widgetVersion) then return end
 
@@ -82,7 +83,7 @@ function LAMCreateControl.colorpicker(parent, colorpickerData, controlName)
         end
     end)
 
-    if colorpickerData.warning ~= nil then
+    if colorpickerData.warning ~= nil or colorpickerData.requiresReload then
         control.warning = wm:CreateControlFromVirtual(nil, control, "ZO_Options_WarningIcon")
         control.warning:SetAnchor(RIGHT, control.color, LEFT, -5, 0)
         control.UpdateWarning = LAM.util.UpdateWarning
@@ -99,6 +100,7 @@ function LAMCreateControl.colorpicker(parent, colorpickerData, controlName)
     end
 
     LAM.util.RegisterForRefreshIfNeeded(control)
+    LAM.util.RegisterForReloadIfNeeded(control)
 
     return control
 end

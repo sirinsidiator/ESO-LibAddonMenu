@@ -43,6 +43,8 @@ local HALF_WIDTH_LINE_SPACING = 2
 local OPTIONS_CREATION_RUNNING = 1
 local OPTIONS_CREATED = 2
 local LAM_CONFIRM_DIALOG = "LAM_CONFIRM_DIALOG"
+local LAM_DEFAULTS_DIALOG = "LAM_DEFAULTS"
+local LAM_RELOAD_DIALOG = "LAM_RELOAD_DIALOG"
 
 local addonsForList = {}
 local addonToOptionsMap = {}
@@ -51,6 +53,8 @@ lam.widgets = lam.widgets or {}
 local widgets = lam.widgets
 lam.util = lam.util or {}
 local util = lam.util
+lam.controlsForReload = lam.controlsForReload or {}
+local controlsForReload = lam.controlsForReload
 
 local function GetDefaultValue(default)
     if type(default) == "function" then
@@ -121,13 +125,36 @@ local function GetTopPanel(panel)
     return panel
 end
 
+local function IsSame(objA, objB)
+    if #objA ~= #objB then return false end
+    for i = 1, #objA do
+        if objA[i] ~= objB[i] then return false end
+    end
+    return true
+end
+
+local function RefreshReloadUIButton()
+    lam.requiresReload = false
+
+    for i = 1, #controlsForReload do
+        local reloadControl = controlsForReload[i]
+        if not IsSame(reloadControl.startValue, {reloadControl.data.getFunc()}) then
+            lam.requiresReload = true
+            break
+        end
+    end
+
+    lam.applyButton:SetHidden(not lam.requiresReload)
+end
+
 local function RequestRefreshIfNeeded(control)
-    -- if our parent window wants to refresh controls, then add this to the list
+    -- if our parent window wants to refresh controls, then fire the callback
     local panel = GetTopPanel(control.panel)
     local panelData = panel.data
     if panelData.registerForRefresh then
         cm:FireCallbacks("LAM-RefreshPanel", control)
     end
+    RefreshReloadUIButton()
 end
 
 local function RegisterForRefreshIfNeeded(control)
@@ -135,7 +162,14 @@ local function RegisterForRefreshIfNeeded(control)
     local panel = GetTopPanel(control.panel)
     local panelData = panel.data
     if panelData.registerForRefresh or panelData.registerForDefaults then
-        tinsert(panel.controlsToRefresh, control)
+        tinsert(panel.controlsToRefresh or {}, control) -- prevent errors on custom panels
+    end
+end
+
+local function RegisterForReloadIfNeeded(control)
+    if control.data.requiresReload then
+        tinsert(controlsForReload, control)
+        control.startValue = {control.data.getFunc()}
     end
 end
 
@@ -171,8 +205,120 @@ local function ShowConfirmationDialog(title, body, callback)
     ZO_Dialogs_ShowDialog(LAM_CONFIRM_DIALOG)
 end
 
+local function GetDefaultsDialog()
+    if(not ESO_Dialogs[LAM_DEFAULTS_DIALOG]) then
+        ESO_Dialogs[LAM_DEFAULTS_DIALOG] = {
+            canQueue = true,
+            title = {
+                text = SI_INTERFACE_OPTIONS_RESET_TO_DEFAULT_TOOLTIP,
+            },
+            mainText = {
+                text = SI_OPTIONS_RESET_PROMPT,
+            },
+            buttons = {
+                [1] = {
+                    text = SI_OPTIONS_RESET,
+                    callback = function(dialog) end,
+                },
+                [2] = {
+                    text = SI_DIALOG_CANCEL,
+                }
+            }
+        }
+    end
+    return ESO_Dialogs[LAM_DEFAULTS_DIALOG]
+end
+
+local function ShowDefaultsDialog(panel)
+    local dialog = GetDefaultsDialog()
+    dialog.buttons[1].callback = function()
+        panel:ForceDefaults()
+        RefreshReloadUIButton()
+    end
+    ZO_Dialogs_ShowDialog(LAM_DEFAULTS_DIALOG)
+end
+
+local function DiscardChangesOnReloadControls()
+    for i = 1, #controlsForReload do
+        local reloadControl = controlsForReload[i]
+        if not IsSame(reloadControl.startValue, {reloadControl.data.getFunc()}) then
+            reloadControl:UpdateValue(false, unpack(reloadControl.startValue))
+        end
+    end
+    lam.requiresReload = false
+    lam.applyButton:SetHidden(true)
+end
+
+local function StorePanelForReopening()
+    local saveData = ZO_Ingame_SavedVariables["LAM"] or {}
+    saveData.reopenPanel = lam.currentAddonPanel:GetName()
+    ZO_Ingame_SavedVariables["LAM"] = saveData
+end
+
+local function RetrievePanelForReopening()
+    local saveData = ZO_Ingame_SavedVariables["LAM"]
+    if(saveData) then
+        ZO_Ingame_SavedVariables["LAM"] = nil
+        return _G[saveData.reopenPanel]
+    end
+end
+
+local function HandleReloadUIPressed()
+    StorePanelForReopening()
+    ReloadUI()
+end
+
+local function HandleLoadDefaultsPressed()
+    ShowDefaultsDialog(lam.currentAddonPanel)
+end
+
+local function GetReloadDialog()
+    if(not ESO_Dialogs[LAM_RELOAD_DIALOG]) then
+        ESO_Dialogs[LAM_RELOAD_DIALOG] = {
+            canQueue = true,
+            title = {
+                text = util.L["RELOAD_DIALOG_TITLE"],
+            },
+            mainText = {
+                text = util.L["RELOAD_DIALOG_TEXT"],
+            },
+            buttons = {
+                [1] = {
+                    text = util.L["RELOAD_DIALOG_RELOAD_BUTTON"],
+                    callback = function() ReloadUI() end,
+                },
+                [2] = {
+                    text = util.L["RELOAD_DIALOG_DISCARD_BUTTON"],
+                    callback = DiscardChangesOnReloadControls,
+                }
+            },
+            noChoiceCallback = DiscardChangesOnReloadControls,
+        }
+    end
+    return ESO_Dialogs[LAM_CONFIRM_DIALOG]
+end
+
+local function ShowReloadDialogIfNeeded()
+    if lam.requiresReload then
+        local dialog = GetReloadDialog()
+        ZO_Dialogs_ShowDialog(LAM_RELOAD_DIALOG)
+    end
+end
+
 local function UpdateWarning(control)
-    local warning = util.GetStringFromValue(control.data.warning)
+    local warning
+    if control.data.warning ~= nil then
+        warning = util.GetStringFromValue(control.data.warning)
+    end
+
+    if control.data.requiresReload then
+        if not warning then
+            warning = string.format("|cff0000%s", util.L["RELOAD_UI_WARNING"])
+        else
+            warning = string.format("%s\n\n|cff0000%s", warning, util.L["RELOAD_UI_WARNING"])
+        end
+    end
+
     if not warning then
         control.warning:SetHidden(true)
     else
@@ -188,14 +334,29 @@ local localization = {
         VERSION = "Version: <<X:1>>",
         WEBSITE = "Visit Website",
         PANEL_INFO_FONT = "$(CHAT_FONT)|14|soft-shadow-thin",
+        RELOAD_UI_WARNING = "Changes to this setting require an UI reload in order to take effect.",
+        RELOAD_DIALOG_TITLE = "UI Reload required",
+        RELOAD_DIALOG_TEXT = "Some changes require an UI reload in order to take effect. Do you want to reload now or discard the changes?",
+        RELOAD_DIALOG_RELOAD_BUTTON = "Reload",
+        RELOAD_DIALOG_DISCARD_BUTTON = "Discard",
     },
     fr = { -- provided by Ayantir
         PANEL_NAME = "Extensions",
         WEBSITE = "Visiter le site Web",
+        RELOAD_UI_WARNING = "La modification de ce paramètre requiert un rechargement de l'UI pour qu'il soit pris en compte.",
+        RELOAD_DIALOG_TITLE = "Reload UI requis",
+        RELOAD_DIALOG_TEXT = "Certaines modifications requièrent un rechargement de l'UI pour qu'ils soient pris en compte. Souhaitez-vous recharger l'interface maintenant ou annuler les modifications ?",
+        RELOAD_DIALOG_RELOAD_BUTTON = "Recharger",
+        RELOAD_DIALOG_DISCARD_BUTTON = "Annuler",
     },
     de = { -- provided by sirinsidiator
         PANEL_NAME = "Erweiterungen",
         WEBSITE = "Webseite besuchen",
+        RELOAD_UI_WARNING = "Änderungen an dieser Option werden erst übernommen nachdem die Benutzeroberfläche neu geladen wird.",
+        RELOAD_DIALOG_TITLE = "Neuladen benötigt",
+        RELOAD_DIALOG_TEXT = "Einige Änderungen werden erst übernommen nachdem die Benutzeroberfläche neu geladen wird. Wollt Ihr sie jetzt neu laden oder die Änderungen verwerfen?",
+        RELOAD_DIALOG_RELOAD_BUTTON = "Neu laden",
+        RELOAD_DIALOG_DISCARD_BUTTON = "Verwerfen",
     },
     ru = { -- provided by TERAB1T
         PANEL_NAME = "Дополнения",
@@ -226,6 +387,7 @@ util.CreateBaseControl = CreateBaseControl
 util.CreateLabelAndContainerControl = CreateLabelAndContainerControl
 util.RequestRefreshIfNeeded = RequestRefreshIfNeeded
 util.RegisterForRefreshIfNeeded = RegisterForRefreshIfNeeded
+util.RegisterForReloadIfNeeded = RegisterForReloadIfNeeded
 util.GetTopPanel = GetTopPanel
 util.ShowConfirmationDialog = ShowConfirmationDialog
 util.UpdateWarning = UpdateWarning
@@ -350,19 +512,41 @@ function lam:RegisterWidget(widgetType, widgetVersion)
     end
 end
 
+-- INTERNAL METHOD: hijacks the handlers for the actions in the OptionsWindow layer if not already done
+local function InitKeybindActions()
+    if not lam.keybindsInitialized then
+        lam.keybindsInitialized = true
+        ZO_PreHook(KEYBOARD_OPTIONS, "ApplySettings", function()
+            if lam.currentPanelOpened then
+                if not lam.applyButton:IsHidden() then
+                    HandleReloadUIPressed()
+                end
+                return true
+            end
+        end)
+        ZO_PreHook("ZO_Dialogs_ShowDialog", function(dialogName)
+            if lam.currentPanelOpened and dialogName == "OPTIONS_RESET_TO_DEFAULTS" then
+                if not lam.defaultButton:IsHidden() then
+                    HandleLoadDefaultsPressed()
+                end
+                return true
+            end
+        end)
+    end
+end
+
 -- INTERNAL METHOD: fires the LAM-PanelOpened callback if not already done
 local function OpenCurrentPanel()
-    if(lam.currentAddonPanel and not lam.currentPanelOpened) then
+    if lam.currentAddonPanel and not lam.currentPanelOpened then
         lam.currentPanelOpened = true
-        PushActionLayerByName("OptionsWindow")
+        lam.defaultButton:SetHidden(not lam.currentAddonPanel.data.registerForDefaults)
         cm:FireCallbacks("LAM-PanelOpened", lam.currentAddonPanel)
     end
 end
 
 -- INTERNAL METHOD: fires the LAM-PanelClosed callback if not already done
 local function CloseCurrentPanel()
-    if(lam.currentAddonPanel and lam.currentPanelOpened) then
-        RemoveActionLayerByName("OptionsWindow")
+    if lam.currentAddonPanel and lam.currentPanelOpened then
         lam.currentPanelOpened = false
         cm:FireCallbacks("LAM-PanelClosed", lam.currentAddonPanel)
     end
@@ -922,6 +1106,17 @@ local function CreateAddonSettingsWindow()
     panelContainer:SetAnchor(TOPLEFT, nil, TOPLEFT, 365, 120)
     panelContainer:SetDimensions(645, 675)
 
+    local defaultButton = wm:CreateControlFromVirtual("$(parent)ResetToDefaultButton", tlw, "ZO_DialogButton")
+    ZO_KeybindButtonTemplate_Setup(defaultButton, "OPTIONS_LOAD_DEFAULTS", HandleLoadDefaultsPressed, GetString(SI_OPTIONS_DEFAULTS))
+    defaultButton:SetAnchor(TOPLEFT, panelContainer, BOTTOMLEFT, 0, 2)
+    lam.defaultButton = defaultButton
+
+    local applyButton = wm:CreateControlFromVirtual("$(parent)ApplyButton", tlw, "ZO_DialogButton")
+    ZO_KeybindButtonTemplate_Setup(applyButton, "OPTIONS_APPLY_CHANGES", HandleReloadUIPressed, GetString(SI_ADDON_MANAGER_RELOAD))
+    applyButton:SetAnchor(TOPRIGHT, panelContainer, BOTTOMRIGHT, 0, 2)
+    applyButton:SetHidden(true)
+    lam.applyButton = applyButton
+
     return tlw
 end
 
@@ -938,9 +1133,14 @@ local function OnLoad(_, addonName)
 end
 em:RegisterForEvent(eventHandle, EVENT_ADD_ON_LOADED, OnLoad)
 
-local function OnActivated(_, addonName)
+local function OnActivated(_, initial)
     em:UnregisterForEvent(eventHandle, EVENT_PLAYER_ACTIVATED)
     FlushMessages()
+
+    local reopenPanel = RetrievePanelForReopening()
+    if not initial and reopenPanel then
+        lam:OpenToPanel(reopenPanel)
+    end
 end
 em:RegisterForEvent(eventHandle, EVENT_PLAYER_ACTIVATED, OnActivated)
 
@@ -971,9 +1171,13 @@ function lam:GetAddonSettingsFragment()
         LAMAddonSettingsFragment = ZO_FadeSceneFragment:New(window, true, 100)
         LAMAddonSettingsFragment:RegisterCallback("StateChange", function(oldState, newState)
             if(newState == SCENE_FRAGMENT_SHOWN) then
+                InitKeybindActions()
+                PushActionLayerByName("OptionsWindow")
                 OpenCurrentPanel()
             elseif(newState == SCENE_FRAGMENT_HIDDEN) then
                 CloseCurrentPanel()
+                RemoveActionLayerByName("OptionsWindow")
+                ShowReloadDialogIfNeeded()
             end
         end)
         CreateAddonSettingsMenuEntry()

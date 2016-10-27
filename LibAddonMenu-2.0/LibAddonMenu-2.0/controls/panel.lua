@@ -13,7 +13,7 @@
 } ]]
 
 
-local widgetVersion = 12
+local widgetVersion = 13
 local LAM = LibStub("LibAddonMenu-2.0")
 if not LAM:RegisterWidget("panel", widgetVersion) then return end
 
@@ -54,25 +54,6 @@ local function ForceDefaults(panel)
 
     cm:FireCallbacks("LAM-RefreshPanel", panel)
 end
-
-ESO_Dialogs["LAM_DEFAULTS"] = {
-    title = {
-        text = SI_INTERFACE_OPTIONS_RESET_TO_DEFAULT_TOOLTIP,
-    },
-    mainText = {
-        text = SI_OPTIONS_RESET_PROMPT,
-        align = TEXT_ALIGN_CENTER,
-    },
-    buttons = {
-        [1] = {
-            text = SI_OPTIONS_RESET,
-            callback = function(dialog) ForceDefaults(dialog.data[1]) end,
-        },
-        [2] = {
-            text = SI_DIALOG_CANCEL,
-        },
-    },
-}
 
 local callbackRegistered = false
 LAMCreateControl.scrollCount = LAMCreateControl.scrollCount or 1
@@ -132,21 +113,12 @@ function LAMCreateControl.panel(parent, panelData, controlName)
     control.scroll = GetControl(control.container, "ScrollChild")
     control.scroll:SetResizeToFitPadding(0, 20)
 
-    if panelData.registerForDefaults then
-        control.defaultButton = wm:CreateControlFromVirtual("$(parent)ResetToDefaultButton", control, "ZO_DialogButton")
-        local defaultButton = control.defaultButton
-
-        ZO_KeybindButtonTemplate_Setup(defaultButton, "OPTIONS_LOAD_DEFAULTS", function()
-            ZO_Dialogs_ShowDialog("LAM_DEFAULTS", {control})
-        end, GetString(SI_OPTIONS_DEFAULTS))
-        defaultButton:SetAnchor(TOPLEFT, control, BOTTOMLEFT, 0, 2)
-    end
-
     if panelData.registerForRefresh and not callbackRegistered then --don't want to register our callback more than once
         cm:RegisterCallback("LAM-RefreshPanel", RefreshPanel)
         callbackRegistered = true
     end
 
+    control.ForceDefaults = ForceDefaults
     control.data = panelData
     control.controlsToRefresh = {}
 

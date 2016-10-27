@@ -13,12 +13,13 @@
     width = "full", --or "half" (optional)
     beforeShow = function(control, iconPicker) return preventShow end, --(optional)
     disabled = function() return db.someBooleanSetting end, --or boolean (optional)
-    warning = "Will need to reload the UI.", -- or string id or function returning a string (optional)
+    warning = "May cause permanent awesomeness.", -- or string id or function returning a string (optional)
+    requiresReload = false, -- boolean, if set to true, the warning text will contain a notice that changes are only applied after an UI reload and any change to the value will make the "Apply Settings" button appear on the panel which will reload the UI when pressed (optional)
     default = defaults.var, -- default value or function that returns the default value (optional)
     reference = "MyAddonIconPicker" -- unique global reference to control (optional)
 } ]]
 
-local widgetVersion = 7
+local widgetVersion = 8
 local LAM = LibStub("LibAddonMenu-2.0")
 if not LAM:RegisterWidget("iconpicker", widgetVersion) then return end
 
@@ -408,7 +409,7 @@ function LAMCreateControl.iconpicker(parent, iconpickerData, controlName)
     mungeOverlay:SetAddressMode(TEX_MODE_WRAP)
     mungeOverlay:SetAnchorFill()
 
-    if iconpickerData.warning ~= nil then
+    if iconpickerData.warning ~= nil or iconpickerData.requiresReload then
         control.warning = wm:CreateControlFromVirtual(nil, control, "ZO_Options_WarningIcon")
         control.warning:SetAnchor(RIGHT, control.container, LEFT, -5, 0)
         control.UpdateWarning = LAM.util.UpdateWarning
@@ -429,6 +430,7 @@ function LAMCreateControl.iconpicker(parent, iconpickerData, controlName)
     end
 
     LAM.util.RegisterForRefreshIfNeeded(control)
+    LAM.util.RegisterForReloadIfNeeded(control)
 
     return control
 end
