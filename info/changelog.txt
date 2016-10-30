@@ -1,3 +1,12 @@
+2.0 r23
+- added Chinese translation ([url=https://github.com/sirinsidiator/ESO-LibAddonMenu/issues/64]#64[/url], thanks bssthu)
+- added tooltips for dropdown menu entries ([url=https://github.com/sirinsidiator/ESO-LibAddonMenu/issues/42]#42[/url])
+- added support for separate values for dropdown menu entries ([url=https://github.com/sirinsidiator/ESO-LibAddonMenu/issues/65]#65[/url])
+- added keybind for reset to defaults button ([url=https://github.com/sirinsidiator/ESO-LibAddonMenu/issues/68]#68[/url])
+- added requireReload property for input controls ([url=https://github.com/sirinsidiator/ESO-LibAddonMenu/issues/47]#47[/url])
+- fixed support for nested submenus ([url=https://github.com/sirinsidiator/ESO-LibAddonMenu/issues/61]#61[/url], thanks Baertram)
+- fixed alpha and height not working on divider control ([url=https://github.com/sirinsidiator/ESO-LibAddonMenu/issues/69]#69[/url])
+
 2.0 r22
 - fixed mouse exit events for sliders and textures ([url=https://github.com/sirinsidiator/ESO-LibAddonMenu/issues/52]#52[/url], thanks silvereyes333)
 - fixed decimal input on sliders ([url=https://github.com/sirinsidiator/ESO-LibAddonMenu/issues/54]#54[/url])
