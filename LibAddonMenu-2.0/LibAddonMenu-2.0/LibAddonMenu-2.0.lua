@@ -342,6 +342,7 @@ local localization = {
     },
     it = { -- provided by JohnnyKing
         PANEL_NAME = "Addon",
+        VERSION = "Versione: <<X:1>>",
         WEBSITE = "Visita il Sitoweb",
         RELOAD_UI_WARNING = "Cambiare questa impostazione richiede un Reload UI al fine che faccia effetto.",
         RELOAD_DIALOG_TITLE = "Reload UI richiesto",
