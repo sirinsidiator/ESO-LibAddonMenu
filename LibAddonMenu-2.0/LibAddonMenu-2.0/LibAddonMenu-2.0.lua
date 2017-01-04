@@ -340,6 +340,15 @@ local localization = {
         RELOAD_DIALOG_RELOAD_BUTTON = "Reload",
         RELOAD_DIALOG_DISCARD_BUTTON = "Discard",
     },
+    it = { -- provided by JohnnyKing
+        PANEL_NAME = "Addon",
+        WEBSITE = "Visita il Sitoweb",
+        RELOAD_UI_WARNING = "Cambiare questa impostazione richiede un Reload UI al fine che faccia effetto.",
+        RELOAD_DIALOG_TITLE = "Reload UI richiesto",
+        RELOAD_DIALOG_TEXT = "Alcune modifiche richiedono un Reload UI al fine che facciano effetto. Sei sicuro di voler ricaricare ora o di voler annullare le modifiche?",
+        RELOAD_DIALOG_RELOAD_BUTTON = "Ricarica",
+        RELOAD_DIALOG_DISCARD_BUTTON = "Annulla",
+    },
     fr = { -- provided by Ayantir
         PANEL_NAME = "Extensions",
         WEBSITE = "Visiter le site Web",
