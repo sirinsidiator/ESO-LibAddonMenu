@@ -9,6 +9,7 @@
     choicesTooltips = {"tooltip 1", "tooltip 2", "tooltip 3"}, -- or array of string ids or array of functions returning a string (optional)
     sort = "name-up", --or "name-down", "numeric-up", "numeric-down", "value-up", "value-down", "numericvalue-up", "numericvalue-down" (optional) - if not provided, list will not be sorted
     width = "full", --or "half" (optional)
+    scrollable = true, -- boolean, if set to true the dropdown will feature a scroll bar if there are a large amount of choices (optional)
     disabled = function() return db.someBooleanSetting end, --or boolean (optional)
     warning = "May cause permanent awesomeness.", -- or string id or function returning a string (optional)
     requiresReload = false, -- boolean, if set to true, the warning text will contain a notice that changes are only applied after an UI reload and any change to the value will make the "Apply Settings" button appear on the panel which will reload the UI when pressed (optional)
@@ -17,7 +18,7 @@
 } ]]
 
 
-local widgetVersion = 16
+local widgetVersion = 17
 local LAM = LibStub("LibAddonMenu-2.0")
 if not LAM:RegisterWidget("dropdown", widgetVersion) then return end
 
@@ -161,7 +162,7 @@ function LAMCreateControl.dropdown(parent, dropdownData, controlName)
     end
     local comboboxCount = (countControl.comboboxCount or 0) + 1
     countControl.comboboxCount = comboboxCount
-    control.combobox = wm:CreateControlFromVirtual(zo_strjoin(nil, name, "Combobox", comboboxCount), control.container, "ZO_ComboBox")
+    control.combobox = wm:CreateControlFromVirtual(zo_strjoin(nil, name, "Combobox", comboboxCount), control.container, dropdownData.scrollable and "ZO_ScrollableComboBox" or "ZO_ComboBox")
 
     local combobox = control.combobox
     combobox:SetAnchor(TOPLEFT)
@@ -172,6 +173,45 @@ function LAMCreateControl.dropdown(parent, dropdownData, controlName)
     local dropdown = control.dropdown
     dropdown:SetSortsItems(false) -- need to sort ourselves in order to be able to sort by value
 
+	if dropdownData.scrollable then
+		dropdown.m_dropdown:ClearAnchors()
+		dropdown.m_dropdown:SetAnchor(TOPLEFT, combobox, BOTTOMLEFT)
+		dropdown.m_dropdown:SetWidth(combobox:GetWidth())
+
+		ZO_PreHook(dropdown, "ShowDropdownOnMouseUp", function(self)
+			self.m_lastParent = self.m_dropdown:GetParent()
+			self.m_dropdown:SetParent(ZO_Menus)
+			ZO_Menus:BringWindowToTop()
+		end)
+		ZO_PreHook(dropdown, "HideDropdownInternal", function(self)
+			self.m_dropdown:SetParent(self.m_lastParent)
+			self.m_lastParent = nil
+		end)
+		--we need this for situations where the settings menu gets closed without any clicking
+		--taking place, but only if it hasn't been 'restored' yet.
+		combobox:SetHandler("OnEffectivelyHidden", function()
+			if dropdown.m_lastParent then 
+				dropdown.m_dropdown:SetParent(dropdown.m_lastParent)
+				dropdown.m_lastParent = nil
+			end
+		end)
+
+		--#HACK to determine widest entry (needs a better way) and
+		local DEFAULT_HEIGHT = 250 --same as in zo_combobox.lua
+		ZO_PreHook(dropdown, "AddMenuItems", function(self)
+			ClearMenu()
+			local numItems = #self.m_sortedItems
+			for index=1, numItems do
+				local entry = self.m_sortedItems[index]
+				AddMenuItem(entry.name, nil, nil, self.m_font, self.m_normalColor, self.m_highlightColor)
+			end
+			--minimal width is still size of combobox
+			self.m_dropdown:SetWidth(zo_max((ZO_Menu.menuPad * 2) + ZO_Menu.width, combobox:GetWidth()))
+			--maximum height is just the default value for now, could add a property for it I guess
+			self.m_dropdown:SetHeight(zo_min(DEFAULT_HEIGHT, (ZO_Menu.menuPad * 2) + ZO_Menu.height + self.m_spacing * (numItems - 1)))
+		end)
+	end
+    
     ZO_PreHook(dropdown, "UpdateItems", function(self)
         assert(not self.m_sortsItems, "built-in dropdown sorting was reactivated, sorting is handled by LAM")
         if control.m_sortOrder ~= nil and control.m_sortType then
