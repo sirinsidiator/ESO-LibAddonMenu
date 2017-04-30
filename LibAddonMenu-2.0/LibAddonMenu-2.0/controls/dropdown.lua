@@ -173,44 +173,70 @@ function LAMCreateControl.dropdown(parent, dropdownData, controlName)
     local dropdown = control.dropdown
     dropdown:SetSortsItems(false) -- need to sort ourselves in order to be able to sort by value
 
-	if dropdownData.scrollable then
-		dropdown.m_dropdown:ClearAnchors()
-		dropdown.m_dropdown:SetAnchor(TOPLEFT, combobox, BOTTOMLEFT)
-		dropdown.m_dropdown:SetWidth(combobox:GetWidth())
+    if dropdownData.scrollable then
+        local DEFAULT_HEIGHT = 250 --same as in zo_combobox.lua
+        local SCROLLABLE_ENTRY_TEMPLATE_HEIGHT = 25 --same as in zo_combobox.lua
+        local PADDING = GetMenuPadding()
 
-		ZO_PreHook(dropdown, "ShowDropdownOnMouseUp", function(self)
-			self.m_lastParent = self.m_dropdown:GetParent()
-			self.m_dropdown:SetParent(ZO_Menus)
-			ZO_Menus:BringWindowToTop()
-		end)
-		ZO_PreHook(dropdown, "HideDropdownInternal", function(self)
-			self.m_dropdown:SetParent(self.m_lastParent)
-			self.m_lastParent = nil
-		end)
-		--we need this for situations where the settings menu gets closed without any clicking
-		--taking place, but only if it hasn't been 'restored' yet.
-		combobox:SetHandler("OnEffectivelyHidden", function()
-			if dropdown.m_lastParent then 
-				dropdown.m_dropdown:SetParent(dropdown.m_lastParent)
-				dropdown.m_lastParent = nil
-			end
-		end)
+        dropdown.m_dropdown:ClearAnchors()
+        dropdown.m_dropdown:SetAnchor(TOPLEFT, combobox, BOTTOMLEFT)
+        dropdown.m_dropdown:SetWidth(combobox:GetWidth())
 
-		--#HACK to determine widest entry (needs a better way) and
-		local DEFAULT_HEIGHT = 250 --same as in zo_combobox.lua
-		ZO_PreHook(dropdown, "AddMenuItems", function(self)
-			ClearMenu()
-			local numItems = #self.m_sortedItems
-			for index=1, numItems do
-				local entry = self.m_sortedItems[index]
-				AddMenuItem(entry.name, nil, nil, self.m_font, self.m_normalColor, self.m_highlightColor)
-			end
-			--minimal width is still size of combobox
-			self.m_dropdown:SetWidth(zo_max((ZO_Menu.menuPad * 2) + ZO_Menu.width, combobox:GetWidth()))
-			--maximum height is just the default value for now, could add a property for it I guess
-			self.m_dropdown:SetHeight(zo_min(DEFAULT_HEIGHT, (ZO_Menu.menuPad * 2) + ZO_Menu.height + self.m_spacing * (numItems - 1)))
-		end)
-	end
+        ZO_PreHook(dropdown, "ShowDropdownOnMouseUp", function(self)
+            self.m_lastParent = self.m_dropdown:GetParent()
+            self.m_dropdown:SetParent(ZO_Menus)
+            ZO_Menus:BringWindowToTop()
+        end)
+        ZO_PreHook(dropdown, "HideDropdownInternal", function(self)
+            self.m_dropdown:SetParent(self.m_lastParent)
+            self.m_lastParent = nil
+        end)
+        combobox:SetHandler("OnEffectivelyHidden", function()
+            if dropdown.m_lastParent then 
+                dropdown.m_dropdown:SetParent(dropdown.m_lastParent)
+                dropdown.m_lastParent = nil
+            end
+        end)
+        
+        -- dont fade entries near the edges
+        ZO_Scroll_SetUseFadeGradient(dropdown.m_scroll, false)
+
+        -- adjust scroll content anchor to mimic menu padding
+        local scroll = dropdown.m_dropdown:GetNamedChild("Scroll")
+        local anchor1 = {scroll:GetAnchor(0)}
+        local anchor2 = {scroll:GetAnchor(1)}
+        scroll:ClearAnchors()
+        scroll:SetAnchor(anchor1[2], anchor1[3], anchor1[4], anchor1[5], anchor1[6] + PADDING)
+        scroll:SetAnchor(anchor2[2], anchor2[3], anchor2[4], anchor2[5], anchor2[6] - PADDING)
+
+        -- adjust dimensions based on entries
+        ZO_PreHook(dropdown, "AddMenuItems", function(self)
+            -- retrieve datatype & create dummy control
+            local dataType = ZO_ScrollList_GetDataTypeTable(self.m_scroll, 1) 
+            local control, key = dataType.pool:AcquireObject()
+            local data = {}
+            data.m_owner = self
+            data.name = "Dummy"
+            dataType.setupCallback(control, data, self)
+            -- get widest text
+            local widestEntry = 0
+            local label = control.m_label
+            local numItems = #self.m_sortedItems 
+            for index=1, numItems do
+                label:SetText(self.m_sortedItems[index].name)
+                local width = label:GetTextWidth() + PADDING * 2 -- this padding is ALWAYS needed
+                if (width > widestEntry) then
+                    widestEntry = width
+                end
+            end
+            -- release dummy control
+            dataType.pool:ReleaseObject(control.key)
+            -- apply
+            self.m_dropdown:SetWidth(zo_max(PADDING * 2 + widestEntry, combobox:GetWidth()))
+            self.m_dropdown:SetHeight(PADDING * 2 + zo_min(DEFAULT_HEIGHT, (numItems * (SCROLLABLE_ENTRY_TEMPLATE_HEIGHT + self.m_spacing)) - self.m_spacing))
+            ZO_ScrollList_UpdateScroll(self.m_scroll)
+        end)
+    end
     
     ZO_PreHook(dropdown, "UpdateItems", function(self)
         assert(not self.m_sortsItems, "built-in dropdown sorting was reactivated, sorting is handled by LAM")
