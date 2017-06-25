@@ -379,8 +379,15 @@ local localization = {
         RELOAD_DIALOG_RELOAD_BUTTON = "Перезагрузить",
         RELOAD_DIALOG_DISCARD_BUTTON = "Отменить изменения",
     },
-    es = { -- provided by silvereyes333
-        WEBSITE = "Vaya al sitio web",
+    es = { -- provided by Morganlefai, checked by Kwisatz
+        PANEL_NAME = "Configuración",
+        VERSION = "Versión: <<X:1>>",
+        WEBSITE = "Visita la página web",
+        RELOAD_UI_WARNING = "Cambiar este ajuste recargará la interfaz del usuario.",
+        RELOAD_DIALOG_TITLE = "Requiere recargar la interfaz",
+        RELOAD_DIALOG_TEXT = "Algunos cambios requieren recargar la interfaz para poder aplicarse. Quieres aplicar los cambios y recargar la interfaz?",
+        RELOAD_DIALOG_RELOAD_BUTTON = "Recargar",
+        RELOAD_DIALOG_DISCARD_BUTTON = "Cancelar",
     },
     jp = { -- provided by k0ta0uchi
         PANEL_NAME = "アドオン設定",
