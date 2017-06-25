@@ -399,6 +399,17 @@ local localization = {
         WEBSITE = "访问网站",
         PANEL_INFO_FONT = "EsoZh/fonts/univers57.otf|14|soft-shadow-thin",
     },
+    pl = { -- provided by EmiruTegryfon
+        PANEL_NAME = "Dodatki",
+        VERSION = "Wersja: <<X:1>>",
+        WEBSITE = "Odwiedź stronę",
+        PANEL_INFO_FONT = "EsotwZH/fonts/univers57.otf|14|soft-shadow-thin",
+        RELOAD_UI_WARNING = "Zmiany będą widoczne po ponownym załadowaniu UI.",
+        RELOAD_DIALOG_TITLE = "Wymagane przeładowanie UI",
+        RELOAD_DIALOG_TEXT = "Niektóre zmiany wymagają ponownego załadowania UI. Czy chcesz teraz ponownie załadować, czy porzucić zmiany?",
+        RELOAD_DIALOG_RELOAD_BUTTON = "Przeładuj",
+        RELOAD_DIALOG_DISCARD_BUTTON = "Porzuć",
+    },
 }
 
 util.L = ZO_ShallowTableCopy(localization[GetCVar("Language.2")], localization["en"])
