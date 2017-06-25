@@ -373,6 +373,11 @@ local localization = {
         VERSION = "Версия: <<X:1>>",
         WEBSITE = "Посетить сайт",
         PANEL_INFO_FONT = "RuESO/fonts/Univers57.otf|14|soft-shadow-thin",
+        RELOAD_UI_WARNING = "Для применения этой настройки необходима перезагрузка интерфейса.",
+        RELOAD_DIALOG_TITLE = "Необходима перезагрузка интерфейса",
+        RELOAD_DIALOG_TEXT = "Для применения некоторых изменений необходима перезагрузка интерфейса. Перезагрузить интерфейс сейчас или отменить изменения?",
+        RELOAD_DIALOG_RELOAD_BUTTON = "Перезагрузить",
+        RELOAD_DIALOG_DISCARD_BUTTON = "Отменить изменения",
     },
     es = { -- provided by silvereyes333
         WEBSITE = "Vaya al sitio web",
