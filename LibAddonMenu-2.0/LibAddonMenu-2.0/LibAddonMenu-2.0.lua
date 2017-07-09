@@ -403,7 +403,6 @@ local localization = {
         PANEL_NAME = "Dodatki",
         VERSION = "Wersja: <<X:1>>",
         WEBSITE = "Odwiedź stronę",
-        PANEL_INFO_FONT = "EsoPL/fonts/univers57.otf|14|soft-shadow-thin",
         RELOAD_UI_WARNING = "Zmiany będą widoczne po ponownym załadowaniu UI.",
         RELOAD_DIALOG_TITLE = "Wymagane przeładowanie UI",
         RELOAD_DIALOG_TEXT = "Niektóre zmiany wymagają ponownego załadowania UI. Czy chcesz teraz ponownie załadować, czy porzucić zmiany?",
