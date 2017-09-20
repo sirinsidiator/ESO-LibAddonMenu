@@ -340,6 +340,16 @@ local localization = {
         RELOAD_DIALOG_RELOAD_BUTTON = "Reload",
         RELOAD_DIALOG_DISCARD_BUTTON = "Discard",
     },
+    it = { -- provided by JohnnyKing
+        PANEL_NAME = "Addon",
+        VERSION = "Versione: <<X:1>>",
+        WEBSITE = "Visita il Sitoweb",
+        RELOAD_UI_WARNING = "Cambiare questa impostazione richiede un Ricarica UI al fine che faccia effetto.",
+        RELOAD_DIALOG_TITLE = "Ricarica UI richiesto",
+        RELOAD_DIALOG_TEXT = "Alcune modifiche richiedono un Ricarica UI al fine che facciano effetto. Sei sicuro di voler ricaricare ora o di voler annullare le modifiche?",
+        RELOAD_DIALOG_RELOAD_BUTTON = "Ricarica",
+        RELOAD_DIALOG_DISCARD_BUTTON = "Annulla",
+    },
     fr = { -- provided by Ayantir
         PANEL_NAME = "Extensions",
         WEBSITE = "Visiter le site Web",
@@ -363,9 +373,21 @@ local localization = {
         VERSION = "Версия: <<X:1>>",
         WEBSITE = "Посетить сайт",
         PANEL_INFO_FONT = "RuESO/fonts/Univers57.otf|14|soft-shadow-thin",
+        RELOAD_UI_WARNING = "Для применения этой настройки необходима перезагрузка интерфейса.",
+        RELOAD_DIALOG_TITLE = "Необходима перезагрузка интерфейса",
+        RELOAD_DIALOG_TEXT = "Для применения некоторых изменений необходима перезагрузка интерфейса. Перезагрузить интерфейс сейчас или отменить изменения?",
+        RELOAD_DIALOG_RELOAD_BUTTON = "Перезагрузить",
+        RELOAD_DIALOG_DISCARD_BUTTON = "Отменить изменения",
     },
-    es = { -- provided by silvereyes333
-        WEBSITE = "Vaya al sitio web",
+    es = { -- provided by Morganlefai, checked by Kwisatz
+        PANEL_NAME = "Configuración",
+        VERSION = "Versión: <<X:1>>",
+        WEBSITE = "Visita la página web",
+        RELOAD_UI_WARNING = "Cambiar este ajuste recargará la interfaz del usuario.",
+        RELOAD_DIALOG_TITLE = "Requiere recargar la interfaz",
+        RELOAD_DIALOG_TEXT = "Algunos cambios requieren recargar la interfaz para poder aplicarse. Quieres aplicar los cambios y recargar la interfaz?",
+        RELOAD_DIALOG_RELOAD_BUTTON = "Recargar",
+        RELOAD_DIALOG_DISCARD_BUTTON = "Cancelar",
     },
     jp = { -- provided by k0ta0uchi
         PANEL_NAME = "アドオン設定",
@@ -376,6 +398,16 @@ local localization = {
         VERSION = "版本: <<X:1>>",
         WEBSITE = "访问网站",
         PANEL_INFO_FONT = "EsoZh/fonts/univers57.otf|14|soft-shadow-thin",
+    },
+    pl = { -- provided by EmiruTegryfon
+        PANEL_NAME = "Dodatki",
+        VERSION = "Wersja: <<X:1>>",
+        WEBSITE = "Odwiedź stronę",
+        RELOAD_UI_WARNING = "Zmiany będą widoczne po ponownym załadowaniu UI.",
+        RELOAD_DIALOG_TITLE = "Wymagane przeładowanie UI",
+        RELOAD_DIALOG_TEXT = "Niektóre zmiany wymagają ponownego załadowania UI. Czy chcesz teraz ponownie załadować, czy porzucić zmiany?",
+        RELOAD_DIALOG_RELOAD_BUTTON = "Przeładuj",
+        RELOAD_DIALOG_DISCARD_BUTTON = "Porzuć",
     },
 }
 
@@ -713,12 +745,12 @@ local function CreateOptionsControls(panel)
 
                     err, anchorOffset, lastAddedControl, wasHalf = CreateAndAnchorWidget(parent, widgetData, offsetX, anchorOffset, lastAddedControl, wasHalf)
                     if err then
-                        PrintLater(("Could not create %s '%s' of %s."):format(widgetData.type, widgetData.name or "unnamed", addonID))
+                        PrintLater(("Could not create %s '%s' of %s."):format(widgetData.type, GetStringFromValue(widgetData.name or "unnamed"), addonID))
                     end
 
                     if isSubmenu then
                         if SetupCreationCalls(lastAddedControl, widgetData.controls) then
-                            PrintLater(("The sub menu '%s' of %s is missing some entries."):format(widgetData.name or "unnamed", addonID))
+                            PrintLater(("The sub menu '%s' of %s is missing some entries."):format(GetStringFromValue(widgetData.name or "unnamed"), addonID))
                         end
                     end
                 end

@@ -2,7 +2,7 @@
 <project name="LibAddonMenu-2.0" default="copyToAddonFolder" basedir=".">
     <property name="version" value="1" />
 
-    <property name="addonhome" location="${user.home}/Documents/Elder Scrolls Online/liveeu/AddOns" />
+    <property name="addonhome" location="${user.home}/Documents/Elder Scrolls Online/live/AddOns" />
     <property name="addondir" location="${addonhome}/${ant.project.name}" />
     <property name="srcdir" location="${basedir}/../LibAddonMenu-2.0" />
     <property name="tempdir" location="${basedir}/../temp" />

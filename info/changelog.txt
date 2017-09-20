@@ -1,3 +1,11 @@
+2.0 r24
+- added scrollable property for dropdown controls ([url=https://github.com/sirinsidiator/ESO-LibAddonMenu/issues/71]#71[/url], [url=https://github.com/sirinsidiator/ESO-LibAddonMenu/issues/75]#75[/url], thanks kyoma)
+- added Italian translation ([url=https://github.com/sirinsidiator/ESO-LibAddonMenu/issues/70]#70[/url], thanks JohnnyKing94)
+- added Polish translation ([url=https://github.com/sirinsidiator/ESO-LibAddonMenu/issues/73]#73[/url], [url=https://github.com/sirinsidiator/ESO-LibAddonMenu/issues/74]#74[/url], thanks EmiruTegryfon)
+- updated Spanish translation (thanks TERAB1T)
+- updated Russian translation (thanks Morganlefai and Kwisatz)
+- fixed debug code not accepting functions for widget names ([url=https://github.com/sirinsidiator/ESO-LibAddonMenu/issues/72]#72[/url], thanks kyoma)
+
 2.0 r23
 - added Chinese translation ([url=https://github.com/sirinsidiator/ESO-LibAddonMenu/issues/64]#64[/url], thanks bssthu)
 - added tooltips for dropdown menu entries ([url=https://github.com/sirinsidiator/ESO-LibAddonMenu/issues/42]#42[/url])
