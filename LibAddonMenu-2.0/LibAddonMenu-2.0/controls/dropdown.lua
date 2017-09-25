@@ -160,6 +160,7 @@ local SCROLLABLE_ENTRY_TEMPLATE_HEIGHT = 25 -- same as in zo_combobox.lua
 local CONTENT_PADDING = 24
 local SCROLLBAR_PADDING = 16
 local PADDING = GetMenuPadding() / 2 -- half the amount looks closer to the regular dropdown
+local ROUNDING_MARGIN = 0.01 -- needed to avoid rare issue with too many anchors processed
 local ScrollableDropdownHelper = ZO_Object:Subclass()
 
 function ScrollableDropdownHelper:New(...)
@@ -244,7 +245,7 @@ function ScrollableDropdownHelper:Initialize(parent, control, visibleRows)
             numItems = self.visibleRows
         end
         scrollContent:SetAnchor(BOTTOMRIGHT, nil, nil, anchorOffset)
-        local height = PADDING * 2 + numItems * (SCROLLABLE_ENTRY_TEMPLATE_HEIGHT + dropdown.m_spacing) - dropdown.m_spacing
+        local height = PADDING * 2 + numItems * (SCROLLABLE_ENTRY_TEMPLATE_HEIGHT + dropdown.m_spacing) - dropdown.m_spacing + ROUNDING_MARGIN
         dropdown.m_dropdown:SetWidth(width)
         dropdown.m_dropdown:SetHeight(height)
     end)
