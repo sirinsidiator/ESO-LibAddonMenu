@@ -441,7 +441,7 @@ local function ScrollDataIntoView(list, data)
 
     local scrollMin, scrollMax = list.scrollbar:GetMinMax()
     local scrollTop = list.scrollbar:GetValue()
-    local controlHeight = list.controlHeight
+    local controlHeight = list.uniformControlHeight or list.controlHeight
     local targetMin = controlHeight * (targetIndex - 1) - 64
     -- subtracting 64 ain't arbitrary, it's the maximum fading height
     -- (libraries/zo_templates/scrolltemplates.lua/UpdateScrollFade)
