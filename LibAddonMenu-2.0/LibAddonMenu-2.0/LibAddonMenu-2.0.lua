@@ -494,6 +494,7 @@ local function PopulateAddonList(addonList, filter)
     local entryList = ZO_ScrollList_GetDataList(addonList)
     local numEntries = 0
     local selectedData = nil
+    local selectionIsFinal = false
 
     ZO_ScrollList_Clear(addonList)
 
@@ -505,8 +506,14 @@ local function PopulateAddonList(addonList, filter)
             entryList[numEntries] = dataEntry
             -- select the first panel passing the filter, or the currently
             -- shown panel, but only if it passes the filter as well
-            if selectedData == nil or data.panel == lam.currentAddonPanel then
-                selectedData = data
+            if selectedData == nil or data.panel == lam.pendingAddonPanel or data.panel == lam.currentAddonPanel then
+                if not selectionIsFinal then
+                    selectedData = data
+                end
+                if data.panel == lam.pendingAddonPanel then
+                    lam.pendingAddonPanel = nil
+                    selectionIsFinal = true
+                end
             end
         else
             data.sortIndex = nil
@@ -600,6 +607,7 @@ function lam:OpenToPanel(panel)
         if addonData.panel == panel then
             selectedData = addonData
             ScrollDataIntoView(addonList, selectedData)
+            lam.pendingAddonPanel = addonData.panel
             break
         end
     end
