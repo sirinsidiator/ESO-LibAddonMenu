@@ -18,7 +18,7 @@
 } ]]
 
 
-local widgetVersion = 17
+local widgetVersion = 18
 local LAM = LibStub("LibAddonMenu-2.0")
 if not LAM:RegisterWidget("dropdown", widgetVersion) then return end
 
@@ -126,7 +126,9 @@ local function UpdateChoices(control, choices, choicesValues, choicesTooltips)
 
     if choicesTooltips then
         assert(#choices == #choicesTooltips, "choices and choicesTooltips need to have the same size")
-        SetupTooltips(control.dropdown, choicesTooltips)
+        if not control.scrollHelper then -- only do this for non-scrollable
+            SetupTooltips(control.dropdown, choicesTooltips)
+        end
     end
 
     for i = 1, #choices do
@@ -134,6 +136,9 @@ local function UpdateChoices(control, choices, choicesValues, choicesTooltips)
         entry.control = control
         if choicesValues then
             entry.value = choicesValues[i]
+        end
+        if choicesTooltips and control.scrollHelper then
+            entry.tooltip = choicesTooltips[i]
         end
         control.choices[entry.value or entry.name] = entry.name
         control.dropdown:AddItem(entry, not control.data.sort and ZO_COMBOBOX_SUPRESS_UPDATE) --if sort type/order isn't specified, then don't sort
@@ -155,6 +160,7 @@ local SCROLLABLE_ENTRY_TEMPLATE_HEIGHT = 25 -- same as in zo_combobox.lua
 local CONTENT_PADDING = 24
 local SCROLLBAR_PADDING = 16
 local PADDING = GetMenuPadding() / 2 -- half the amount looks closer to the regular dropdown
+local ROUNDING_MARGIN = 0.01 -- needed to avoid rare issue with too many anchors processed
 local ScrollableDropdownHelper = ZO_Object:Subclass()
 
 function ScrollableDropdownHelper:New(...)
@@ -202,6 +208,10 @@ function ScrollableDropdownHelper:Initialize(parent, control, visibleRows)
     scroll:SetAnchor(anchor1[2], anchor1[3], anchor1[4], anchor1[5] + PADDING, anchor1[6] + PADDING)
     scroll:SetAnchor(anchor2[2], anchor2[3], anchor2[4], anchor2[5] - PADDING, anchor2[6] - PADDING)
     ZO_ScrollList_Commit(scrollList)
+    
+    -- hook mouse enter/exit
+    local function onMouseEnter(control) self:OnMouseEnter(control) end
+    local function onMouseExit(control) self:OnMouseExit(control) end
 
     -- adjust row setup to mimic the highlight padding
     local dataType1 = ZO_ScrollList_GetDataTypeTable(dropdown.m_scroll, 1)
@@ -210,6 +220,15 @@ function ScrollableDropdownHelper:Initialize(parent, control, visibleRows)
     local function SetupEntry(control, data, list)
         oSetup(control, data, list)
         control.m_label:SetAnchor(LEFT, nil, nil, 2)
+        -- no need to store old ones since we have full ownership of our dropdown controls
+        if not control.hookedMouseHandlers then --only do it once per control
+            control.hookedMouseHandlers = true
+            ZO_PreHookHandler(control, "OnMouseEnter", onMouseEnter)
+            ZO_PreHookHandler(control, "OnMouseExit", onMouseExit)
+            -- we could also just replace the handlers
+            --control:SetHandler("OnMouseEnter", onMouseEnter)
+            --control:SetHandler("OnMouseExit", onMouseExit)
+        end
     end
     dataType1.setupCallback = SetupEntry
     dataType2.setupCallback = SetupEntry
@@ -226,7 +245,7 @@ function ScrollableDropdownHelper:Initialize(parent, control, visibleRows)
             numItems = self.visibleRows
         end
         scrollContent:SetAnchor(BOTTOMRIGHT, nil, nil, anchorOffset)
-        local height = PADDING * 2 + numItems * (SCROLLABLE_ENTRY_TEMPLATE_HEIGHT + dropdown.m_spacing) - dropdown.m_spacing
+        local height = PADDING * 2 + numItems * (SCROLLABLE_ENTRY_TEMPLATE_HEIGHT + dropdown.m_spacing) - dropdown.m_spacing + ROUNDING_MARGIN
         dropdown.m_dropdown:SetWidth(width)
         dropdown.m_dropdown:SetHeight(height)
     end)
@@ -280,6 +299,25 @@ function ScrollableDropdownHelper:GetMaxWidth()
 
     dataType.pool:ReleaseObject(dummy.key)
     return maxWidth
+end
+
+function ScrollableDropdownHelper:OnMouseEnter(control)
+    -- call original code if we replace instead of hook the handler
+        --ZO_ScrollableComboBox_Entry_OnMouseEnter(control)
+    -- show tooltip
+    if control.m_data.tooltip then
+        InitializeTooltip(InformationTooltip, control, TOPLEFT, 0, 0, BOTTOMRIGHT)
+        SetTooltipText(InformationTooltip, LAM.util.GetStringFromValue(control.m_data.tooltip))
+        InformationTooltipTopLevel:BringWindowToTop()
+    end
+end
+function ScrollableDropdownHelper:OnMouseExit(control)
+    -- call original code if we replace instead of hook the handler
+        --ZO_ScrollableComboBox_Entry_OnMouseExit(control)
+    -- hide tooltip
+    if control.m_data.tooltip then
+        ClearTooltip(InformationTooltip)
+    end
 end
 
 function LAMCreateControl.dropdown(parent, dropdownData, controlName)
