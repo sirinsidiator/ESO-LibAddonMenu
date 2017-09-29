@@ -1,6 +1,7 @@
 ## APIVersion: 100019
 ## Title: LibAddonMenu-2.0
 ## Version: 2.0 rVERSION_NUMBER
+## AddOnVersion: VERSION_NUMBER
 ## Author: Seerah, sirinsidiator, et al.
 ## Contributors: votan, merlight, Garkin, Randactyl, KuroiLight, silvereyes333, Baertram, kyoma
 ## Description: A library to aid in the creation of option panels.
