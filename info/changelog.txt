@@ -1,3 +1,9 @@
+2.0 r25
+- fixed tooltips not working for entries in scrollable dropdown controls ([url=https://github.com/sirinsidiator/ESO-LibAddonMenu/issues/78]#78[/url], thanks kyoma)
+- fixed standalone LAM not loading as expected when LAM is bundled with the manifest included ([url=https://github.com/sirinsidiator/ESO-LibAddonMenu/issues/81]#81[/url])
+- fixed slashcommands not opening the correct panel on first attempt after UI load ([url=https://github.com/sirinsidiator/ESO-LibAddonMenu/issues/79]#79[/url])
+- fixed an error when opening the addon settings menu after Clockwork City update ([url=https://github.com/sirinsidiator/ESO-LibAddonMenu/issues/80]#80[/url], thanks Gandalf)
+
 2.0 r24
 - added scrollable property for dropdown controls ([url=https://github.com/sirinsidiator/ESO-LibAddonMenu/issues/71]#71[/url], [url=https://github.com/sirinsidiator/ESO-LibAddonMenu/issues/75]#75[/url], thanks kyoma)
 - added Italian translation ([url=https://github.com/sirinsidiator/ESO-LibAddonMenu/issues/70]#70[/url], thanks JohnnyKing94)
