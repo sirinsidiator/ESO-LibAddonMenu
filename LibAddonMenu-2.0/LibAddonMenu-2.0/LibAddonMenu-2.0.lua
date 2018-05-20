@@ -409,6 +409,28 @@ local localization = {
         RELOAD_DIALOG_RELOAD_BUTTON = "Przeładuj",
         RELOAD_DIALOG_DISCARD_BUTTON = "Porzuć",
     },
+    kr = { -- provided by p.walker
+        PANEL_NAME = "蝠盜蠨",
+        VERSION = "纄訄: <<X:1>>",
+        WEBSITE = "裹芬襴钸 縩紸",
+        PANEL_INFO_FONT = "EsoKR/fonts/Univers57.otf|14|soft-shadow-thin",
+        RELOAD_UI_WARNING = "襴 茤訕襄 绀溽靘籴 風滼筼 訁袩靘瀰褄靴 UI 苈穜滠遨襴 靄袔革瓈瓤.",
+        RELOAD_DIALOG_TITLE = "UI 苈穜滠遨 靄袔",
+        RELOAD_DIALOG_TEXT = "绀溽瘜 茤訕 謑 UI 苈穜滠遨襄 靄袔穜靘璔 芬靭襴 覈蒵瓈瓤. 诀瀈 苈穜滠遨靘蓜溠蒵瓈灌? 蝄瓈籴 绀溽襄 迨莌靘蓜溠蒵瓈灌?",
+        RELOAD_DIALOG_RELOAD_BUTTON = "苈穜滠遨",
+        RELOAD_DIALOG_DISCARD_BUTTON = "绀溽迨莌",
+    },
+    br = { -- provided by mlsevero
+        PANEL_NAME = "Addons",
+        AUTHOR = string.format("%s: <<X:1>>", GetString(SI_ADDON_MANAGER_AUTHOR)), -- "Autor: <<X:1>>"
+        VERSION = "Versão: <<X:1>>",
+        WEBSITE = "Visite o Website",
+        RELOAD_UI_WARNING = "Mudanças nessa configuração requer a releitura da UI para ter efeito.",
+        RELOAD_DIALOG_TITLE = "Releitura da UI requerida",
+        RELOAD_DIALOG_TEXT = "Algumas mudanças requerem a releitura da UI para ter efeito. Você deseja reler agora ou descartar as mudanças?",
+        RELOAD_DIALOG_RELOAD_BUTTON = "Relê",
+        RELOAD_DIALOG_DISCARD_BUTTON = "Descarta",
+    },
 }
 
 util.L = ZO_ShallowTableCopy(localization[GetCVar("Language.2")] or {}, localization["en"])
