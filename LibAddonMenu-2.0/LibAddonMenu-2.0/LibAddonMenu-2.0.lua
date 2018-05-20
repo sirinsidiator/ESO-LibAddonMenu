@@ -411,7 +411,7 @@ local localization = {
     },
 }
 
-util.L = ZO_ShallowTableCopy(localization[GetCVar("Language.2")], localization["en"])
+util.L = ZO_ShallowTableCopy(localization[GetCVar("Language.2")] or {}, localization["en"])
 util.GetTooltipText = GetStringFromValue -- deprecated, use util.GetStringFromValue instead
 util.GetStringFromValue = GetStringFromValue
 util.GetDefaultValue = GetDefaultValue
