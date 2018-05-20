@@ -1,3 +1,8 @@
+2.0 r26
+- fixed error when loading LAM on an unsupported locale
+- added Korean translation (thanks p.walker)
+- added Brazilian translation (thanks mlsevero)
+
 2.0 r25
 - fixed tooltips not working for entries in scrollable dropdown controls ([url=https://github.com/sirinsidiator/ESO-LibAddonMenu/issues/78]#78[/url], thanks kyoma)
 - fixed standalone LAM not loading as expected when LAM is bundled with the manifest included ([url=https://github.com/sirinsidiator/ESO-LibAddonMenu/issues/81]#81[/url])
