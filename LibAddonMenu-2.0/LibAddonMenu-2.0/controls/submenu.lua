@@ -3,15 +3,35 @@
     name = "Submenu Title", -- or string id or function returning a string
     tooltip = "My submenu tooltip", -- -- or string id or function returning a string (optional)
     controls = {sliderData, buttonData} --(optional) used by LAM
+    disabled = function() return db.someBooleanSetting end, --or boolean (optional)
     reference = "MyAddonSubmenu" --(optional) unique global reference to control
 } ]]
 
-local widgetVersion = 11
+local widgetVersion = 12
 local LAM = LibStub("LibAddonMenu-2.0")
 if not LAM:RegisterWidget("submenu", widgetVersion) then return end
 
 local wm = WINDOW_MANAGER
 local am = ANIMATION_MANAGER
+
+--label
+local enabledColor = ZO_DEFAULT_ENABLED_COLOR
+local disabledColor = ZO_DEFAULT_DISABLED_COLOR
+
+local function UpdateDisabled(control)
+    local disable
+    if type(control.data.disabled) == "function" then
+        disable = control.data.disabled()
+    else
+        disable = control.data.disabled
+    end
+	
+    if disable then
+        control.label:SetColor(ZO_DEFAULT_DISABLED_COLOR:UnpackRGBA())	
+    else
+        control.label:SetColor(ZO_DEFAULT_ENABLED_COLOR:UnpackRGBA())
+    end
+end
 
 local function UpdateValue(control)
     control.label:SetText(LAM.util.GetStringFromValue(control.data.name))
@@ -101,6 +121,10 @@ function LAMCreateControl.submenu(parent, submenuData, controlName)
     btmToggle:SetHandler("OnMouseUp", AnimateSubmenu)
 
     control.UpdateValue = UpdateValue
+    if submenuData.disabled ~= nil then
+        control.UpdateDisabled = UpdateDisabled
+        control:UpdateDisabled()
+    end
 
     LAM.util.RegisterForRefreshIfNeeded(control)
 
