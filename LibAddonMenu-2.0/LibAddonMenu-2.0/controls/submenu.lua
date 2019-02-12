@@ -23,13 +23,22 @@ local function IsDisabled(control)
 end
 
 local function UpdateDisabled(control)
-    if IsDisabled(control) then
+    local disable = IsDisabled(control)
+    if disable == control.disabled then return end
+
+    local color = ZO_DEFAULT_ENABLED_COLOR
+    if disable then
+        color = ZO_DEFAULT_DISABLED_COLOR
+
         if control.open then
+            control.open = false
             control.animation:PlayFromStart()
         end
-    else
-        control.label:SetColor(ZO_DEFAULT_ENABLED_COLOR:UnpackRGBA())
     end
+
+    control.label:SetColor(color:UnpackRGBA())
+    control.arrow:SetColor(color:UnpackRGBA())
+    control.disabled = disable
 end
 
 local function UpdateValue(control)
@@ -41,14 +50,13 @@ end
 
 local function AnimateSubmenu(clicked)
     local control = clicked:GetParent()
-    control.open = not control.open
+    if control.disabled then return end
 
-    if not IsDisabled(control) then
-        if control.open then
-            control.animation:PlayFromStart()
-        else
-            control.animation:PlayFromEnd()
-        end
+    control.open = not control.open
+    if control.open then
+        control.animation:PlayFromStart()
+    else
+        control.animation:PlayFromEnd()
     end
 end
 
