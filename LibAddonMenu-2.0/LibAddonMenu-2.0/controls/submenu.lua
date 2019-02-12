@@ -14,20 +14,19 @@ if not LAM:RegisterWidget("submenu", widgetVersion) then return end
 local wm = WINDOW_MANAGER
 local am = ANIMATION_MANAGER
 
---label
-local enabledColor = ZO_DEFAULT_ENABLED_COLOR
-local disabledColor = ZO_DEFAULT_DISABLED_COLOR
+local function IsDisabled(control)
+    if type(control.data.disabled) == "function" then
+        return control.data.disabled()
+    else
+        return control.data.disabled
+    end
+end
 
 local function UpdateDisabled(control)
-    local disable
-    if type(control.data.disabled) == "function" then
-        disable = control.data.disabled()
-    else
-        disable = control.data.disabled
-    end
-	
-    if disable then
-        control.label:SetColor(ZO_DEFAULT_DISABLED_COLOR:UnpackRGBA())	
+    if IsDisabled(control) then
+        if control.open then
+            control.animation:PlayFromStart()
+        end
     else
         control.label:SetColor(ZO_DEFAULT_ENABLED_COLOR:UnpackRGBA())
     end
@@ -44,10 +43,12 @@ local function AnimateSubmenu(clicked)
     local control = clicked:GetParent()
     control.open = not control.open
 
-    if control.open then
-        control.animation:PlayFromStart()
-    else
-        control.animation:PlayFromEnd()
+    if not IsDisabled(control) then
+        if control.open then
+            control.animation:PlayFromStart()
+        else
+            control.animation:PlayFromEnd()
+        end
     end
 end
 
