@@ -3,15 +3,43 @@
     name = "Submenu Title", -- or string id or function returning a string
     tooltip = "My submenu tooltip", -- -- or string id or function returning a string (optional)
     controls = {sliderData, buttonData} --(optional) used by LAM
+    disabled = function() return db.someBooleanSetting end, --or boolean (optional)
     reference = "MyAddonSubmenu" --(optional) unique global reference to control
 } ]]
 
-local widgetVersion = 11
+local widgetVersion = 12
 local LAM = LibStub("LibAddonMenu-2.0")
 if not LAM:RegisterWidget("submenu", widgetVersion) then return end
 
 local wm = WINDOW_MANAGER
 local am = ANIMATION_MANAGER
+
+local function IsDisabled(control)
+    if type(control.data.disabled) == "function" then
+        return control.data.disabled()
+    else
+        return control.data.disabled
+    end
+end
+
+local function UpdateDisabled(control)
+    local disable = IsDisabled(control)
+    if disable == control.disabled then return end
+
+    local color = ZO_DEFAULT_ENABLED_COLOR
+    if disable then
+        color = ZO_DEFAULT_DISABLED_COLOR
+
+        if control.open then
+            control.open = false
+            control.animation:PlayFromStart()
+        end
+    end
+
+    control.label:SetColor(color:UnpackRGBA())
+    control.arrow:SetColor(color:UnpackRGBA())
+    control.disabled = disable
+end
 
 local function UpdateValue(control)
     control.label:SetText(LAM.util.GetStringFromValue(control.data.name))
@@ -22,8 +50,9 @@ end
 
 local function AnimateSubmenu(clicked)
     local control = clicked:GetParent()
-    control.open = not control.open
+    if control.disabled then return end
 
+    control.open = not control.open
     if control.open then
         control.animation:PlayFromStart()
     else
@@ -101,6 +130,10 @@ function LAMCreateControl.submenu(parent, submenuData, controlName)
     btmToggle:SetHandler("OnMouseUp", AnimateSubmenu)
 
     control.UpdateValue = UpdateValue
+    if submenuData.disabled ~= nil then
+        control.UpdateDisabled = UpdateDisabled
+        control:UpdateDisabled()
+    end
 
     LAM.util.RegisterForRefreshIfNeeded(control)
 
