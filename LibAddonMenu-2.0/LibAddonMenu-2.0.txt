@@ -1,13 +1,18 @@
-## APIVersion: 100011
+## APIVersion: 100026 100027
 ## Title: LibAddonMenu-2.0
-## Version: 2.0 rVERSION_NUMBER
+## Version: 2.0 r28
+## AddOnVersion: 28
 ## Author: Seerah, sirinsidiator, et al.
-## Contributors: votan, merlight, Garkin
+## Contributors: votan, merlight, Garkin, Randactyl, KuroiLight, silvereyes333, Baertram, kyoma
 ## Description: A library to aid in the creation of option panels.
-
+##
+## This Add-on is not created by, affiliated with or sponsored by ZeniMax Media Inc. or its affiliates. 
+## The Elder Scrolls® and related logos are registered trademarks or trademarks of ZeniMax Media Inc. in the United States and/or other countries. 
+## All rights reserved
+##
+## You can read the full terms at https://account.elderscrollsonline.com/add-on-terms
 
 LibStub\LibStub.lua
-
 LibAddonMenu-2.0\LibAddonMenu-2.0.lua
 
 LibAddonMenu-2.0\controls\panel.lua
@@ -22,3 +27,5 @@ LibAddonMenu-2.0\controls\editbox.lua
 LibAddonMenu-2.0\controls\header.lua
 LibAddonMenu-2.0\controls\slider.lua
 LibAddonMenu-2.0\controls\texture.lua
+LibAddonMenu-2.0\controls\iconpicker.lua
+LibAddonMenu-2.0\controls\divider.lua
