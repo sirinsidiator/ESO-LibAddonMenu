@@ -1,7 +1,7 @@
-## APIVersion: 100022 100023
+## APIVersion: 100026 100027
 ## Title: LibAddonMenu-2.0
-## Version: 2.0 rVERSION_NUMBER
-## AddOnVersion: VERSION_NUMBER
+## Version: 2.0 r28
+## AddOnVersion: 28
 ## Author: Seerah, sirinsidiator, et al.
 ## Contributors: votan, merlight, Garkin, Randactyl, KuroiLight, silvereyes333, Baertram, kyoma
 ## Description: A library to aid in the creation of option panels.
@@ -13,7 +13,6 @@
 ## You can read the full terms at https://account.elderscrollsonline.com/add-on-terms
 
 LibStub\LibStub.lua
-development.lua
 LibAddonMenu-2.0\LibAddonMenu-2.0.lua
 
 LibAddonMenu-2.0\controls\panel.lua
