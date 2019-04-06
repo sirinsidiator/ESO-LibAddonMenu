@@ -43,7 +43,7 @@
         <copy todir="${addondir}">
             <fileset dir="${srcdir}" />
         </copy>
-        <replace file="${addondir}/${ant.project.name}.txt" token="VERSION_NUMBER" value="development" encoding="UTF-8" />
+        <replace file="${addondir}/${ant.project.name}.txt" token="VERSION_NUMBER" value="999" encoding="UTF-8" />
     </target>
 
     <target name="createArchive" depends="getIsCustomVersion,getCustomVersion,getVersion">
