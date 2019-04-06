@@ -188,7 +188,9 @@ function LAMCreateControl.slider(parent, sliderData, controlName)
         HandleValueChanged(value)
     end)
     slider:SetHandler("OnSliderReleased", function(self, value)
-        control:UpdateValue(false, value)
+        if self:GetEnabled() then
+            control:UpdateValue(false, value)
+        end
     end)
     slider:SetHandler("OnMouseWheel", function(self, value)
         if(not self:GetEnabled()) then return end
