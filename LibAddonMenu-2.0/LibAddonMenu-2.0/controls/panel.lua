@@ -63,9 +63,39 @@ end
 local callbackRegistered = false
 LAMCreateControl.scrollCount = LAMCreateControl.scrollCount or 1
 local SEPARATOR = " - "
+local COLORED_SEPARATOR = ZO_WHITE:Colorize(SEPARATOR)
 local LINK_COLOR = ZO_ColorDef:New("5959D5")
-local LINK_COLOR_DONATE = ZO_ColorDef:New("FFD700") --golden
 local LINK_MOUSE_OVER_COLOR = ZO_ColorDef:New("B8B8D3")
+local LINK_COLOR_DONATE = ZO_ColorDef:New("FFD700") -- golden
+local LINK_MOUSE_OVER_COLOR_DONATE = ZO_ColorDef:New("FFF6CC")
+
+local function CreateButtonControl(control, label, clickAction, relativeTo)
+    local button = wm:CreateControl(nil, control, CT_BUTTON)
+    button:SetClickSound("Click")
+    button:SetFont(LAM.util.L["PANEL_INFO_FONT"])
+    button:SetNormalFontColor(LINK_COLOR:UnpackRGBA())
+    button:SetMouseOverFontColor(LINK_MOUSE_OVER_COLOR:UnpackRGBA())
+
+    local OnClicked
+    local actionType = type(clickAction)
+    if actionType == "string" then
+        OnClicked = function() RequestOpenUnsafeURL(clickAction) end
+    elseif actionType == "function" then
+        OnClicked = clickAction
+    end
+    button:SetHandler("OnClicked", OnClicked)
+
+    if relativeTo then
+        button:SetAnchor(TOPLEFT, relativeTo, TOPRIGHT, 0, 0)
+        button:SetText(COLORED_SEPARATOR .. label)
+    else
+        button:SetAnchor(TOPLEFT, control.label, BOTTOMLEFT, 0, -2)
+        button:SetText(label)
+    end
+    button:SetDimensions(button:GetLabelControl():GetTextDimensions())
+
+    return button
+end
 
 function LAMCreateControl.panel(parent, panelData, controlName)
     local control = wm:CreateControl(controlName, parent, CT_CONTROL)
@@ -75,6 +105,7 @@ function LAMCreateControl.panel(parent, panelData, controlName)
     label:SetAnchor(TOPLEFT, control, TOPLEFT, 0, 4)
     label:SetText(LAM.util.GetStringFromValue(panelData.displayName or panelData.name))
 
+    local previousInfoControl
     if panelData.author or panelData.version then
         control.info = wm:CreateControl(nil, control, CT_LABEL)
         local info = control.info
@@ -89,126 +120,30 @@ function LAMCreateControl.panel(parent, panelData, controlName)
             output[#output + 1] = zo_strformat(LAM.util.L["VERSION"], LAM.util.GetStringFromValue(panelData.version))
         end
         info:SetText(table.concat(output, SEPARATOR))
+        previousInfoControl = info
     end
 
     if panelData.website then
-        control.website = wm:CreateControl(nil, control, CT_BUTTON)
-        local website = control.website
-        website:SetClickSound("Click")
-        website:SetFont(LAM.util.L["PANEL_INFO_FONT"])
-        website:SetNormalFontColor(LINK_COLOR:UnpackRGBA())
-        website:SetMouseOverFontColor(LINK_MOUSE_OVER_COLOR:UnpackRGBA())
-        if(control.info) then
-            website:SetAnchor(TOPLEFT, control.info, TOPRIGHT, 0, 0)
-            website:SetText(string.format("|cffffff%s|r%s", SEPARATOR, LAM.util.L["WEBSITE"]))
-        else
-            website:SetAnchor(TOPLEFT, label, BOTTOMLEFT, 0, -2)
-            website:SetText(LAM.util.L["WEBSITE"])
-        end
-        website:SetDimensions(website:GetLabelControl():GetTextDimensions())
-        local websiteOnClickHandler
-        local websiteType = type(panelData.website)
-        if websiteType == "string" then
-            websiteOnClickHandler = function() RequestOpenUnsafeURL(panelData.website) end
-        elseif websiteType == "function" then
-            websiteOnClickHandler = function(ctrl) panelData.website(ctrl) end
-        end
-        website:SetHandler("OnClicked", function(ctrl)
-            websiteOnClickHandler(ctrl)
-        end)
+        control.website = CreateButtonControl(control, LAM.util.L["WEBSITE"], panelData.website, previousInfoControl)
+        previousInfoControl = control.website
     end
 
     if panelData.feedback then
-        control.feedback = wm:CreateControl(nil, control, CT_BUTTON)
-        local feedback = control.feedback
-        feedback:SetClickSound("Click")
-        feedback:SetFont(LAM.util.L["PANEL_INFO_FONT"])
-        feedback:SetNormalFontColor(LINK_COLOR:UnpackRGBA())
-        feedback:SetMouseOverFontColor(LINK_MOUSE_OVER_COLOR:UnpackRGBA())
-        if(control.website) then
-            feedback:SetAnchor(TOPLEFT, control.website, TOPRIGHT, 0, 0)
-            feedback:SetText(string.format("|cffffff%s|r%s", SEPARATOR, LAM.util.L["FEEDBACK"]))
-        elseif(control.info) then
-            feedback:SetAnchor(TOPLEFT, control.info, TOPRIGHT, 0, 0)
-            feedback:SetText(string.format("|cffffff%s|r%s", SEPARATOR, LAM.util.L["DONATION"]))
-        else
-            feedback:SetAnchor(TOPLEFT, label, BOTTOMLEFT, 0, -2)
-            feedback:SetText(LAM.util.L["FEEDBACK"])
-        end
-        feedback:SetDimensions(feedback:GetLabelControl():GetTextDimensions())
-        local feedbackOnClickHandler
-        local feedbackType = type(panelData.feedback)
-        if feedbackType == "string" then
-            feedbackOnClickHandler = function() RequestOpenUnsafeURL(panelData.feedback) end
-        elseif feedbackType == "function" then
-            feedbackOnClickHandler = function(ctrl) panelData.feedback(ctrl) end
-        end
-        feedback:SetHandler("OnClicked", function(ctrl)
-            feedbackOnClickHandler(ctrl)
-        end)
+        control.feedback = CreateButtonControl(control, LAM.util.L["FEEDBACK"], panelData.feedback, previousInfoControl)
+        previousInfoControl = control.feedback
     end
 
     if panelData.translation then
-        control.translation = wm:CreateControl(nil, control, CT_BUTTON)
-        local translation = control.translation
-        translation:SetClickSound("Click")
-        translation:SetFont(LAM.util.L["PANEL_INFO_FONT"])
-        translation:SetNormalFontColor(LINK_COLOR:UnpackRGBA())
-        translation:SetMouseOverFontColor(LINK_MOUSE_OVER_COLOR:UnpackRGBA())
-        if(control.feedback) then
-            translation:SetAnchor(TOPLEFT, control.feedback, TOPRIGHT, 0, 0)
-            translation:SetText(string.format("|cffffff%s|r%s", SEPARATOR, LAM.util.L["TRANSLATION"]))
-        elseif(control.info) then
-            translation:SetAnchor(TOPLEFT, control.info, TOPRIGHT, 0, 0)
-            translation:SetText(string.format("|cffffff%s|r%s", SEPARATOR, LAM.util.L["TRANSLATION"]))
-        else
-            translation:SetAnchor(TOPLEFT, label, BOTTOMLEFT, 0, -2)
-            translation:SetText(LAM.util.L["TRANSLATION"])
-        end
-        translation:SetDimensions(translation:GetLabelControl():GetTextDimensions())
-        local translationOnClickHandler
-        local translationType = type(panelData.translation)
-        if translationType == "string" then
-            translationOnClickHandler = function() RequestOpenUnsafeURL(panelData.translation) end
-        elseif translationType == "function" then
-            translationOnClickHandler = function(ctrl) panelData.translation(ctrl) end
-        end
-        translation:SetHandler("OnClicked", function(ctrl)
-            translationOnClickHandler(ctrl)
-        end)
+        control.translation = CreateButtonControl(control, LAM.util.L["TRANSLATION"], panelData.translation, previousInfoControl)
+        previousInfoControl = control.translation
     end
 
     if panelData.donation then
-        control.donation = wm:CreateControl(nil, control, CT_BUTTON)
+        control.donation = CreateButtonControl(control, LAM.util.L["DONATION"], panelData.donation, previousInfoControl)
         local donation = control.donation
-        donation:SetClickSound("Click")
-        donation:SetFont(LAM.util.L["PANEL_INFO_FONT"])
+        previousInfoControl = donation
         donation:SetNormalFontColor(LINK_COLOR_DONATE:UnpackRGBA())
-        donation:SetMouseOverFontColor(LINK_MOUSE_OVER_COLOR:UnpackRGBA())
-        if(control.translation) then
-            donation:SetAnchor(TOPLEFT, control.translation, TOPRIGHT, 0, 0)
-            donation:SetText(string.format("|cffffff%s|r%s", SEPARATOR, LAM.util.L["DONATION"]))
-        elseif(control.feedback) then
-            donation:SetAnchor(TOPLEFT, control.feedback, TOPRIGHT, 0, 0)
-            donation:SetText(string.format("|cffffff%s|r%s", SEPARATOR, LAM.util.L["DONATION"]))
-        elseif(control.info) then
-            donation:SetAnchor(TOPLEFT, control.info, TOPRIGHT, 0, 0)
-            donation:SetText(string.format("|cffffff%s|r%s", SEPARATOR, LAM.util.L["DONATION"]))
-        else
-            donation:SetAnchor(TOPLEFT, label, BOTTOMLEFT, 0, -2)
-            donation:SetText(LAM.util.L["DONATION"])
-        end
-        donation:SetDimensions(donation:GetLabelControl():GetTextDimensions())
-        local donationOnClickHandler
-        local donationType = type(panelData.donation)
-        if donationType == "string" then
-            donationOnClickHandler = function() RequestOpenUnsafeURL(panelData.donation) end
-        elseif donationType == "function" then
-            donationOnClickHandler = function(ctrl) panelData.donation(ctrl) end
-        end
-        donation:SetHandler("OnClicked", function(ctrl)
-            donationOnClickHandler(ctrl)
-        end)
+        donation:SetMouseOverFontColor(LINK_MOUSE_OVER_COLOR_DONATE:UnpackRGBA())
     end
 
     control.container = wm:CreateControlFromVirtual("LAMAddonPanelContainer"..LAMCreateControl.scrollCount, control, "ZO_ScrollContainer")
