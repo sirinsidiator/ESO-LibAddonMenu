@@ -866,7 +866,7 @@ function lam:RegisterAddonPanel(addonID, panelData)
     local panel = lamcc.panel(container, panelData, addonID) --addonID==global name of panel
     panel:SetHidden(true)
     panel:SetAnchorFill(container)
-    panel:SetHandler("OnShow", ToggleAddonPanels)
+    panel:SetHandler("OnEffectivelyShown", ToggleAddonPanels)
 
     local function stripMarkup(str)
         return str:gsub("|[Cc]%x%x%x%x%x%x", ""):gsub("|[Rr]", "")
