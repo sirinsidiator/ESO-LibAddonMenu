@@ -149,7 +149,7 @@ end
 
 local function RequestRefreshIfNeeded(control)
     -- if our parent window wants to refresh controls, then fire the callback
-    local panel = GetTopPanel(control.panel)
+    local panel = GetTopPanel(control)
     local panelData = panel.data
     if panelData.registerForRefresh then
         cm:FireCallbacks("LAM-RefreshPanel", control)

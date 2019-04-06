@@ -16,7 +16,7 @@
 } ]]
 
 
-local widgetVersion = 14
+local widgetVersion = 15
 local LAM = LibStub("LibAddonMenu-2.0")
 if not LAM:RegisterWidget("panel", widgetVersion) then return end
 
@@ -25,6 +25,8 @@ local cm = CALLBACK_MANAGER
 
 local function RefreshPanel(control)
     local panel = LAM.util.GetTopPanel(control) --callback can be fired by a single control, by the panel showing or by a nested submenu
+    if LAM.currentAddonPanel ~= panel or not LAM.currentPanelOpened then return end -- we refresh it later when the panel is opened
+
     local panelControls = panel.controlsToRefresh
 
     for i = 1, #panelControls do
@@ -223,6 +225,7 @@ function LAMCreateControl.panel(parent, panelData, controlName)
     end
 
     control.ForceDefaults = ForceDefaults
+    control.RefreshPanel = LAM.util.RequestRefreshIfNeeded
     control.data = panelData
     control.controlsToRefresh = {}
 
