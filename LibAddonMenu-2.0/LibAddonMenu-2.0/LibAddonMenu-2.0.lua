@@ -25,6 +25,11 @@ local function FlushMessages()
     messages = {}
 end
 
+local logger
+if LibDebugLogger then
+    logger = LibDebugLogger(MAJOR)
+end
+
 if LAMSettingsPanelCreated and not LAMCompatibilityWarning then
     PrintLater("An old version of LibAddonMenu with compatibility issues was detected. For more information on how to proceed search for LibAddonMenu on esoui.com")
     LAMCompatibilityWarning = true
@@ -797,6 +802,9 @@ local function CreateOptionsControls(panel)
                     err, anchorOffset, lastAddedControl, wasHalf = CreateAndAnchorWidget(parent, widgetData, offsetX, anchorOffset, lastAddedControl, wasHalf)
                     if err then
                         PrintLater(("Could not create %s '%s' of %s."):format(widgetData.type, GetStringFromValue(widgetData.name or "unnamed"), addonID))
+                        if logger then
+                            logger:Error(err)
+                        end
                     end
 
                     if isSubmenu then
