@@ -1,6 +1,8 @@
 --[[submenuData = {
     type = "submenu",
     name = "Submenu Title", -- or string id or function returning a string
+    icon = "path/to/my/icon.dds", -- or function returning a string (optional)
+    iconTextureCoords = {left, right, top, bottom}, -- or function returning a table (optional)
     tooltip = "My submenu tooltip", -- -- or string id or function returning a string (optional)
     controls = {sliderData, buttonData} --(optional) used by LAM
     disabled = function() return db.someBooleanSetting end, --or boolean (optional)
@@ -14,6 +16,7 @@ if not LAM:RegisterWidget("submenu", widgetVersion) then return end
 
 local wm = WINDOW_MANAGER
 local am = ANIMATION_MANAGER
+local ICON_SIZE = 32
 
 local GetDefaultValue = LAM.util.GetDefaultValue
 local GetColorForState = LAM.util.GetColorForState
@@ -35,12 +38,24 @@ local function UpdateDisabled(control)
     if disableLabel ~= control.disabledLabel then
         local color = GetColorForState(disableLabel)
         control.label:SetColor(color:UnpackRGBA())
+        if(control.icon) then
+            control.icon:SetDesaturation(disableLabel and 1 or 0)
+        end
         control.disabledLabel = disableLabel
     end
 end
 
 local function UpdateValue(control)
     control.label:SetText(LAM.util.GetStringFromValue(control.data.name))
+
+    if control.icon then
+        control.icon:SetTexture(GetDefaultValue(control.data.icon))
+        if(control.data.iconTextureCoords) then
+            local coords = GetDefaultValue(control.data.iconTextureCoords)
+            control.icon:SetTextureCoords(unpack(coords))
+        end
+    end
+
     if control.data.tooltip then
         control.label.data.tooltipText = LAM.util.GetStringFromValue(control.data.tooltip)
     end
@@ -66,30 +81,55 @@ function LAMCreateControl.submenu(parent, submenuData, controlName)
 
     control.label = wm:CreateControlFromVirtual(nil, control, "ZO_Options_SectionTitleLabel")
     local label = control.label
-    label:SetAnchor(TOPLEFT, control, TOPLEFT, 5, 5)
-    label:SetDimensions(width, 30)
     label:SetWrapMode(TEXT_WRAP_MODE_ELLIPSIS)
     label:SetText(LAM.util.GetStringFromValue(submenuData.name))
     label:SetMouseEnabled(true)
+
+    if submenuData.icon then
+        control.icon = wm:CreateControl(nil, control, CT_TEXTURE)
+        local icon = control.icon
+        icon:SetTexture(GetDefaultValue(submenuData.icon))
+        if(submenuData.iconTextureCoords) then
+            local coords = GetDefaultValue(submenuData.iconTextureCoords)
+            icon:SetTextureCoords(unpack(coords))
+        end
+        icon:SetDimensions(ICON_SIZE, ICON_SIZE)
+        icon:SetAnchor(TOPLEFT, control, TOPLEFT, 5, 5)
+        icon:SetMouseEnabled(true)
+        icon:SetDrawLayer(DL_CONTROLS)
+        label:SetAnchor(TOP, control, TOP, 0, 5, ANCHOR_CONSTRAINS_Y)
+        label:SetAnchor(LEFT, icon, RIGHT, 10, 0, ANCHOR_CONSTRAINS_X)
+        label:SetDimensions(width - ICON_SIZE - 5, 30)
+    else
+        label:SetAnchor(TOPLEFT, control, TOPLEFT, 5, 5)
+        label:SetDimensions(width, 30)
+    end
+
     if submenuData.tooltip then
         label.data = {tooltipText = LAM.util.GetStringFromValue(submenuData.tooltip)}
         label:SetHandler("OnMouseEnter", ZO_Options_OnMouseEnter)
         label:SetHandler("OnMouseExit", ZO_Options_OnMouseExit)
+        if control.icon then
+            control.icon.data = label.data
+            control.icon:SetHandler("OnMouseEnter", ZO_Options_OnMouseEnter)
+            control.icon:SetHandler("OnMouseExit", ZO_Options_OnMouseExit)
+        end
     end
 
     control.scroll = wm:CreateControl(nil, control, CT_SCROLL)
     local scroll = control.scroll
     scroll:SetParent(control)
-    scroll:SetAnchor(TOPLEFT, label, BOTTOMLEFT, 0, 10)
+    scroll:SetAnchor(TOPLEFT, control.icon or label, BOTTOMLEFT, 0, 10)
     scroll:SetDimensionConstraints(width + 5, 0, width + 5, 0)
 
-    control.bg = wm:CreateControl(nil, label, CT_BACKDROP)
+    control.bg = wm:CreateControl(nil, control.icon or label, CT_BACKDROP)
     local bg = control.bg
-    bg:SetAnchor(TOPLEFT, label, TOPLEFT, -5, -5)
+    bg:SetAnchor(TOPLEFT, control.icon or label, TOPLEFT, -5, -5)
     bg:SetAnchor(BOTTOMRIGHT, scroll, BOTTOMRIGHT, -7, 0)
     bg:SetEdgeTexture("EsoUI\\Art\\Tooltips\\UI-Border.dds", 128, 16)
     bg:SetCenterTexture("EsoUI\\Art\\Tooltips\\UI-TooltipCenter.dds")
     bg:SetInsets(16, 16, -16, -16)
+    bg:SetDrawLayer(DL_BACKGROUND)
 
     control.arrow = wm:CreateControl(nil, bg, CT_TEXTURE)
     local arrow = control.arrow
@@ -105,6 +145,9 @@ function LAMCreateControl.submenu(parent, submenuData, controlName)
     control:SetResizeToFitDescendents(true)
     control.open = false
     label:SetHandler("OnMouseUp", AnimateSubmenu)
+    if(control.icon) then
+        control.icon:SetHandler("OnMouseUp", AnimateSubmenu)
+    end
     animation:SetHandler("OnStop", function(self, completedPlaying)
         scroll:SetResizeToFitDescendents(control.open)
         if control.open then
