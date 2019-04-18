@@ -22,6 +22,9 @@ local function UpdateDisabled(control)
     if disable ~= control.disabled then
         local color = GetColorForState(disable)
         control.desc:SetColor(color:UnpackRGBA())
+        if control.title then
+            control.title:SetColor(color:UnpackRGBA())
+        end
         control.disabled = disable
     end
 end
