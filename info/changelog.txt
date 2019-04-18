@@ -1,3 +1,20 @@
+2.0 r27
+- fixed scrollable dropdown not working correctly ([url=https://github.com/sirinsidiator/ESO-LibAddonMenu/issues/83]#83[/url])
+- fixed disabled sliders changing value in some situations when clicked
+- fixed panel not refreshing on open when it was already selected ([url=https://github.com/sirinsidiator/ESO-LibAddonMenu/issues/82]#82[/url])
+- added RefreshPanel function to panel control ([url=https://github.com/sirinsidiator/ESO-LibAddonMenu/issues/84]#84[/url])
+[INDENT]- the panel control is returned by RegisterAddonPanel[/INDENT]
+- added "translation", "feedback" and "donation" properties to panel ([url=https://github.com/sirinsidiator/ESO-LibAddonMenu/pull/88]#88[/url], thanks Baertram)
+[INDENT]- all three (and also the "website" property) accept a function or a string[/INDENT]
+- added "disabled" and "disabledLabel" property for submenus ([url=https://github.com/sirinsidiator/ESO-LibAddonMenu/pull/86]#86[/url], [url=https://github.com/sirinsidiator/ESO-LibAddonMenu/pull/90]#90[/url], thanks klingo)
+- added "icon" and "iconTextureCoords" property for submenus ([url=https://github.com/sirinsidiator/ESO-LibAddonMenu/pull/91]#91[/url])
+- added "disabled" property for descriptions ([url=https://github.com/sirinsidiator/ESO-LibAddonMenu/pull/89]#89[/url], thanks klingo)
+- added "clampFunction" property for slider controls ([url=https://github.com/sirinsidiator/ESO-LibAddonMenu/issues/85]#85[/url])
+[INDENT]- the function receives the value, min and max as arguments and has to return a clamped value[/INDENT]
+- added optional support for LibDebugLogger
+[INDENT]- in case it is loaded, it logs the full error when control creation failed[/INDENT]
+- updated LibStub to r5
+
 2.0 r26
 - fixed error when loading LAM on an unsupported locale
 - added Korean translation (thanks p.walker)
