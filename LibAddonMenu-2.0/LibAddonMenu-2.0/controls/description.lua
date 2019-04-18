@@ -3,15 +3,28 @@
     text = "My description text to display.", -- or string id or function returning a string
     title = "My Title", -- or string id or function returning a string (optional)
     width = "full", --or "half" (optional)
+    disabled = function() return db.someBooleanSetting end, --or boolean (optional)
     reference = "MyAddonDescription" -- unique global reference to control (optional)
 } ]]
 
 
-local widgetVersion = 8
+local widgetVersion = 9
 local LAM = LibStub("LibAddonMenu-2.0")
 if not LAM:RegisterWidget("description", widgetVersion) then return end
 
 local wm = WINDOW_MANAGER
+
+local GetDefaultValue = LAM.util.GetDefaultValue
+local GetColorForState = LAM.util.GetColorForState
+
+local function UpdateDisabled(control)
+    local disable = GetDefaultValue(control.data.disabled)
+    if disable ~= control.disabled then
+        local color = GetColorForState(disable)
+        control.desc:SetColor(color:UnpackRGBA())
+        control.disabled = disable
+    end
+end
 
 local function UpdateValue(control)
     if control.title then
@@ -52,6 +65,10 @@ function LAMCreateControl.description(parent, descriptionData, controlName)
     end
 
     control.UpdateValue = UpdateValue
+    if descriptionData.disabled ~= nil then
+        control.UpdateDisabled = UpdateDisabled
+        control:UpdateDisabled()
+    end
 
     LAM.util.RegisterForRefreshIfNeeded(control)
 
