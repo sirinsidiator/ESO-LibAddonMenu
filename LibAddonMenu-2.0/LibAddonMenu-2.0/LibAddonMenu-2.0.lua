@@ -77,6 +77,10 @@ local function GetStringFromValue(value)
     return value
 end
 
+local function GetColorForState(disabled)
+    return disabled and ZO_DEFAULT_DISABLED_COLOR or ZO_DEFAULT_ENABLED_COLOR
+end
+
 local function CreateBaseControl(parent, controlData, controlName)
     local control = wm:CreateControl(controlName or controlData.reference, parent.scroll or parent, CT_CONTROL)
     control.panel = parent.panel or parent -- if this is in a submenu, panel is the submenu's parent
@@ -463,6 +467,7 @@ util.L = ZO_ShallowTableCopy(localization[GetCVar("Language.2")] or {}, localiza
 util.GetTooltipText = GetStringFromValue -- deprecated, use util.GetStringFromValue instead
 util.GetStringFromValue = GetStringFromValue
 util.GetDefaultValue = GetDefaultValue
+util.GetColorForState = GetColorForState
 util.CreateBaseControl = CreateBaseControl
 util.CreateLabelAndContainerControl = CreateLabelAndContainerControl
 util.RequestRefreshIfNeeded = RequestRefreshIfNeeded
