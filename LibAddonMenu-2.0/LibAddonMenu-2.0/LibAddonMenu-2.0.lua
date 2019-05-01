@@ -871,6 +871,13 @@ local function ToggleAddonPanels(panel) --called in OnShow of newly shown panel
 end
 
 local CheckSafetyAndInitialize
+local function ShowSetHandlerWarning(panel, handler)
+    if(handler == "OnShow" or handler == "OnEffectivelyShown") then
+        PrintLater(("Setting a handler on a panel is not recommended. Use the global callback 'LAM-PanelControlsCreated' or 'LAM-PanelOpened' instead. (%s on %s)"):format(handler, panel:GetName()))
+    elseif(handler == "OnHide" or handler == "OnEffectivelyHidden") then
+        PrintLater(("Setting a handler on a panel is not recommended. Use the global callback 'LAM-PanelClosed' instead. (%s on %s)"):format(handler, panel:GetName()))
+    end
+end
 
 --METHOD: REGISTER ADDON PANEL
 --registers your addon with LibAddonMenu and creates a panel
@@ -884,6 +891,7 @@ function lam:RegisterAddonPanel(addonID, panelData)
     panel:SetHidden(true)
     panel:SetAnchorFill(container)
     panel:SetHandler("OnEffectivelyShown", ToggleAddonPanels)
+    ZO_PreHook(panel, "SetHandler", ShowSetHandlerWarning)
 
     local function stripMarkup(str)
         return str:gsub("|[Cc]%x%x%x%x%x%x", ""):gsub("|[Rr]", "")
