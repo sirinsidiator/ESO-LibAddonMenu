@@ -7,6 +7,7 @@
 local MAJOR, MINOR = "LibAddonMenu-2.0", _LAM2_VERSION_NUMBER or -1
 local lam, oldminor = LibStub:NewLibrary(MAJOR, MINOR)
 if not lam then return end --the same or newer version of this lib is already loaded into memory
+LibAddonMenu2 = lam
 
 local messages = {}
 local MESSAGE_PREFIX = "[LAM2] "
