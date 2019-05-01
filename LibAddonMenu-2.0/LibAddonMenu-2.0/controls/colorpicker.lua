@@ -13,7 +13,7 @@
 } ]]
 
 
-local widgetVersion = 13
+local widgetVersion = 14
 local LAM = LibStub("LibAddonMenu-2.0")
 if not LAM:RegisterWidget("colorpicker", widgetVersion) then return end
 
@@ -79,7 +79,11 @@ function LAMCreateControl.colorpicker(parent, colorpickerData, controlName)
 
         if upInside then
             local r, g, b, a = colorpickerData.getFunc()
-            COLOR_PICKER:Show(ColorPickerCallback, r, g, b, a, LAM.util.GetStringFromValue(colorpickerData.name))
+            if IsInGamepadPreferredMode() then
+                COLOR_PICKER_GAMEPAD:Show(ColorPickerCallback, r, g, b, a)
+            else
+                COLOR_PICKER:Show(ColorPickerCallback, r, g, b, a)
+            end
         end
     end)
 
