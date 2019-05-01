@@ -450,16 +450,19 @@ local localization = {
         RELOAD_DIALOG_RELOAD_BUTTON = "苈穜滠遨",
         RELOAD_DIALOG_DISCARD_BUTTON = "绀溽迨莌",
     },
-    br = { -- provided by mlsevero
+    br = { -- provided by mlsevero & FelipeS11
         PANEL_NAME = "Addons",
         AUTHOR = string.format("%s: <<X:1>>", GetString(SI_ADDON_MANAGER_AUTHOR)), -- "Autor: <<X:1>>"
         VERSION = "Versão: <<X:1>>",
         WEBSITE = "Visite o Website",
-        RELOAD_UI_WARNING = "Mudanças nessa configuração requer a releitura da UI para ter efeito.",
-        RELOAD_DIALOG_TITLE = "Releitura da UI requerida",
-        RELOAD_DIALOG_TEXT = "Algumas mudanças requerem a releitura da UI para ter efeito. Você deseja reler agora ou descartar as mudanças?",
-        RELOAD_DIALOG_RELOAD_BUTTON = "Relê",
-        RELOAD_DIALOG_DISCARD_BUTTON = "Descarta",
+        FEEDBACK = "Feedback",
+        TRANSLATION = "Tradução",
+        DONATION = "Doação",
+        RELOAD_UI_WARNING = "Mudanças nessa configuração requerem o recarregamento da UI para ter efeito.",
+        RELOAD_DIALOG_TITLE = "Recarregamento da UI requerida",
+        RELOAD_DIALOG_TEXT = "Algumas mudanças requerem o recarregamento da UI para ter efeito. Você deseja recarregar agora ou descartar as mudanças?",
+        RELOAD_DIALOG_RELOAD_BUTTON = "Recarregar",
+        RELOAD_DIALOG_DISCARD_BUTTON = "Descartar",
     },
 }
 
