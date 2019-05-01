@@ -1,3 +1,11 @@
+2.0 r28
+- fixed color picker throwing errors in gamepad mode ([url=https://github.com/sirinsidiator/ESO-LibAddonMenu/issues/94]#94[/url], thanks Gandalf)
+- added global variable "LibAddonMenu2" for direct access without using LibStub ([url=https://github.com/sirinsidiator/ESO-LibAddonMenu/issues/95]#95[/url])
+- added IsLibrary directive to manifest ([url=https://github.com/sirinsidiator/ESO-LibAddonMenu/issues/93]#93[/url])
+- added warning message when an addon is setting the "OnShow", "OnEffectivelyShown", "OnHide" or "OnEffectivelyHidden" handler on a panel ([url=https://github.com/sirinsidiator/ESO-LibAddonMenu/issues/92]#92[/url])
+[INDENT]- use the callbacks "LAM-PanelControlsCreated", "LAM-PanelOpened" and "LAM-PanelClosed" instead[/INDENT]
+- updated Brazilian translation (thanks FelipeS11)
+
 2.0 r27
 - fixed scrollable dropdown not working correctly ([url=https://github.com/sirinsidiator/ESO-LibAddonMenu/issues/83]#83[/url])
 - fixed disabled sliders changing value in some situations when clicked
