@@ -10,6 +10,7 @@
     donation = "http://www.esoui.com/downloads/info7-LibAddonMenu.html", -- URL of website where a donation for the addon author can be raised or function (optional)
     keywords = "settings", -- additional keywords for search filter (it looks for matches in name..keywords..author) (optional)
     slashCommand = "/myaddon", -- will register a keybind to open to this panel (don't forget to include the slash!) (optional)
+    reloadWarningColor = "ff0000" -- (optional) apply a color to the reload UI warning text
     registerForRefresh = true, --boolean (optional) (will refresh all options controls when a setting is changed and when the panel is shown)
     registerForDefaults = true, --boolean (optional) (will set all options controls back to default values)
     resetFunc = function() print("defaults reset") end, --(optional) custom function to run after settings are reset to defaults
