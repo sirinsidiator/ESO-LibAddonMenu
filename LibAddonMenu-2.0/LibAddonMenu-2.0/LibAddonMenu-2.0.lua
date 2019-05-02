@@ -322,10 +322,18 @@ local function UpdateWarning(control)
     end
 
     if control.data.requiresReload then
+        local color = control.panel.data.reloadWarningColor
+        
+        local reloadWarning = util.L["RELOAD_UI_WARNING"]
+        
+        if color then
+            reloadWarning = string.format("|c%s%s", color, reloadWarning)
+        end
+        
         if not warning then
-            warning = util.L["RELOAD_UI_WARNING"]
+            warning = reloadWarning
         else
-            warning = string.format("%s\n\n%s", warning, util.L["RELOAD_UI_WARNING"])
+            warning = string.format("%s\n\n%s", warning, reloadWarning)
         end
     end
 
