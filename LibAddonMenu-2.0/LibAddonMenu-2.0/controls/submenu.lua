@@ -3,11 +3,11 @@
     name = "Submenu Title", -- or string id or function returning a string
     icon = "path/to/my/icon.dds", -- or function returning a string (optional)
     iconTextureCoords = {left, right, top, bottom}, -- or function returning a table (optional)
-    tooltip = "My submenu tooltip", -- -- or string id or function returning a string (optional)
-    controls = {sliderData, buttonData} --(optional) used by LAM
-    disabled = function() return db.someBooleanSetting end, --or boolean (optional)
-    disabledLabel = function() return db.someBooleanSetting end, --or boolean (optional)
-    reference = "MyAddonSubmenu" --(optional) unique global reference to control
+    tooltip = "My submenu tooltip", -- or string id or function returning a string (optional)
+    controls = {sliderData, buttonData} -- used by LAM (optional)
+    disabled = function() return db.someBooleanSetting end, -- or boolean (optional)
+    disabledLabel = function() return db.someBooleanSetting end, -- or boolean (optional)
+    reference = "MyAddonSubmenu" -- unique global reference to control (optional)
 } ]]
 
 local widgetVersion = 13
