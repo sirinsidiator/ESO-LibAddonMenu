@@ -1,8 +1,8 @@
 --[[dividerData = {
     type = "divider",
-    width = "full", --or "half" (optional)
-    height = 10, (optional)
-    alpha = 0.25, (optional)
+    width = "full", -- or "half" (optional)
+    height = 10, -- (optional)
+    alpha = 0.25, -- (optional)
     reference = "MyAddonDivider" -- unique global reference to control (optional)
 } ]]
 

@@ -5,7 +5,7 @@
     setFunc = function(value) db.var = value doStuff() end,
     tooltip = "Checkbox's tooltip text.", -- or string id or function returning a string (optional)
     width = "full", -- or "half" (optional)
-    disabled = function() return db.someBooleanSetting end, --or boolean (optional)
+    disabled = function() return db.someBooleanSetting end, -- or boolean (optional)
     warning = "May cause permanent awesomeness.", -- or string id or function returning a string (optional)
     requiresReload = false, -- boolean, if set to true, the warning text will contain a notice that changes are only applied after an UI reload and any change to the value will make the "Apply Settings" button appear on the panel which will reload the UI when pressed (optional)
     default = defaults.var, -- a boolean or function that returns a boolean (optional)

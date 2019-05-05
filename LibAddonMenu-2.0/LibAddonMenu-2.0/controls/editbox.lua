@@ -4,10 +4,10 @@
     getFunc = function() return db.text end,
     setFunc = function(text) db.text = text doStuff() end,
     tooltip = "Editbox's tooltip text.", -- or string id or function returning a string (optional)
-    isMultiline = true, --boolean (optional)
-    isExtraWide = true, --boolean (optional)
-    width = "full", --or "half" (optional)
-    disabled = function() return db.someBooleanSetting end, --or boolean (optional)
+    isMultiline = true, -- boolean (optional)
+    isExtraWide = true, -- boolean (optional)
+    width = "full", -- or "half" (optional)
+    disabled = function() return db.someBooleanSetting end, -- or boolean (optional)
     warning = "May cause permanent awesomeness.", -- or string id or function returning a string (optional)
     requiresReload = false, -- boolean, if set to true, the warning text will contain a notice that changes are only applied after an UI reload and any change to the value will make the "Apply Settings" button appear on the panel which will reload the UI when pressed (optional)
     default = defaults.text, -- default value or function that returns the default value (optional)

@@ -2,8 +2,8 @@
     type = "description",
     text = "My description text to display.", -- or string id or function returning a string
     title = "My Title", -- or string id or function returning a string (optional)
-    width = "full", --or "half" (optional)
-    disabled = function() return db.someBooleanSetting end, --or boolean (optional)
+    width = "full", -- or "half" (optional)
+    disabled = function() return db.someBooleanSetting end, -- or boolean (optional)
     reference = "MyAddonDescription" -- unique global reference to control (optional)
 } ]]
 
