@@ -5,14 +5,14 @@
     setFunc = function(value) db.var = value doStuff() end,
     min = 0,
     max = 20,
-    step = 1, --(optional)
+    step = 1, -- (optional)
     clampInput = true, -- boolean, if set to false the input won't clamp to min and max and allow any number instead (optional)
     clampFunction = function(value, min, max) return math.max(math.min(value, max), min) end, -- function that is called to clamp the value (optional)
     decimals = 0, -- when specified the input value is rounded to the specified number of decimals (optional)
     autoSelect = false, -- boolean, automatically select everything in the text input field when it gains focus (optional)
     inputLocation = "below", -- or "right", determines where the input field is shown. This should not be used within the addon menu and is for custom sliders (optional) 
     tooltip = "Slider's tooltip text.", -- or string id or function returning a string (optional)
-    width = "full", --or "half" (optional)
+    width = "full", -- or "half" (optional)
     disabled = function() return db.someBooleanSetting end, --or boolean (optional)
     warning = "May cause permanent awesomeness.", -- or string id or function returning a string (optional)
     requiresReload = false, -- boolean, if set to true, the warning text will contain a notice that changes are only applied after an UI reload and any change to the value will make the "Apply Settings" button appear on the panel which will reload the UI when pressed (optional)

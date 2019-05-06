@@ -1,7 +1,7 @@
 --[[headerData = {
     type = "header",
     name = "My Header", -- or string id or function returning a string
-    width = "full", --or "half" (optional)
+    width = "full", -- or "half" (optional)
     reference = "MyAddonHeader" -- unique global reference to control (optional)
 } ]]
 
