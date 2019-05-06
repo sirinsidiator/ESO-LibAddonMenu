@@ -325,9 +325,9 @@ local function UpdateWarning(control)
 
     if control.data.requiresReload then
         if not warning then
-            warning = string.format("|cff0000%s", util.L["RELOAD_UI_WARNING"])
+            warning = string.format("%s", util.L["RELOAD_UI_WARNING"])
         else
-            warning = string.format("%s\n\n|cff0000%s", warning, util.L["RELOAD_UI_WARNING"])
+            warning = string.format("%s\n\n%s", warning, util.L["RELOAD_UI_WARNING"])
         end
     end
 
@@ -349,9 +349,9 @@ local localization = {
         TRANSLATION = "Translation",
         DONATION = "Donate",
         PANEL_INFO_FONT = "$(CHAT_FONT)|14|soft-shadow-thin",
-        RELOAD_UI_WARNING = "Changes to this setting require an UI reload in order to take effect.",
-        RELOAD_DIALOG_TITLE = "UI Reload required",
-        RELOAD_DIALOG_TEXT = "Some changes require an UI reload in order to take effect. Do you want to reload now or discard the changes?",
+        RELOAD_UI_WARNING = "Changes to this setting require a UI reload in order to take effect.",
+        RELOAD_DIALOG_TITLE = "UI Reload Required",
+        RELOAD_DIALOG_TEXT = "Some changes require a UI reload in order to take effect. Do you want to reload now or discard the changes?",
         RELOAD_DIALOG_RELOAD_BUTTON = "Reload",
         RELOAD_DIALOG_DISCARD_BUTTON = "Discard",
     },
