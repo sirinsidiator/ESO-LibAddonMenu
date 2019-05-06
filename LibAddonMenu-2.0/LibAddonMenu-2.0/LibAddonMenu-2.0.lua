@@ -154,7 +154,9 @@ local function RefreshReloadUIButton()
         end
     end
 
-    lam.applyButton:SetHidden(not lam.requiresReload)
+    if lam.applyButton then
+        lam.applyButton:SetHidden(not lam.requiresReload)
+    end
 end
 
 local function RequestRefreshIfNeeded(control)
@@ -872,10 +874,19 @@ end
 
 local CheckSafetyAndInitialize
 local function ShowSetHandlerWarning(panel, handler)
+    local hint
     if(handler == "OnShow" or handler == "OnEffectivelyShown") then
-        PrintLater(("Setting a handler on a panel is not recommended. Use the global callback 'LAM-PanelControlsCreated' or 'LAM-PanelOpened' instead. (%s on %s)"):format(handler, panel:GetName()))
+        hint = "'LAM-PanelControlsCreated' or 'LAM-PanelOpened'"
     elseif(handler == "OnHide" or handler == "OnEffectivelyHidden") then
-        PrintLater(("Setting a handler on a panel is not recommended. Use the global callback 'LAM-PanelClosed' instead. (%s on %s)"):format(handler, panel:GetName()))
+        hint = "'LAM-PanelClosed'"
+    end
+
+    if hint then
+        local message = ("Setting a handler on a panel is not recommended. Use the global callback %s instead. (%s on %s)"):format(hint, handler, panel.data.name)
+        PrintLater(message)
+        if logger then
+            logger:Warn(message)
+        end
     end
 end
 
