@@ -154,7 +154,9 @@ local function RefreshReloadUIButton()
         end
     end
 
-    lam.applyButton:SetHidden(not lam.requiresReload)
+    if lam.applyButton then
+        lam.applyButton:SetHidden(not lam.requiresReload)
+    end
 end
 
 local function RequestRefreshIfNeeded(control)
