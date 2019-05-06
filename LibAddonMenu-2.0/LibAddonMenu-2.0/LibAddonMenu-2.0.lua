@@ -347,8 +347,8 @@ local localization = {
         TRANSLATION = "Translation",
         DONATION = "Donate",
         PANEL_INFO_FONT = "$(CHAT_FONT)|14|soft-shadow-thin",
-        RELOAD_UI_WARNING = GetString(SI_OPTIONS_APPLY_WARNING),
-        RELOAD_DIALOG_TITLE = GetString(SI_ADDON_MANAGER_RELOAD),
+        RELOAD_UI_WARNING = "Changes to this setting require a UI reload in order to take effect.",
+        RELOAD_DIALOG_TITLE = "UI Reload Required",
         RELOAD_DIALOG_TEXT = "Some changes require a UI reload in order to take effect. Do you want to reload now or discard the changes?",
         RELOAD_DIALOG_RELOAD_BUTTON = "Reload",
         RELOAD_DIALOG_DISCARD_BUTTON = "Discard",
@@ -1220,7 +1220,7 @@ local function CreateAddonSettingsWindow()
     lam.defaultButton = defaultButton
 
     local applyButton = wm:CreateControlFromVirtual("$(parent)ApplyButton", tlw, "ZO_DialogButton")
-    ZO_KeybindButtonTemplate_Setup(applyButton, "OPTIONS_APPLY_CHANGES", HandleReloadUIPressed, GetString(SI_APPLY))
+    ZO_KeybindButtonTemplate_Setup(applyButton, "OPTIONS_APPLY_CHANGES", HandleReloadUIPressed, GetString(SI_ADDON_MANAGER_RELOAD))
     applyButton:SetAnchor(TOPRIGHT, panelContainer, BOTTOMRIGHT, 0, 2)
     applyButton:SetHidden(true)
     lam.applyButton = applyButton
