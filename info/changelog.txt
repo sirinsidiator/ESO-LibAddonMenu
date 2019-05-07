@@ -1,3 +1,10 @@
+2.0 r29
+- fixed a rare error when a panel refresh is triggered by an addon before LAM is fully initialized ([url=https://github.com/sirinsidiator/ESO-LibAddonMenu/issues/98]#98[/url])
+- fixed SetHandler warning showing when a scrollable dropdown is used ([url=https://github.com/sirinsidiator/ESO-LibAddonMenu/issues/97]#97[/url])
+- improved SetHandler warning message to show the panel title instead of the internal name and in addition log to LibDebugLogger for easy access to a stack trace ([url=https://github.com/sirinsidiator/ESO-LibAddonMenu/issues/99]#99[/url])
+- improved comments in control files ([url=https://github.com/sirinsidiator/ESO-LibAddonMenu/issues/100]#100[/url], thanks Phuein)
+- adjusted ReloadUI warning color to match the color of the warning in the ingame video settings ([url=https://github.com/sirinsidiator/ESO-LibAddonMenu/issues/101]#101[/url], thanks Phuein)
+
 2.0 r28
 - fixed color picker throwing errors in gamepad mode ([url=https://github.com/sirinsidiator/ESO-LibAddonMenu/issues/94]#94[/url], thanks Gandalf)
 - added global variable "LibAddonMenu2" for direct access without using LibStub ([url=https://github.com/sirinsidiator/ESO-LibAddonMenu/issues/95]#95[/url])
