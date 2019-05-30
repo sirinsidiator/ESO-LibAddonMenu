@@ -4,11 +4,13 @@
     title = "My Title", -- or string id or function returning a string (optional)
     width = "full", -- or "half" (optional)
     disabled = function() return db.someBooleanSetting end, -- or boolean (optional)
+    enableLinks = nil, -- or true for default tooltips, or function OnLinkClicked handler (optional)
+                       -- see: https://wiki.esoui.com/UI_XML#OnLinkClicked
     reference = "MyAddonDescription" -- unique global reference to control (optional)
 } ]]
 
 
-local widgetVersion = 9
+local widgetVersion = 10
 local LAM = LibStub("LibAddonMenu-2.0")
 if not LAM:RegisterWidget("description", widgetVersion) then return end
 
@@ -65,6 +67,19 @@ function LAMCreateControl.description(parent, descriptionData, controlName)
         desc:SetAnchor(TOPLEFT, title, BOTTOMLEFT)
     else
         desc:SetAnchor(TOPLEFT)
+    end
+    
+    if descriptionData.enableLinks then
+        desc:SetMouseEnabled(true)
+        desc:SetLinkEnabled(true)
+        if type(descriptionData.enableLinks) == "function" then
+            desc.linkClickedHandler = descriptionData.enableLinks
+        else
+            function desc:linkClickedHandler(linkData, linkText, button)
+                ZO_LinkHandler_OnLinkClicked(linkText, button) 
+            end
+        end
+        desc:SetHandler("OnLinkClicked", desc.linkClickedHandler)
     end
 
     control.UpdateValue = UpdateValue
