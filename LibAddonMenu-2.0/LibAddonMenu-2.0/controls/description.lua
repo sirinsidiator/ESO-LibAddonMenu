@@ -19,6 +19,10 @@ local wm = WINDOW_MANAGER
 local GetDefaultValue = LAM.util.GetDefaultValue
 local GetColorForState = LAM.util.GetColorForState
 
+local function OnLinkClicked(control, linkData, linkText, button)
+    ZO_LinkHandler_OnLinkClicked(linkText, button) 
+end
+
 local function UpdateDisabled(control)
     local disable = GetDefaultValue(control.data.disabled)
     if disable ~= control.disabled then
@@ -72,14 +76,13 @@ function LAMCreateControl.description(parent, descriptionData, controlName)
     if descriptionData.enableLinks then
         desc:SetMouseEnabled(true)
         desc:SetLinkEnabled(true)
+        local linkClickedHandler
         if type(descriptionData.enableLinks) == "function" then
-            desc.linkClickedHandler = descriptionData.enableLinks
+            linkClickedHandler = descriptionData.enableLinks
         else
-            function desc:linkClickedHandler(linkData, linkText, button)
-                ZO_LinkHandler_OnLinkClicked(linkText, button) 
-            end
+            linkClickedHandler = OnLinkClicked
         end
-        desc:SetHandler("OnLinkClicked", desc.linkClickedHandler)
+        desc:SetHandler("OnLinkClicked", linkClickedHandler)
     end
 
     control.UpdateValue = UpdateValue
