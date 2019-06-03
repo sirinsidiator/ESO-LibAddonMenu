@@ -76,13 +76,11 @@ function LAMCreateControl.description(parent, descriptionData, controlName)
     if descriptionData.enableLinks then
         desc:SetMouseEnabled(true)
         desc:SetLinkEnabled(true)
-        local linkClickedHandler
         if type(descriptionData.enableLinks) == "function" then
-            linkClickedHandler = descriptionData.enableLinks
+            desc:SetHandler("OnLinkClicked", descriptionData.enableLinks)
         else
-            linkClickedHandler = OnLinkClicked
+            desc:SetHandler("OnLinkClicked", OnLinkClicked)
         end
-        desc:SetHandler("OnLinkClicked", linkClickedHandler)
     end
 
     control.UpdateValue = UpdateValue
