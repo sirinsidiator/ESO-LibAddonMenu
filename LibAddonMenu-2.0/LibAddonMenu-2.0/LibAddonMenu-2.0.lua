@@ -965,6 +965,7 @@ local function CreateAddonSettingsMenuEntry()
 
     KEYBOARD_OPTIONS.currentPanelId = panelData.id + 1
     KEYBOARD_OPTIONS.panelNames[panelData.id] = panelData.name
+    KEYBOARD_OPTIONS.controlTable[panelData.id] = {}
 
     lam.panelId = panelData.id
 
