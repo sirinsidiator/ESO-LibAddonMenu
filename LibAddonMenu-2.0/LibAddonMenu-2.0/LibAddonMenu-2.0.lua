@@ -442,17 +442,6 @@ local localization = {
         RELOAD_DIALOG_RELOAD_BUTTON = "Przeładuj",
         RELOAD_DIALOG_DISCARD_BUTTON = "Porzuć",
     },
-    kr = { -- provided by p.walker
-        PANEL_NAME = "蝠盜蠨",
-        VERSION = "纄訄: <<X:1>>",
-        WEBSITE = "裹芬襴钸 縩紸",
-        PANEL_INFO_FONT = "EsoKR/fonts/Univers57.otf|14|soft-shadow-thin",
-        RELOAD_UI_WARNING = "襴 茤訕襄 绀溽靘籴 風滼筼 訁袩靘瀰褄靴 UI 苈穜滠遨襴 靄袔革瓈瓤.",
-        RELOAD_DIALOG_TITLE = "UI 苈穜滠遨 靄袔",
-        RELOAD_DIALOG_TEXT = "绀溽瘜 茤訕 謑 UI 苈穜滠遨襄 靄袔穜靘璔 芬靭襴 覈蒵瓈瓤. 诀瀈 苈穜滠遨靘蓜溠蒵瓈灌? 蝄瓈籴 绀溽襄 迨莌靘蓜溠蒵瓈灌?",
-        RELOAD_DIALOG_RELOAD_BUTTON = "苈穜滠遨",
-        RELOAD_DIALOG_DISCARD_BUTTON = "绀溽迨莌",
-    },
     br = { -- provided by mlsevero & FelipeS11
         PANEL_NAME = "Addons",
         AUTHOR = string.format("%s: <<X:1>>", GetString(SI_ADDON_MANAGER_AUTHOR)), -- "Autor: <<X:1>>"
@@ -469,7 +458,29 @@ local localization = {
     },
 }
 
-util.L = ZO_ShallowTableCopy(localization[GetCVar("Language.2")] or {}, localization["en"])
+do
+    local EsoKR = EsoKR
+    if EsoKR and EsoKR:isKorean() then
+        util.L = ZO_ShallowTableCopy({ -- provided by whya5448
+            PANEL_NAME = EsoKR:E("애드온"),
+            AUTHOR = string.format("%s: <<X:1>>", GetString(SI_ADDON_MANAGER_AUTHOR)), -- "Author: <<X:1>>"
+            VERSION = EsoKR:E("버전: <<X:1>>"),
+            WEBSITE = EsoKR:E("웹사이트 방문"),
+            FEEDBACK = EsoKR:E("피드백"),
+            TRANSLATION = EsoKR:E("번역"),
+            DONATION = EsoKR:E("기부"),
+            PANEL_INFO_FONT = "EsoKR/fonts/Univers57.otf|14|soft-shadow-thin",
+            RELOAD_UI_WARNING = EsoKR:E("이 설정을 변경하면 효과를 적용하기위해 UI 새로고침이 필요합니다."),
+            RELOAD_DIALOG_TITLE = EsoKR:E("UI 새로고침 필요"),
+            RELOAD_DIALOG_TEXT = EsoKR:E("변경된 설정 중 UI 새로고침을 필요로하는 사항이 있습니다. 지금 새로고침하시겠습니까? 아니면 변경을 취소하시겠습니까?"),
+            RELOAD_DIALOG_RELOAD_BUTTON = EsoKR:E("새로고침"),
+            RELOAD_DIALOG_DISCARD_BUTTON = EsoKR:E("변경취소"),
+        }, localization["en"])
+    else
+        util.L = ZO_ShallowTableCopy(localization[GetCVar("Language.2")] or {}, localization["en"])
+    end
+end
+
 util.GetTooltipText = GetStringFromValue -- deprecated, use util.GetStringFromValue instead
 util.GetStringFromValue = GetStringFromValue
 util.GetDefaultValue = GetDefaultValue
