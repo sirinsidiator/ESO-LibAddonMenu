@@ -1,68 +1,56 @@
-Since I (sirinsidiator) have taken over development of LAM-2.0 I decided it will be in the best interest of everyone to make future development a group effort.
-With the consent of Seerah I have put LAM-2.0 under [URL=https://github.com/sirinsidiator/ESO-LibAddonMenu/blob/master/LICENSE]The Artistic License 2.0[/URL] and created a [URL=https://github.com/sirinsidiator/ESO-LibAddonMenu]github project[/URL] in order to make collaborations possible.
-I also want to thank everyone who participated in planning and realizing upcoming changes, especially votan, merlight and Garkin.
+LibAddonMenu is a library which offers many functions for add-on authors to simplify creating a configuration panel in the game's settings menu.
 
-[B][SIZE="3"]If you came here because a message in chat told you so,[/SIZE][/B]  
-then you are using an outdated addon that relies on an older version of LAM-2.0 which might not be compatible with ESO update 6. 
-But no need to panic. There are a few things you can do in order to get it to work again:
-[LIST=1]
-[*]Update your addons. Maybe the author already fixed the problem.
-[*]Try to find out which addon uses the outdated version and ask for help in the comment section.
-[*]Ask for help in our comment section.
-[*]Replace LibAddonMenu-2.0 in all your addons with the newest version.
-[/LIST]
+[SIZE="4"][B]Users:[/B][/SIZE]
 
-LibAddonMenu-2.0 is now released!
-Your addons will continue to work under LAM-1.0, however that version of the library will no longer be receiving updates, and you will not receive any benefits of LAM-2.0.
+If the game cannot load some addon because it is missing LibAddonMenu-2.0 as a dependency, simply download and install it like you would any other addon. In case it shows as "out of date" in the game, simply enable the "allow out of date addons" checkbox.
 
-[COLOR="Wheat"][B]** NOTE:[/B] If you are using a version of LAM-2.0 earlier than r17, please update your copy of the lib in the addon. This will avoid problems with loading future versions of LAM.[B]**[/B][/COLOR]
+[SIZE="4"][B]Developers:[/B][/SIZE]
 
+Ever since I (sirinsidiator) have taken over development of LAM-2.0 in 2015, the project is available on [URL=https://github.com/sirinsidiator/ESO-LibAddonMenu]github[/URL] and open for contributions by other authors.
 
-LibAddonMenu-2.0 is a library to aid addon authors in creating a configuration GUI for their addons which is located in the game's Settings menu.  It supports the ability to have all of a user's addon options located in the same panel.
+With the ongoing effort to get rid of LibStub in favour of the library management capabilities provided by the game itself since Summerset was released, it is no longer recommended to embed LAM, or use LibStub to access it. Instead it should simply be specified as a dependency and accessed via the new LibAddonMenu2 global variable. Instead of providing it as part of another add-on, users should install and update it separately. 
 
-You may see [URL="http://www.esoui.com/downloads/info6-ZAMStats.html"]ZAM_Stats[/URL] for an example of usage.
-
-
-[SIZE="3"][U][COLOR="DeepSkyBlue"]HOW TO USE:[/COLOR][/U][/SIZE]
-
-[COLOR="Plum"]--Including the library with your addon--[/COLOR]
-You may either embed the library and LibStub in your addon and load the files from your addon manifest, or have the library installed like any other normal addon.
-
-If your addon embeds the library, you may place this line in your manifest file, just in case the user also has a standalone version installed.
-[CODE]## OptionalDependsOn: LibAddonMenu-2.0[/CODE]
-
-If you are depending on the library being installed separately and are not embedding it, then you must include this line in your text file.
+[SIZE="3"]Quickstart:[/SIZE]
+Simply add LAM2 as a dependency in your addon manifest:
 [CODE]## DependsOn: LibAddonMenu-2.0[/CODE]
+Optionally you can require a specific minimum version of LAM in case you rely on some features that are not available in earlier versions.
+[CODE]## DependsOn: LibAddonMenu-2.0>=30[/CODE]
 
-Either way you choose, LibStub will ensure that only one copy of the library (the newest revision) is loaded into memory.
+In your code you can simply access the library via the global variable "LibAddonMenu2" and start creating your settings panel and controls:
 
-When embedding the libary, remove the internal LibAddonMenu-2.0 folder from the main library download.  I usually place my libraries in a sub-folder called "libs", but you may put them wherever you like in your addon directory.  This is how I would then list the files in my manifest.  (LAM2's widget controls are broken out into their own files to keep their code clean - this is why there is so many.  Good thing you only have to copy-paste this once!)
+[highlight="Lua"]local LAM = LibAddonMenu2
+local saveData = {} -- TODO this should be a reference to your actual saved variables table
+local panelName = "MyAddOnSettingsPanel" -- TODO the name will be used to create a global variable, pick something unique or you may overwrite an existing variable!
 
-[CODE]libs\LibAddonMenu-2.0\LibAddonMenu-2.0.lua
-libs\LibAddonMenu-2.0\controls\panel.lua
-libs\LibAddonMenu-2.0\controls\submenu.lua
-libs\LibAddonMenu-2.0\controls\button.lua
-libs\LibAddonMenu-2.0\controls\checkbox.lua
-libs\LibAddonMenu-2.0\controls\colorpicker.lua
-libs\LibAddonMenu-2.0\controls\custom.lua
-libs\LibAddonMenu-2.0\controls\description.lua
-libs\LibAddonMenu-2.0\controls\dropdown.lua
-libs\LibAddonMenu-2.0\controls\editbox.lua
-libs\LibAddonMenu-2.0\controls\header.lua
-libs\LibAddonMenu-2.0\controls\slider.lua
-libs\LibAddonMenu-2.0\controls\texture.lua
-libs\LibAddonMenu-2.0\controls\iconpicker.lua
-libs\LibAddonMenu-2.0\controls\divider.lua[/CODE]
-(Don't forget to also embed LibStub and have it listed to load prior to LibAddonMenu!)
+local panelData = {
+    type = "panel",
+    name = "MyAddOn Settings",
+    author = "me",
+}
+local panel = LAM:RegisterAddonPanel(panelName, panelData)
+local optionsData = {
+    {
+        type = "checkbox",
+        name = "My First Checkbox",
+        getFunc = function() return saveData.myValue end,
+        setFunc = function(value) saveData.myValue = value end
+    }
+}
+LAM:RegisterOptionControls(panelName, optionsData)[/highlight]
 
+For more examples and information you can take a look at [URL="https://github.com/sirinsidiator/ESO-LibAddonMenu/blob/master/LibAddonMenu-2.0/exampleoptions.lua"]exampleoptions.lua[/URL], [URL="https://www.esoui.com/downloads/info695-AwesomeGuildStore.html"]AwesomeGuildStore[/URL]/Settings.lua, the [URL="https://github.com/sirinsidiator/ESO-LibAddonMenu/wiki"]LAM wiki[/URL] or the [URL="https://github.com/sirinsidiator/ESO-LibAddonMenu/tree/master/LibAddonMenu-2.0/LibAddonMenu-2.0"]source code[/URL]. Each control has a full list of available properties in the comment at the start of the lua file.
 
-[COLOR="Plum"]--Getting the library from LibStub (required)--[/COLOR]
-[highlight="Lua"]local LAM = LibStub:GetLibrary("LibAddonMenu-2.0")
---OR--
-local LAM = LibStub("LibAddonMenu-2.0")
-     --returns a reference to the library table[/highlight]
+[SIZE="3"]Features:[/SIZE]
 
-
-[SIZE="3"]Please see the [URL="https://github.com/sirinsidiator/ESO-LibAddonMenu/wiki"]LAM-2.0 wiki on github[/URL] for guides and docs, as well as a list of differences between LAM-1.0 and LAM-2.0
-
-[URL="https://github.com/sirinsidiator/ESO-LibAddonMenu/wiki/Details-on-LAM2-data-tables"]Details on LAM2 data tables[/URL][/SIZE]
+[LIST]
+[*][B][URL=https://github.com/sirinsidiator/ESO-LibAddonMenu/wiki/Controls]Controls[/URL][/B] - LAM offers different control types to build elaborate settings menus
+[*][B]Reset to Default[/B] - LAM can restore the settings to their default state with one key press
+[*][B]Additional AddOn Info[/B] - Add a version label and URLs for website, donations, translations or feedback
+[*][B]AddOn Search[/B] - Can't find the settings for your AddOn between the other hundred entries? No problem! Simply use the text search to quickly find what you are looking for
+[*][B]Slash Commands[/B] - Provides a shortcut to open your settings menu from chat
+[*][B]Tooltips[/B] - In case you need more space to explain what a control does, simply use a tooltip
+[*][B]Warnings[/B] - If your setting causes some unexpected behaviour, you can simply slap a warning on them
+[*][B]Dangerous Buttons[/B] - when flagged as such, a button will have red text and ask for confirmation before it runs any action
+[*][B]Required UI Reload[/B] - For cases where settings have to reload the UI or should be stored to disk right away, LAM offers a user friendly way to ask for a UI reload.
+[*]Support for all 4 official languages and 6 custom localisation projects
+[/LIST]

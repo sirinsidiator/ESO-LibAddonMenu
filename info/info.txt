@@ -1,3 +1,3 @@
 title: LibAddonMenu
-version: 2.0 r29
-compatiblity: 5.0
+version: 2.0 r30
+compatiblity: 5.2
