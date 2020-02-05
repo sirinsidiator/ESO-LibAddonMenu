@@ -62,6 +62,8 @@ local util = lam.util
 lam.controlsForReload = lam.controlsForReload or {}
 local controlsForReload = lam.controlsForReload
 
+local lamTimeLines = {}
+
 local function GetDefaultValue(default)
     if type(default) == "function" then
         return default()
@@ -143,6 +145,28 @@ local function IsSame(objA, objB)
     return true
 end
 
+--Animation: Make control "PingPong": Change size up and back to normal scaling again.
+-- bounces parameter = 255: Indefinitely bounces!
+local function timelineAnimationPingPong(control, scalingStart, scalingEnd, bounces, duration)
+    scalingStart = scalingStart or 1
+    scalingEnd = scalingEnd or 1.25
+    bounces = bounces or 3
+    duration = duration or 150
+    local animation, timeline = CreateSimpleAnimation(ANIMATION_SCALE, control, 150)
+    animation:SetScaleValues(scalingStart, scalingEnd)
+    animation:SetDuration(duration)
+    timeline:SetPlaybackType(ANIMATION_PLAYBACK_PING_PONG, bounces)
+    timeline:PlayFromStart()
+    return timeline
+end
+
+local function stopTimelineAnimation(timelineName)
+    if timelineName and lamTimeLines and lamTimeLines[timelineName] and lamTimeLines[timelineName].Stop then
+        lamTimeLines[timelineName]:Stop()
+        lamTimeLines[timelineName] = nil
+    end
+end
+
 local function RefreshReloadUIButton()
     lam.requiresReload = false
 
@@ -156,6 +180,12 @@ local function RefreshReloadUIButton()
 
     if lam.applyButton then
         lam.applyButton:SetHidden(not lam.requiresReload)
+        if lam.requiresReload == true then
+            stopTimelineAnimation("reloadUIButton")
+            lamTimeLines["reloadUIButton"] = timelineAnimationPingPong(lam.applyButton, 1, 1.25, 255, 500)
+        else
+            stopTimelineAnimation("reloadUIButton")
+        end
     end
 end
 
