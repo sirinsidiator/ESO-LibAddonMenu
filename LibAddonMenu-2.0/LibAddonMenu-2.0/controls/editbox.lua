@@ -23,7 +23,7 @@ if not LAM:RegisterWidget("editbox", widgetVersion) then return end
 local wm = WINDOW_MANAGER
 
 local function GetValidTextType(textType)
-    if textType >= TEXT_TYPE_ITERATION_BEGIN and textType <= TEXT_TYPE_ITERATION_END then
+    if textType and (textType >= TEXT_TYPE_ITERATION_BEGIN and textType <= TEXT_TYPE_ITERATION_END) then
         return textType
     end
     return TEXT_TYPE_ALL
