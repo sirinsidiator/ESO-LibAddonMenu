@@ -6,7 +6,7 @@
     tooltip = "Editbox's tooltip text.", -- or string id or function returning a string (optional)
     isMultiline = true, -- boolean (optional)
     isExtraWide = true, -- boolean (optional)
-    textType = TEXT_TYPE_NUMERIC, -- number (optional)
+    textType = TEXT_TYPE_NUMERIC, -- number (optional) or function returning a number. Valid TextType numbers: TEXT_TYPE_ALL, TEXT_TYPE_ALPHABETIC, TEXT_TYPE_ALPHABETIC_NO_FULLWIDTH_LATIN, TEXT_TYPE_NUMERIC, TEXT_TYPE_NUMERIC_UNSIGNED_INT, TEXT_TYPE_PASSWORD
     width = "full", -- or "half" (optional)
     disabled = function() return db.someBooleanSetting end, -- or boolean (optional)
     warning = "May cause permanent awesomeness.", -- or string id or function returning a string (optional)
@@ -23,6 +23,7 @@ if not LAM:RegisterWidget("editbox", widgetVersion) then return end
 local wm = WINDOW_MANAGER
 
 local function GetValidTextType(textType)
+    textType = LAM.util.GetDefaultValue(textType)
     if textType and (textType >= TEXT_TYPE_ITERATION_BEGIN and textType <= TEXT_TYPE_ITERATION_END) then
         return textType
     end
