@@ -10,7 +10,7 @@
     clampFunction = function(value, min, max) return math.max(math.min(value, max), min) end, -- function that is called to clamp the value (optional)
     decimals = 0, -- when specified the input value is rounded to the specified number of decimals (optional)
     autoSelect = false, -- boolean, automatically select everything in the text input field when it gains focus (optional)
-    inputLocation = "below", -- or "right", determines where the input field is shown. This should not be used within the addon menu and is for custom sliders (optional) 
+    inputLocation = "below", -- or "right" or "off", determines where the input field is shown or disable the manual input with "off". This should not be used within the addon menu and is for custom sliders (optional) 
     tooltip = "Slider's tooltip text.", -- or string id or function returning a string (optional)
     width = "full", -- or "half" (optional)
     disabled = function() return db.someBooleanSetting end, --or boolean (optional)
@@ -20,12 +20,14 @@
     reference = "MyAddonSlider" -- unique global reference to control (optional)
 } ]]
 
-local widgetVersion = 13
+local widgetVersion = 14
 local LAM = LibStub("LibAddonMenu-2.0")
 if not LAM:RegisterWidget("slider", widgetVersion) then return end
 
 local wm = WINDOW_MANAGER
 local strformat = string.format
+
+
 
 local function RoundDecimalToPlace(d, place)
     return tonumber(strformat("%." .. tostring(place) .. "f", d))
@@ -44,7 +46,9 @@ local function UpdateDisabled(control)
     end
 
     control.slider:SetEnabled(not disable)
-    control.slidervalue:SetEditEnabled(not disable)
+    if(control.slidervalue.SetEditEnabled) then
+        control.slidervalue:SetEditEnabled(not disable)
+    end
     if disable then
         control.label:SetColor(ZO_DEFAULT_DISABLED_COLOR:UnpackRGBA())
         control.minText:SetColor(ZO_DEFAULT_DISABLED_COLOR:UnpackRGBA())
@@ -83,7 +87,7 @@ end
 
 function LAMCreateControl.slider(parent, sliderData, controlName)
     local control = LAM.util.CreateLabelAndContainerControl(parent, sliderData, controlName)
-    local isInputOnRight = sliderData.inputLocation == "right" 
+    local isInputOnRight = sliderData.inputLocation == "right"
 
     --skipping creating the backdrop...  Is this the actual slider texture?
     control.slider = wm:CreateControl(nil, control.container, CT_SLIDER)
@@ -132,12 +136,23 @@ function LAMCreateControl.slider(parent, sliderData, controlName)
         control.slidervalueBG:SetDimensions(50, 16)
         control.slidervalueBG:SetAnchor(TOP, slider, BOTTOM, 0, 0)
     end
-    control.slidervalue = wm:CreateControlFromVirtual(nil, control.slidervalueBG, "ZO_DefaultEditForBackdrop")
-    local slidervalue = control.slidervalue
-    slidervalue:ClearAnchors()
-    slidervalue:SetAnchor(TOPLEFT, control.slidervalueBG, TOPLEFT, 3, 1)
-    slidervalue:SetAnchor(BOTTOMRIGHT, control.slidervalueBG, BOTTOMRIGHT, -3, -1)
-    slidervalue:SetTextType(TEXT_TYPE_NUMERIC)
+
+    local slidervalue
+    if(sliderData.inputLocation ~= "off") then
+        control.slidervalue = wm:CreateControlFromVirtual(nil, control.slidervalueBG, "ZO_DefaultEditForBackdrop")
+        slidervalue = control.slidervalue
+        slidervalue:ClearAnchors()
+        slidervalue:SetAnchor(TOPLEFT, control.slidervalueBG, TOPLEFT, 3, 1)
+        slidervalue:SetAnchor(BOTTOMRIGHT, control.slidervalueBG, BOTTOMRIGHT, -3, -1)
+        slidervalue:SetTextType(TEXT_TYPE_NUMERIC)
+    else
+        control.slidervalue = wm:CreateControl(nil, control.slidervalueBG, CT_LABEL)
+        slidervalue = control.slidervalue
+        slidervalue:SetAnchor(TOPLEFT, control.slidervalueBG, TOPLEFT )
+        slidervalue:SetAnchor(BOTTOMRIGHT, control.slidervalueBG, BOTTOMRIGHT )
+        slidervalue:SetHorizontalAlignment(TEXT_ALIGN_CENTER)
+    end
+
     if(isInputOnRight) then
         slidervalue:SetFont("ZoFontGameLarge")
     else
