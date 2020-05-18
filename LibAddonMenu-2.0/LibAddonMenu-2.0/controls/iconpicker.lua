@@ -19,7 +19,7 @@
     reference = "MyAddonIconPicker" -- unique global reference to control (optional)
 } ]]
 
-local widgetVersion = 8
+local widgetVersion = 9
 local LAM = LibStub("LibAddonMenu-2.0")
 if not LAM:RegisterWidget("iconpicker", widgetVersion) then return end
 
@@ -134,9 +134,11 @@ function IconPickerMenu:Initialize(name)
 end
 
 function IconPickerMenu:OnMouseEnter(icon)
-    InitializeTooltip(InformationTooltip, icon, TOPLEFT, 0, 0, BOTTOMRIGHT)
-    SetTooltipText(InformationTooltip, LAM.util.GetStringFromValue(icon.tooltip))
-    InformationTooltipTopLevel:BringWindowToTop()
+    if icon.tooltip and icon.tooltip ~= "" then
+        InitializeTooltip(InformationTooltip, icon, TOPLEFT, 0, 0, BOTTOMRIGHT)
+        SetTooltipText(InformationTooltip, LAM.util.GetStringFromValue(icon.tooltip))
+        InformationTooltipTopLevel:BringWindowToTop()
+    end
 end
 
 function IconPickerMenu:OnMouseExit(icon)
