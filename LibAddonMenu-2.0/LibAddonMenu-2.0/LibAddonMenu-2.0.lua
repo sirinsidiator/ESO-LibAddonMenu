@@ -419,12 +419,17 @@ local localization = {
         RELOAD_DIALOG_RELOAD_BUTTON = "Recargar",
         RELOAD_DIALOG_DISCARD_BUTTON = "Cancelar",
     },
-    jp = { -- provided by k0ta0uchi
+    jp = { -- provided by k0ta0uchi, updated by Calamath
         PANEL_NAME = "アドオン設定",
         WEBSITE = "ウェブサイトを見る",
         FEEDBACK = "フィードバック",
         TRANSLATION = "訳書",
-        DONATION = "寄贈する",
+        DONATION = "寄付",
+        RELOAD_UI_WARNING = "この設定変更を有効にするには、UIのリロードが必要です。",
+        RELOAD_DIALOG_TITLE = "UIのリロードが必要",
+        RELOAD_DIALOG_TEXT = "一部の変更を有効にするには、UIのリロードが必要です。 今すぐリロードしますか、それとも変更内容を破棄しますか？",
+        RELOAD_DIALOG_RELOAD_BUTTON = "リロード",
+        RELOAD_DIALOG_DISCARD_BUTTON = "破棄",
     },
     zh = { -- provided by bssthu
         PANEL_NAME = "插件",
