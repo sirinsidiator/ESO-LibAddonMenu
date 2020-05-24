@@ -134,9 +134,10 @@ function IconPickerMenu:Initialize(name)
 end
 
 function IconPickerMenu:OnMouseEnter(icon)
-    if icon.tooltip and icon.tooltip ~= "" then
+    local tooltipText = icon.tooltip and LAM.util.GetStringFromValue(icon.tooltip)
+    if tooltipText and tooltipText ~= "" then
         InitializeTooltip(InformationTooltip, icon, TOPLEFT, 0, 0, BOTTOMRIGHT)
-        SetTooltipText(InformationTooltip, LAM.util.GetStringFromValue(icon.tooltip))
+        SetTooltipText(InformationTooltip, text)
         InformationTooltipTopLevel:BringWindowToTop()
     end
 end
