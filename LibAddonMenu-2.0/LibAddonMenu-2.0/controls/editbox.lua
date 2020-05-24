@@ -25,7 +25,7 @@ local wm = WINDOW_MANAGER
 
 local function GetValidTextType(textType)
     textType = LAM.util.GetDefaultValue(textType)
-    if textType and (textType >= TEXT_TYPE_ITERATION_BEGIN and textType <= TEXT_TYPE_ITERATION_END) then
+    if type(textType) == "number" and (textType >= TEXT_TYPE_ITERATION_BEGIN and textType <= TEXT_TYPE_ITERATION_END) then
         return textType
     end
     return TEXT_TYPE_ALL
@@ -33,10 +33,10 @@ end
 
 local function GetValidMaxChars(number)
     number = LAM.util.GetDefaultValue(number)
-    if number and type(number) == "number" then
+    if type(number) == "number" then
         return number
     end
-    return MAX_GUILD_RECRUITMENT_MESSAGE_LENGTH
+    return 6000
 end
 
 local function UpdateDisabled(control)
