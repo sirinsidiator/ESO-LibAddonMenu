@@ -10,7 +10,8 @@
     clampFunction = function(value, min, max) return math.max(math.min(value, max), min) end, -- function that is called to clamp the value (optional)
     decimals = 0, -- when specified the input value is rounded to the specified number of decimals (optional)
     autoSelect = false, -- boolean, automatically select everything in the text input field when it gains focus (optional)
-    inputLocation = "below", -- or "right" or "off", determines where the input field is shown or disable the manual input with "off". This should not be used within the addon menu and is for custom sliders (optional) 
+    inputLocation = "below", -- or "right", determines where the input field is shown. This should not be used within the addon menu and is for custom sliders (optional) 
+    readOnly = "true", -- boolean, you can use the slider, but you can't insert a value manually (optional)
     tooltip = "Slider's tooltip text.", -- or string id or function returning a string (optional)
     width = "full", -- or "half" (optional)
     disabled = function() return db.someBooleanSetting end, --or boolean (optional)
@@ -138,7 +139,7 @@ function LAMCreateControl.slider(parent, sliderData, controlName)
     end
 
     local slidervalue
-    if(sliderData.inputLocation ~= "off") then
+    if(not sliderData.readOnly) then
         control.slidervalue = wm:CreateControlFromVirtual(nil, control.slidervalueBG, "ZO_DefaultEditForBackdrop")
         slidervalue = control.slidervalue
         slidervalue:ClearAnchors()
