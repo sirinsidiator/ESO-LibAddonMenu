@@ -6,7 +6,7 @@
     tooltip = "Editbox's tooltip text.", -- or string id or function returning a string (optional)
     isMultiline = true, -- boolean (optional)
     isExtraWide = true, -- boolean (optional)
-    maxChars = 3000, -- number (optional)
+    maxChars = 1000, -- number (optional)
     textType = TEXT_TYPE_NUMERIC, -- number (optional) or function returning a number. Valid TextType numbers: TEXT_TYPE_ALL, TEXT_TYPE_ALPHABETIC, TEXT_TYPE_ALPHABETIC_NO_FULLWIDTH_LATIN, TEXT_TYPE_NUMERIC, TEXT_TYPE_NUMERIC_UNSIGNED_INT, TEXT_TYPE_PASSWORD
     width = "full", -- or "half" (optional)
     disabled = function() return db.someBooleanSetting end, -- or boolean (optional)
@@ -29,14 +29,6 @@ local function GetValidTextType(textType)
         return TEXT_TYPE_ALL
     end
     return textType
-end
-
-local function GetValidMaxChars(number)
-    number = LAM.util.GetDefaultValue(number)
-    if type(number) == "number" then
-        return number
-    end
-    return 3000
 end
 
 local function UpdateDisabled(control)
@@ -112,7 +104,7 @@ function LAMCreateControl.editbox(parent, editboxData, controlName)
     local editbox = control.editbox
     editbox:SetTextType(GetValidTextType(editboxData.textType))
     editbox:SetText(editboxData.getFunc())
-    editbox:SetMaxInputChars(GetValidMaxChars(editboxData.maxChars))
+    editbox:SetMaxInputChars(editboxData.maxChars or 3000)
     editbox:SetHandler("OnFocusLost", function(self) control:UpdateValue(false, self:GetText()) end)
     editbox:SetHandler("OnEscape", function(self) self:LoseFocus() control:UpdateValue(false, self:GetText()) end)
     editbox:SetHandler("OnMouseEnter", function() ZO_Options_OnMouseEnter(control) end)
