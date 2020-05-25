@@ -25,10 +25,10 @@ local wm = WINDOW_MANAGER
 
 local function GetValidTextType(textType)
     textType = LAM.util.GetDefaultValue(textType)
-    if type(textType) == "number" and (textType >= TEXT_TYPE_ITERATION_BEGIN and textType <= TEXT_TYPE_ITERATION_END) then
-        return textType
+    if type(textType) ~= "number" or textType < TEXT_TYPE_ITERATION_BEGIN or textType > TEXT_TYPE_ITERATION_END then
+        return TEXT_TYPE_ALL
     end
-    return TEXT_TYPE_ALL
+    return textType
 end
 
 local function GetValidMaxChars(number)
@@ -36,7 +36,7 @@ local function GetValidMaxChars(number)
     if type(number) == "number" then
         return number
     end
-    return 6000
+    return 3000
 end
 
 local function UpdateDisabled(control)
