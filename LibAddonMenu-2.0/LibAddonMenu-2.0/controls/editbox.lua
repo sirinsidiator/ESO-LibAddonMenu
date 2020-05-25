@@ -104,7 +104,7 @@ function LAMCreateControl.editbox(parent, editboxData, controlName)
     local editbox = control.editbox
     editbox:SetTextType(GetValidTextType(editboxData.textType))
     editbox:SetText(editboxData.getFunc())
-    editbox:SetMaxInputChars(editboxData.maxChars or 3000)
+    editbox:SetMaxInputChars(LAM.util.GetDefaultValue(editboxData.maxChars) or 3000)
     editbox:SetHandler("OnFocusLost", function(self) control:UpdateValue(false, self:GetText()) end)
     editbox:SetHandler("OnEscape", function(self) self:LoseFocus() control:UpdateValue(false, self:GetText()) end)
     editbox:SetHandler("OnMouseEnter", function() ZO_Options_OnMouseEnter(control) end)
