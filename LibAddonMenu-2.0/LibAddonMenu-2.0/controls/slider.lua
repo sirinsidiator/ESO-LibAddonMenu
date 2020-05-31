@@ -11,6 +11,7 @@
     decimals = 0, -- when specified the input value is rounded to the specified number of decimals (optional)
     autoSelect = false, -- boolean, automatically select everything in the text input field when it gains focus (optional)
     inputLocation = "below", -- or "right", determines where the input field is shown. This should not be used within the addon menu and is for custom sliders (optional) 
+    readOnly = true, -- boolean, you can use the slider, but you can't insert a value manually (optional)
     tooltip = "Slider's tooltip text.", -- or string id or function returning a string (optional)
     width = "full", -- or "half" (optional)
     disabled = function() return db.someBooleanSetting end, --or boolean (optional)
@@ -20,7 +21,7 @@
     reference = "MyAddonSlider" -- unique global reference to control (optional)
 } ]]
 
-local widgetVersion = 13
+local widgetVersion = 14
 local LAM = LibStub("LibAddonMenu-2.0")
 if not LAM:RegisterWidget("slider", widgetVersion) then return end
 
@@ -44,7 +45,7 @@ local function UpdateDisabled(control)
     end
 
     control.slider:SetEnabled(not disable)
-    control.slidervalue:SetEditEnabled(not disable)
+    control.slidervalue:SetEditEnabled(not (control.data.readOnly or disable))
     if disable then
         control.label:SetColor(ZO_DEFAULT_DISABLED_COLOR:UnpackRGBA())
         control.minText:SetColor(ZO_DEFAULT_DISABLED_COLOR:UnpackRGBA())
@@ -83,7 +84,7 @@ end
 
 function LAMCreateControl.slider(parent, sliderData, controlName)
     local control = LAM.util.CreateLabelAndContainerControl(parent, sliderData, controlName)
-    local isInputOnRight = sliderData.inputLocation == "right" 
+    local isInputOnRight = sliderData.inputLocation == "right"
 
     --skipping creating the backdrop...  Is this the actual slider texture?
     control.slider = wm:CreateControl(nil, control.container, CT_SLIDER)
