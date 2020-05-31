@@ -6,7 +6,7 @@
     tooltip = "Editbox's tooltip text.", -- or string id or function returning a string (optional)
     isMultiline = true, -- boolean (optional)
     isExtraWide = true, -- boolean (optional)
-    maxChars = 1000, -- number (optional)
+    maxChars = 3000, -- number (optional)
     textType = TEXT_TYPE_NUMERIC, -- number (optional) or function returning a number. Valid TextType numbers: TEXT_TYPE_ALL, TEXT_TYPE_ALPHABETIC, TEXT_TYPE_ALPHABETIC_NO_FULLWIDTH_LATIN, TEXT_TYPE_NUMERIC, TEXT_TYPE_NUMERIC_UNSIGNED_INT, TEXT_TYPE_PASSWORD
     width = "full", -- or "half" (optional)
     disabled = function() return db.someBooleanSetting end, -- or boolean (optional)
