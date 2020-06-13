@@ -400,14 +400,13 @@ local localization = {
         RELOAD_DIALOG_RELOAD_BUTTON = "Neu laden",
         RELOAD_DIALOG_DISCARD_BUTTON = "Verwerfen",
     },
-    ru = { -- provided by TERAB1T
+    ru = { -- provided by TERAB1T, updated by andy.s
         PANEL_NAME = "Дополнения",
         VERSION = "Версия: <<X:1>>",
         WEBSITE = "Посетить сайт",
-        FEEDBACK = "отзыв",
+        FEEDBACK = "Отзыв",
         TRANSLATION = "Перевод",
-        DONATION = "жертвовать",
-        PANEL_INFO_FONT = "RuESO/fonts/Univers57.otf|14|soft-shadow-thin",
+        DONATION = "Жертвовать",
         RELOAD_UI_WARNING = "Для применения этой настройки необходима перезагрузка интерфейса.",
         RELOAD_DIALOG_TITLE = "Необходима перезагрузка интерфейса",
         RELOAD_DIALOG_TEXT = "Для применения некоторых изменений необходима перезагрузка интерфейса. Перезагрузить интерфейс сейчас или отменить изменения?",
