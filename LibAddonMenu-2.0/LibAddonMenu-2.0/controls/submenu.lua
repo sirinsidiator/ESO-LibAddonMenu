@@ -11,7 +11,7 @@
 } ]]
 
 local widgetVersion = 13
-local LAM = LibStub("LibAddonMenu-2.0")
+local LAM = LibAddonMenu2
 if not LAM:RegisterWidget("submenu", widgetVersion) then return end
 
 local wm = WINDOW_MANAGER

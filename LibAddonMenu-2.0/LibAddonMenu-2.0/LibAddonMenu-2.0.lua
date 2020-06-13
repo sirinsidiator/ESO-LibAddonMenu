@@ -3,10 +3,18 @@
 ------------------------------------------------------------------
 
 
---Register LAM with LibStub
 local MAJOR, MINOR = "LibAddonMenu-2.0", _LAM2_VERSION_NUMBER or -1
-local lam, oldminor = LibStub:NewLibrary(MAJOR, MINOR)
-if not lam then return end --the same or newer version of this lib is already loaded into memory
+
+local lam
+if(not LibStub) then
+    lam = {}
+else
+    -- Optionally register LAM with LibStub
+    lam = LibStub:NewLibrary(MAJOR, MINOR)
+    if not lam then
+        return --the same or newer version of this lib is already loaded into memory
+    end
+end
 LibAddonMenu2 = lam
 
 local messages = {}
