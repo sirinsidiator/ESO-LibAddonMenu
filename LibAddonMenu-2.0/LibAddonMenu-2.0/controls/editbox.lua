@@ -13,11 +13,12 @@
     warning = "May cause permanent awesomeness.", -- or string id or function returning a string (optional)
     requiresReload = false, -- boolean, if set to true, the warning text will contain a notice that changes are only applied after an UI reload and any change to the value will make the "Apply Settings" button appear on the panel which will reload the UI when pressed (optional)
     default = defaults.text, -- default value or function that returns the default value (optional)
+    helpUrl = "https://www.esoui.com/portal.php?id=218&a=faq", -- a string URL or a function that returns the string URL (optional)
     reference = "MyAddonEditbox" -- unique global reference to control (optional)
 } ]]
 
 
-local widgetVersion = 15
+local widgetVersion = 16
 local LAM = LibAddonMenu2
 if not LAM:RegisterWidget("editbox", widgetVersion) then return end
 

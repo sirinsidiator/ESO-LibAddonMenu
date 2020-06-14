@@ -18,10 +18,11 @@
     warning = "May cause permanent awesomeness.", -- or string id or function returning a string (optional)
     requiresReload = false, -- boolean, if set to true, the warning text will contain a notice that changes are only applied after an UI reload and any change to the value will make the "Apply Settings" button appear on the panel which will reload the UI when pressed (optional)
     default = defaults.var, -- default value or function that returns the default value (optional)
+    helpUrl = "https://www.esoui.com/portal.php?id=218&a=faq", -- a string URL or a function that returns the string URL (optional)
     reference = "MyAddonSlider" -- unique global reference to control (optional)
 } ]]
 
-local widgetVersion = 14
+local widgetVersion = 15
 local LAM = LibAddonMenu2
 if not LAM:RegisterWidget("slider", widgetVersion) then return end
 
@@ -111,7 +112,7 @@ function LAMCreateControl.slider(parent, sliderData, controlName)
     bg:SetCenterColor(0, 0, 0)
     bg:SetAnchor(TOPLEFT, slider, TOPLEFT, 0, 4)
     bg:SetAnchor(BOTTOMRIGHT, slider, BOTTOMRIGHT, 0, -4)
-    bg:SetEdgeTexture("EsoUI\\Art\\Tooltips\\UI-SliderBackdrop.dds", 32, 4) 
+    bg:SetEdgeTexture("EsoUI\\Art\\Tooltips\\UI-SliderBackdrop.dds", 32, 4)
 
     control.minText = wm:CreateControl(nil, slider, CT_LABEL)
     local minText = control.minText

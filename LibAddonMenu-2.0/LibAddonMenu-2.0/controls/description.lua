@@ -6,11 +6,12 @@
     disabled = function() return db.someBooleanSetting end, -- or boolean (optional)
     enableLinks = nil, -- or true for default tooltips, or function OnLinkClicked handler (optional)
                        -- see: https://wiki.esoui.com/UI_XML#OnLinkClicked
+    helpUrl = "https://www.esoui.com/portal.php?id=218&a=faq", -- a string URL or a function that returns the string URL (optional)
     reference = "MyAddonDescription" -- unique global reference to control (optional)
 } ]]
 
 
-local widgetVersion = 10
+local widgetVersion = 11
 local LAM = LibAddonMenu2
 if not LAM:RegisterWidget("description", widgetVersion) then return end
 
