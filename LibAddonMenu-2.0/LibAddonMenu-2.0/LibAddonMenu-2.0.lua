@@ -194,9 +194,10 @@ local function CreateLabelAndContainerControl(parent, controlData, controlName)
 
     if faqTexture then
         faqTexture:ClearAnchors()
-        faqTexture:SetAnchor(LEFT, label, RIGHT, 5, 0)
+        faqTexture:SetAnchor(LEFT, label, RIGHT, 5, -1)
         faqTexture:SetParent(labelContainer)
         label:SetAnchor(LEFT, labelContainer, LEFT)
+        label:SetDimensionConstraints(0, 0, labelContainer:GetWidth() - faqTexture:GetWidth(), 0)
     end
 
     control.data.tooltipText = GetStringFromValue(control.data.tooltip)
