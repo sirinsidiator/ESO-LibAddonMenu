@@ -2,11 +2,12 @@
     type = "header",
     name = "My Header", -- or string id or function returning a string
     width = "full", -- or "half" (optional)
+    helpUrl = "https://www.esoui.com/portal.php?id=218&a=faq", -- a string URL or a function that returns the string URL (optional)
     reference = "MyAddonHeader" -- unique global reference to control (optional)
 } ]]
 
 
-local widgetVersion = 8
+local widgetVersion = 9
 local LAM = LibAddonMenu2
 if not LAM:RegisterWidget("header", widgetVersion) then return end
 
@@ -33,6 +34,11 @@ function LAMCreateControl.header(parent, headerData, controlName)
     header:SetAnchor(TOPLEFT, divider, BOTTOMLEFT)
     header:SetAnchor(BOTTOMRIGHT)
     header:SetText(LAM.util.GetStringFromValue(headerData.name))
+
+    local faqTexture = LAM.util.CreateFAQTexture(control)
+    if faqTexture then
+        faqTexture:SetAnchor(RIGHT, header, RIGHT, 0, 0)
+    end
 
     control.UpdateValue = UpdateValue
 

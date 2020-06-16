@@ -37,6 +37,9 @@ end
 local logger
 if LibDebugLogger then
     logger = LibDebugLogger(MAJOR)
+else
+    local function noop() end
+    logger = setmetatable({}, { __index = function() return noop end })
 end
 
 if LAMSettingsPanelCreated and not LAMCompatibilityWarning then
@@ -86,8 +89,59 @@ local function GetStringFromValue(value)
     return value
 end
 
+local FAQ_ICON_COLOR = ZO_ColorDef:New("FFFFFF") -- white
+local FAQ_ICON_MOUSE_OVER_COLOR = ZO_ColorDef:New("B8B8D3") -- dark-blue/white
+local FAQ_ICON_MOUSE_OVER_ALPHA = 1
+local FAQ_ICON_MOUSE_EXIT_ALPHA = 0.4
+local FAQ_ICON_SIZE = 23
+local FAQ_ICON_TOOTIP_TEMPLATE = "%s: %s"
+
 local function GetColorForState(disabled)
     return disabled and ZO_DEFAULT_DISABLED_COLOR or ZO_DEFAULT_ENABLED_COLOR
+end
+
+local function CreateFAQTexture(control)
+    local controlData = control.data
+    if not control or not controlData then logger:Warn("CreateFAQTexture - missing or invalid control") return end
+    local helpUrl = controlData and GetStringFromValue(controlData.helpUrl)
+    if not helpUrl or helpUrl == "" then return end
+
+    local faqControl = wm:CreateControl(nil, control, CT_TEXTURE)
+    control.faqControl = faqControl
+
+    faqControl:SetDrawLayer(DL_OVERLAY)
+    faqControl:SetTexture("EsoUI\\Art\\miscellaneous\\help_icon.dds")
+    faqControl:SetDimensions(FAQ_ICON_SIZE, FAQ_ICON_SIZE)
+    faqControl:SetColor(FAQ_ICON_COLOR:UnpackRGBA())
+    faqControl:SetAlpha(FAQ_ICON_MOUSE_EXIT_ALPHA)
+    faqControl:SetHidden(false)
+
+    faqControl.data = faqControl.data or {}
+    faqControl.data.helpUrl = helpUrl
+    faqControl.data.tooltipText = FAQ_ICON_TOOTIP_TEMPLATE:format(util.L.WEBSITE, helpUrl)
+
+    faqControl:SetMouseEnabled(true)
+    local function onMouseExitFAQ(ctrl)
+        ZO_Options_OnMouseExit(ctrl)
+        ctrl:SetColor(FAQ_ICON_COLOR:UnpackRGBA())
+        ctrl:SetAlpha(FAQ_ICON_MOUSE_EXIT_ALPHA)
+    end
+    faqControl:SetHandler("OnMouseUp", function(self, button, upInside)
+        if button == MOUSE_BUTTON_INDEX_LEFT and upInside then
+            --As the parent control's OnMouseExit won't be called because of the popup "open website":
+            --We hide the faq texture ourself
+            onMouseExitFAQ(self, true)
+            RequestOpenUnsafeURL(helpUrl)
+        end
+    end)
+    faqControl:SetHandler("OnMouseEnter", function(self)
+        ZO_Options_OnMouseEnter(self)
+        self:SetColor(FAQ_ICON_MOUSE_OVER_COLOR:UnpackRGBA()) --light blue
+        self:SetAlpha(FAQ_ICON_MOUSE_OVER_ALPHA)
+    end, "LAM2_FAQTexture_OnMouseEnter")
+    faqControl:SetHandler("OnMouseExit", onMouseExitFAQ, "LAM2_FAQTexture_OnMouseExit")
+
+    return faqControl
 end
 
 local function CreateBaseControl(parent, controlData, controlName)
@@ -110,23 +164,40 @@ local function CreateLabelAndContainerControl(parent, controlData, controlName)
     container:SetDimensions(width / 3, MIN_HEIGHT)
     control.container = container
 
-    local label = wm:CreateControl(nil, control, CT_LABEL)
+    local labelContainer
+    local faqTexture = CreateFAQTexture(control)
+    if faqTexture then
+        labelContainer = wm:CreateControl(nil, control, CT_CONTROL)
+        labelContainer:SetHeight(MIN_HEIGHT)
+        control.labelContainer = container
+    end
+
+    local label = wm:CreateControl(nil, labelContainer or control, CT_LABEL)
     label:SetFont("ZoFontWinH4")
     label:SetHeight(MIN_HEIGHT)
     label:SetWrapMode(TEXT_WRAP_MODE_ELLIPSIS)
     label:SetText(GetStringFromValue(controlData.name))
     control.label = label
 
+    local labelAnchorTarget = labelContainer or label
     if control.isHalfWidth then
         control:SetDimensions(width / 2, MIN_HEIGHT * 2 + HALF_WIDTH_LINE_SPACING)
-        label:SetAnchor(TOPLEFT, control, TOPLEFT, 0, 0)
-        label:SetAnchor(TOPRIGHT, control, TOPRIGHT, 0, 0)
-        container:SetAnchor(TOPRIGHT, control.label, BOTTOMRIGHT, 0, HALF_WIDTH_LINE_SPACING)
+        labelAnchorTarget:SetAnchor(TOPLEFT, control, TOPLEFT, 0, 0)
+        labelAnchorTarget:SetAnchor(TOPRIGHT, control, TOPRIGHT, 0, 0)
+        container:SetAnchor(TOPRIGHT, labelAnchorTarget, BOTTOMRIGHT, 0, HALF_WIDTH_LINE_SPACING)
     else
         control:SetDimensions(width, MIN_HEIGHT)
         container:SetAnchor(TOPRIGHT, control, TOPRIGHT, 0, 0)
-        label:SetAnchor(TOPLEFT, control, TOPLEFT, 0, 0)
-        label:SetAnchor(TOPRIGHT, container, TOPLEFT, 5, 0)
+        labelAnchorTarget:SetAnchor(TOPLEFT, control, TOPLEFT, 0, 0)
+        labelAnchorTarget:SetAnchor(TOPRIGHT, container, TOPLEFT, 5, 0)
+    end
+
+    if faqTexture then
+        faqTexture:ClearAnchors()
+        faqTexture:SetAnchor(LEFT, label, RIGHT, 5, -1)
+        faqTexture:SetParent(labelContainer)
+        label:SetAnchor(LEFT, labelContainer, LEFT)
+        label:SetDimensionConstraints(0, 0, labelContainer:GetWidth() - faqTexture:GetWidth(), 0)
     end
 
     control.data.tooltipText = GetStringFromValue(control.data.tooltip)
@@ -505,6 +576,7 @@ util.RegisterForReloadIfNeeded = RegisterForReloadIfNeeded
 util.GetTopPanel = GetTopPanel
 util.ShowConfirmationDialog = ShowConfirmationDialog
 util.UpdateWarning = UpdateWarning
+util.CreateFAQTexture = CreateFAQTexture
 
 local ADDON_DATA_TYPE = 1
 local RESELECTING_DURING_REBUILD = true
@@ -836,9 +908,7 @@ local function CreateOptionsControls(panel)
                     err, anchorOffset, lastAddedControl, wasHalf = CreateAndAnchorWidget(parent, widgetData, offsetX, anchorOffset, lastAddedControl, wasHalf)
                     if err then
                         PrintLater(("Could not create %s '%s' of %s."):format(widgetData.type, GetStringFromValue(widgetData.name or "unnamed"), addonID))
-                        if logger then
-                            logger:Error(err)
-                        end
+                        logger:Error(err)
                     end
 
                     if isSubmenu then
@@ -907,9 +977,7 @@ local function ShowSetHandlerWarning(panel, handler)
     if hint then
         local message = ("Setting a handler on a panel is not recommended. Use the global callback %s instead. (%s on %s)"):format(hint, handler, panel.data.name)
         PrintLater(message)
-        if logger then
-            logger:Warn(message)
-        end
+        logger:Warn(message)
     end
 end
 
