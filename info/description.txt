@@ -52,5 +52,5 @@ For more examples and information you can take a look at [URL="https://github.co
 [*][B]Warnings[/B] - If your setting causes some unexpected behaviour, you can simply slap a warning on them
 [*][B]Dangerous Buttons[/B] - when flagged as such, a button will have red text and ask for confirmation before it runs any action
 [*][B]Required UI Reload[/B] - For cases where settings have to reload the UI or should be stored to disk right away, LAM offers a user friendly way to ask for a UI reload.
-[*]Support for all 4 official languages and 6 custom localisation projects
+[*]Support for all 5 official languages and 6 custom localisation projects
 [/LIST]

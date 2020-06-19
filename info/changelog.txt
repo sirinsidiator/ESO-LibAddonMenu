@@ -1,3 +1,15 @@
+2.0 r31
+- fixed iconpicker showing an empty tooltip when no choicesTooltips are set ([url=https://github.com/sirinsidiator/ESO-LibAddonMenu/pull/111]#111[/url], thanks Scootworks)
+- fixed slider mouse wheel interactions ([url=https://github.com/sirinsidiator/ESO-LibAddonMenu/pull/115]#115[/url])
+- fixed translated texts not showing in the official Russian localization ([url=https://github.com/sirinsidiator/ESO-LibAddonMenu/pull/118]#118[/url], thanks andy.s)
+- improved dropdown choice tooltip code compatibility ([url=https://github.com/sirinsidiator/ESO-LibAddonMenu/pull/115]#115[/url])
+- added "helpUrl" property for many control types ([url=https://github.com/sirinsidiator/ESO-LibAddonMenu/pull/109]#109[/url], thanks Baertram)
+- added "textType" and "maxChars" properties for editbox ([url=https://github.com/sirinsidiator/ESO-LibAddonMenu/pull/110]#110[/url], thanks Scootworks)
+- added "readOnly" property for slider ([url=https://github.com/sirinsidiator/ESO-LibAddonMenu/pull/112]#112[/url], thanks Scootworks)
+- removed embedded copy of LibStub ([url=https://github.com/sirinsidiator/ESO-LibAddonMenu/pull/116]#116[/url])
+- updated Japanese translation ([url=https://github.com/sirinsidiator/ESO-LibAddonMenu/pull/113]#113[/url], thanks Calamath)
+- updated for Greymoor
+
 2.0 r30
 - updated Korean translation (thanks whya5448)
 - added "enableLinks" property to description control ([url=https://github.com/sirinsidiator/ESO-LibAddonMenu/pull/102]#102[/url], thanks silvereyes333)
