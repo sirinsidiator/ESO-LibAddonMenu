@@ -22,12 +22,13 @@
     reference = "MyAddonSlider" -- unique global reference to control (optional)
 } ]]
 
-local widgetVersion = 15
+local widgetVersion = 16
 local LAM = LibAddonMenu2
 if not LAM:RegisterWidget("slider", widgetVersion) then return end
 
 local wm = WINDOW_MANAGER
 local strformat = string.format
+local SLIDER_HANDLER_NAMESPACE = "LAM2_Slider"
 
 local function RoundDecimalToPlace(d, place)
     return tonumber(strformat("%." .. tostring(place) .. "f", d))
@@ -83,6 +84,7 @@ local function UpdateValue(control, forceDefault, value)
     control.slidervalue:SetText(value)
 end
 
+local index = 1
 function LAMCreateControl.slider(parent, sliderData, controlName)
     local control = LAM.util.CreateLabelAndContainerControl(parent, sliderData, controlName)
     local isInputOnRight = sliderData.inputLocation == "right"
@@ -194,11 +196,31 @@ function LAMCreateControl.slider(parent, sliderData, controlName)
             control:UpdateValue(false, value)
         end
     end)
-    slider:SetHandler("OnMouseWheel", function(self, value)
+
+    local function OnMouseWheel(self, value)
         if(not self:GetEnabled()) then return end
         local new_value = (tonumber(slidervalue:GetText()) or sliderData.min or 0) + ((sliderData.step or 1) * value)
         control:UpdateValue(false, new_value)
+    end
+
+    local sliderHasFocus = false
+    local scrollEventInstalled = false
+    local function UpdateScrollEventHandler()
+        local needsScrollEvent = sliderHasFocus or slidervalue:HasFocus()
+        if needsScrollEvent ~= scrollEventInstalled then
+            local callback = needsScrollEvent and OnMouseWheel or nil
+            slider:SetHandler("OnMouseWheel", callback, SLIDER_HANDLER_NAMESPACE)
+            scrollEventInstalled = needsScrollEvent
+        end
+    end
+
+    EVENT_MANAGER:RegisterForEvent("LAM_Slider_OnGlobalMouseUp_" .. index, EVENT_GLOBAL_MOUSE_UP, function()
+        sliderHasFocus = (wm:GetMouseOverControl() == slider)
+        UpdateScrollEventHandler()
     end)
+    slidervalue:SetHandler("OnFocusGained", UpdateScrollEventHandler, SLIDER_HANDLER_NAMESPACE)
+    slidervalue:SetHandler("OnFocusLost", UpdateScrollEventHandler, SLIDER_HANDLER_NAMESPACE)
+    index = index + 1
 
     if sliderData.warning ~= nil or sliderData.requiresReload then
         control.warning = wm:CreateControlFromVirtual(nil, control, "ZO_Options_WarningIcon")
