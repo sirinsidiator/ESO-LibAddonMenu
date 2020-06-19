@@ -19,7 +19,7 @@
 } ]]
 
 
-local widgetVersion = 21
+local widgetVersion = 22
 local LAM = LibAddonMenu2
 if not LAM:RegisterWidget("dropdown", widgetVersion) then return end
 
@@ -73,29 +73,35 @@ local function DropdownCallback(control, choiceText, choice)
     choice.control:UpdateValue(false, choice.value or choiceText)
 end
 
-local function SetupTooltips(comboBox, choicesTooltips)
-    local function ShowTooltip(control)
-        InitializeTooltip(InformationTooltip, control, TOPLEFT, 0, 0, BOTTOMRIGHT)
-        SetTooltipText(InformationTooltip, LAM.util.GetStringFromValue(control.tooltip))
-        InformationTooltipTopLevel:BringWindowToTop()
-    end
-    local function HideTooltip(control)
-        ClearTooltip(InformationTooltip)
-    end
+local TOOLTIP_HANDLER_NAMESPACE = "LAM2_Dropdown_Tooltip"
 
+local function DoShowTooltip(control, tooltip)
+    InitializeTooltip(InformationTooltip, control, TOPLEFT, 0, 0, BOTTOMRIGHT)
+    SetTooltipText(InformationTooltip, LAM.util.GetStringFromValue(tooltip))
+    InformationTooltipTopLevel:BringWindowToTop()
+end
+
+local function ShowTooltip(control)
+    DoShowTooltip(control, control.tooltip)
+end
+
+local function HideTooltip()
+    ClearTooltip(InformationTooltip)
+end
+
+local function SetupTooltips(comboBox, choicesTooltips)
     -- allow for tooltips on the drop down entries
     local originalShow = comboBox.ShowDropdownInternal
     comboBox.ShowDropdownInternal = function(comboBox)
         originalShow(comboBox)
         local entries = ZO_Menu.items
         for i = 1, #entries do
-            local entry = entries[i]
             local control = entries[i].item
             control.tooltip = choicesTooltips[i]
-            entry.onMouseEnter = control:GetHandler("OnMouseEnter")
-            entry.onMouseExit = control:GetHandler("OnMouseExit")
-            ZO_PreHookHandler(control, "OnMouseEnter", ShowTooltip)
-            ZO_PreHookHandler(control, "OnMouseExit", HideTooltip)
+            if control.tooltip then
+                control:SetHandler("OnMouseEnter", ShowTooltip, TOOLTIP_HANDLER_NAMESPACE)
+                control:SetHandler("OnMouseExit", HideTooltip, TOOLTIP_HANDLER_NAMESPACE)
+            end
         end
     end
 
@@ -103,11 +109,12 @@ local function SetupTooltips(comboBox, choicesTooltips)
     comboBox.HideDropdownInternal = function(self)
         local entries = ZO_Menu.items
         for i = 1, #entries do
-            local entry = entries[i]
             local control = entries[i].item
-            control:SetHandler("OnMouseEnter", entry.onMouseEnter)
-            control:SetHandler("OnMouseExit", entry.onMouseExit)
-            control.tooltip = nil
+            if control.tooltip then
+                control:SetHandler("OnMouseEnter", nil, TOOLTIP_HANDLER_NAMESPACE)
+                control:SetHandler("OnMouseExit", nil, TOOLTIP_HANDLER_NAMESPACE)
+                control.tooltip = nil
+            end
         end
         originalHide(self)
     end
@@ -235,8 +242,8 @@ function ScrollableDropdownHelper:Initialize(panel, control, visibleRows)
         -- no need to store old ones since we have full ownership of our dropdown controls
         if not control.hookedMouseHandlers then --only do it once per control
             control.hookedMouseHandlers = true
-            ZO_PreHookHandler(control, "OnMouseEnter", onMouseEnter)
-            ZO_PreHookHandler(control, "OnMouseExit", onMouseExit)
+            control:SetHandler("OnMouseEnter", onMouseEnter, TOOLTIP_HANDLER_NAMESPACE)
+            control:SetHandler("OnMouseExit", onMouseExit, TOOLTIP_HANDLER_NAMESPACE)
         end
     end
     dataType1.setupCallback = SetupEntry
@@ -348,21 +355,13 @@ function ScrollableDropdownHelper:CalculateContentWidth()
 end
 
 function ScrollableDropdownHelper:OnMouseEnter(control)
-    -- call original code if we replace instead of hook the handler
-        --ZO_ScrollableComboBox_Entry_OnMouseEnter(control)
-    -- show tooltip
     if control.m_data.tooltip then
-        InitializeTooltip(InformationTooltip, control, TOPLEFT, 0, 0, BOTTOMRIGHT)
-        SetTooltipText(InformationTooltip, LAM.util.GetStringFromValue(control.m_data.tooltip))
-        InformationTooltipTopLevel:BringWindowToTop()
+        DoShowTooltip(control, control.m_data.tooltip)
     end
 end
 function ScrollableDropdownHelper:OnMouseExit(control)
-    -- call original code if we replace instead of hook the handler
-        --ZO_ScrollableComboBox_Entry_OnMouseExit(control)
-    -- hide tooltip
     if control.m_data.tooltip then
-        ClearTooltip(InformationTooltip)
+        HideTooltip()
     end
 end
 
