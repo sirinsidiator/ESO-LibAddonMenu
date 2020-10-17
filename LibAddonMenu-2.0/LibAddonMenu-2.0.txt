@@ -27,6 +27,7 @@ LibAddonMenu-2.0\controls\description.lua
 LibAddonMenu-2.0\controls\dropdown.lua
 LibAddonMenu-2.0\controls\editbox.lua
 LibAddonMenu-2.0\controls\header.lua
+LibAddonMenu-2.0\controls\multiselect.lua
 LibAddonMenu-2.0\controls\slider.lua
 LibAddonMenu-2.0\controls\texture.lua
 LibAddonMenu-2.0\controls\iconpicker.lua
