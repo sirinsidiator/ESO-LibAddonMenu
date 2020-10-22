@@ -238,6 +238,25 @@ function LAMCreateControl.multiselect(parent, dropdownData, controlName)
 	combobox:SetDimensions(control.container:GetDimensions())
 	combobox:SetHandler("OnMouseEnter", function() ZO_Options_OnMouseEnter(control) end)
 	combobox:SetHandler("OnMouseExit", function() ZO_Options_OnMouseExit(control) end)
+	local mouseUp = combobox:GetHandler("OnMouseUp")
+	local function onMouseUp(combobox, button, upInside, alt, shift, ctrl, command)
+    	if button == MOUSE_BUTTON_INDEX_RIGHT and upInside then
+	        ClearMenu()
+	        local dropdown = ZO_ComboBox_ObjectFromContainer(combobox)
+	        AddMenuItem("Select all", function()
+                dropdown.m_selectedItemData = {}
+                for _, entry in pairs(dropdown.m_sortedItems) do
+                    table.insert(dropdown.m_selectedItemData, entry)
+                end
+                dropdown:RefreshSelectedItemText()
+	        end)
+	        AddMenuItem("Deselect all", function() dropdown:ClearAllSelections() end)
+	        ShowMenu(combobox)
+	    else
+	    	mouseUp(combobox, button, upInside, alt, shift, ctrl, command)
+	    end
+	end
+	combobox:SetHandler("OnMouseUp", onMouseUp)
 	control.dropdown = ZO_ComboBox_ObjectFromContainer(combobox)
 	local dropdown = control.dropdown
 	dropdown:SetSortsItems(false) -- need to sort ourselves in order to be able to sort by value
