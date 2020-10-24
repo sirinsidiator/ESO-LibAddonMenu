@@ -81,28 +81,31 @@ local function SetSelected(control, values)
 	control.dropdown:RefreshSelectedItemText()
 end
 
-local function UpdateValue(control, forceDefault, value)
+local function SetFuncWithSelectedItems(control)
 	local values = {}
+	-- TODO: use control.selected instead of 'values' for more efficiency?
+	for _, entry in ipairs(control.dropdown.m_selectedItemData) do
+		local k = entry.value or entry.name
+		if control.data.dataType == "set" then
+			values[k] = true
+		elseif control.data.dataType == "list" then
+			values[#values + 1] = k
+		end
+	end
+	control.data.setFunc(values)
+	-- TODO: determine a more controlled way to do this? currently, this call closes the dropdown, which is annoying when changing multiple things
+	-- LAM.util.RequestRefreshIfNeeded(control)
+end
+
+local function UpdateValue(control, forceDefault, value)
 	if forceDefault then --if we are forcing defaults
-		values = LAM.util.GetDefaultValue(control.data.default)
+		local values = LAM.util.GetDefaultValue(control.data.default)
 		SetSelected(control, values)
 		control.data.setFunc(values)
 	elseif value then
-		-- TODO: use control.selected instead of 'values' for more efficiency?
-		for _, entry in ipairs(control.dropdown.m_selectedItemData) do
-			local k = entry.value or entry.name
-			if control.data.dataType == "set" then
-				values[k] = true
-			elseif control.data.dataType == "list" then
-				values[#values + 1] = k
-			end
-		end
-		control.data.setFunc(values)
-		-- TODO: determine a more controlled way to do this? currently, this call closes the dropdown, which is annoying when changing multiple things
-		--after setting this value, let's refresh the others to see if any should be disabled or have their settings changed
-		-- LAM.util.RequestRefreshIfNeeded(control)
+		SetFuncWithSelectedItems(control)
 	else
-		values = control.data.getFunc()
+		local values = control.data.getFunc()
 		SetSelected(control, values)
 	end
 	-- control.selected = values
@@ -238,19 +241,25 @@ function LAMCreateControl.multiselect(parent, dropdownData, controlName)
 	combobox:SetDimensions(control.container:GetDimensions())
 	combobox:SetHandler("OnMouseEnter", function() ZO_Options_OnMouseEnter(control) end)
 	combobox:SetHandler("OnMouseExit", function() ZO_Options_OnMouseExit(control) end)
+	
+	control.SetFuncWithSelectedItems = SetFuncWithSelectedItems
 	local mouseUp = combobox:GetHandler("OnMouseUp")
 	local function onMouseUp(combobox, button, upInside, alt, shift, ctrl, command)
     	if button == MOUSE_BUTTON_INDEX_RIGHT and upInside then
 	        ClearMenu()
 	        local dropdown = ZO_ComboBox_ObjectFromContainer(combobox)
 	        AddMenuItem("Select all", function()
-                dropdown.m_selectedItemData = {}
-                for _, entry in pairs(dropdown.m_sortedItems) do
-                    table.insert(dropdown.m_selectedItemData, entry)
-                end
-                dropdown:RefreshSelectedItemText()
+	        	dropdown.m_selectedItemData = {}
+	        	for _, entry in pairs(dropdown.m_sortedItems) do
+	        		table.insert(dropdown.m_selectedItemData, entry)
+	        	end
+	        	dropdown:RefreshSelectedItemText()
+	        	control:SetFuncWithSelectedItems()
 	        end)
-	        AddMenuItem("Deselect all", function() dropdown:ClearAllSelections() end)
+	        AddMenuItem("Deselect all", function()
+	        	dropdown:ClearAllSelections()
+	        	control.data.setFunc({})
+	        end)
 	        ShowMenu(combobox)
 	    else
 	    	mouseUp(combobox, button, upInside, alt, shift, ctrl, command)
