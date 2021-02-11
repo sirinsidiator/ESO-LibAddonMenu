@@ -3,7 +3,7 @@
 ------------------------------------------------------------------
 
 
-local MAJOR, MINOR = "LibAddonMenu-2.0", _LAM2_VERSION_NUMBER or -1
+local MAJOR, MINOR = "LibAddonMenu-2.0", 32
 
 local lam
 if(not LibStub) then
@@ -433,6 +433,16 @@ local localization = {
         RELOAD_DIALOG_TEXT = "Some changes require a UI reload in order to take effect. Do you want to reload now or discard the changes?",
         RELOAD_DIALOG_RELOAD_BUTTON = "Reload",
         RELOAD_DIALOG_DISCARD_BUTTON = "Discard",
+        WEEKDAYS = {"Sun","Mon","Tue","Wed","Thu","Fri","Sat"},
+        WEEKDAYS_LONG = {"Sunday","Monday","Tuesday","Wednesday","Thursday","Friday","Saturday"},
+        MONTHS = {"Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"},
+        MONTHS_LONG = {"January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"},
+        CURRENT_DAY = "Current day",
+        CURRENT_MONTH = "Current month",
+        CURRENT_YEAR = "Current year",
+        TODAY = "Today",
+        NEXT_MONTH = "Next month",
+        PREVIOUS_MONTH = "Previous month",
     },
     it = { -- provided by JohnnyKing
         PANEL_NAME = "Addon",
@@ -470,6 +480,16 @@ local localization = {
         RELOAD_DIALOG_TEXT = "Einige Änderungen werden erst übernommen nachdem die Benutzeroberfläche neu geladen wird. Wollt Ihr sie jetzt neu laden oder die Änderungen verwerfen?",
         RELOAD_DIALOG_RELOAD_BUTTON = "Neu laden",
         RELOAD_DIALOG_DISCARD_BUTTON = "Verwerfen",
+        WEEKDAYS = {"So","Mo","Di","Mi","Do","Fr","Sa"},
+        WEEKDAYS_LONG = {"Sonntag","Montag","Dienstag","Mittwoch","Donnerstag","Freitag","Samstag"},
+        MONTHS = {"Jan", "Feb", "Mär", "Apr", "Mai", "Jun", "Jul", "Aug", "Sep", "Olt", "Nov", "Dez"},
+        MONTHS_LONG = {"Januar", "Februar", "März", "April", "Mai", "Juni", "Juli", "August", "September", "Oktober", "November", "Dezember"},
+        CURRENT_DAY = "Aktueller Tag",
+        CURRENT_MONTH = "Aktueller Monat",
+        CURRENT_YEAR = "Aktuelles Jahr",
+        TODAY = "Heute",
+        NEXT_MONTH = "Nächster Monat",
+        PREVIOUS_MONTH = "Vorheriger Monat",
     },
     ru = { -- provided by TERAB1T, updated by andy.s
         PANEL_NAME = "Дополнения",

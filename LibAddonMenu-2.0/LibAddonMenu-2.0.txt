@@ -31,3 +31,4 @@ controls\slider.lua
 controls\texture.lua
 controls\iconpicker.lua
 controls\divider.lua
+controls\datepicker.lua
