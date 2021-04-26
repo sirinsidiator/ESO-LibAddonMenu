@@ -29,7 +29,7 @@ local optionsTable = {
         choices = {"table", "of", "choices"},
         getFunc = function() return "of" end,
         setFunc = function(var) print(var) end,
-        width = "half",	--or "half" (optional)
+        width = "half",	--or "full" (optional)
         warning = "Will need to reload the UI.",	--(optional)
     },
     [4] = {
@@ -39,7 +39,7 @@ local optionsTable = {
         choices = {"table", "of", "choices"},
         getFunc = function() return "of" end,
         setFunc = function(var) print(var) end,
-        width = "half",	--or "half" (optional)
+        width = "half",	--or "full" (optional)
         warning = "Will need to reload the UI.",	--(optional)
     },
     [5] = {
@@ -51,7 +51,7 @@ local optionsTable = {
         step = 1,	--(optional)
         getFunc = function() return 3 end,
         setFunc = function(value) d(value) end,
-        width = "half",	--or "half" (optional)
+        width = "half",	--or "full" (optional)
         default = 5,	--(optional)
     },
     [6] = {
@@ -59,7 +59,7 @@ local optionsTable = {
         name = "My Button",
         tooltip = "Button's tooltip text.",
         func = function() d("button pressed!") end,
-        width = "half",	--or "half" (optional)
+        width = "half",	--or "full" (optional)
         warning = "Will need to reload the UI.",	--(optional)
     },
     [7] = {
@@ -73,7 +73,7 @@ local optionsTable = {
                 tooltip = "Checkbox's tooltip text.",
                 getFunc = function() return true end,
                 setFunc = function(value) d(value) end,
-                width = "half",	--or "half" (optional)
+                width = "half",	--or "full" (optional)
                 warning = "Will need to reload the UI.",	--(optional)
             },
             [2] = {
@@ -82,7 +82,7 @@ local optionsTable = {
                 tooltip = "Color Picker's tooltip text.",
                 getFunc = function() return 1, 0, 0, 1 end,	--(alpha is optional)
                 setFunc = function(r,g,b,a) print(r, g, b, a) end,	--(alpha is optional)
-                width = "half",	--or "half" (optional)
+                width = "half",	--or "full" (optional)
                 warning = "warning text",
             },
             [3] = {
@@ -92,7 +92,7 @@ local optionsTable = {
                 getFunc = function() return "this is some text" end,
                 setFunc = function(text) print(text) end,
                 isMultiline = false,	--boolean
-                width = "half",	--or "half" (optional)
+                width = "half",	--or "full" (optional)
                 warning = "Will need to reload the UI.",	--(optional)
                 default = "",	--(optional)
             },
@@ -102,7 +102,7 @@ local optionsTable = {
         type = "custom",
         reference = "MyAddonCustomControl",	--unique name for your control to use as reference
         refreshFunc = function(customControl) end,	--(optional) function to call when panel/controls refresh
-        width = "half",	--or "half" (optional)
+        width = "half",	--or "full" (optional)
     },
     [9] = {
         type = "texture",
@@ -110,7 +110,7 @@ local optionsTable = {
         imageWidth = 64,	--max of 250 for half width, 510 for full
         imageHeight = 64,	--max of 100
         tooltip = "Image's tooltip text.",	--(optional)
-        width = "half",	--or "half" (optional)
+        width = "half",	--or "full" (optional)
     },
 }
 
