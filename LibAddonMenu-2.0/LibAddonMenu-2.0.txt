@@ -27,6 +27,7 @@ controls\description.lua
 controls\dropdown.lua
 controls\editbox.lua
 controls\header.lua
+controls\multiselect.lua
 controls\slider.lua
 controls\texture.lua
 controls\iconpicker.lua
