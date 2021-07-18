@@ -57,7 +57,7 @@
 
         <replace file="${tempdir}/${ant.project.name}/${ant.project.name}.txt" token="VERSION_NUMBER" value="${finalVersion}" encoding="UTF-8" />
         <replace file="${tempdir}/${ant.project.name}/${ant.project.name}.txt" token="development.lua" value="" encoding="UTF-8" />
-        <replace file="${tempdir}/${ant.project.name}/${ant.project.name}/${ant.project.name}.lua" token="_LAM2_VERSION_NUMBER or -1" value="${finalVersion}" encoding="UTF-8" />
+        <replace file="${tempdir}/${ant.project.name}/${ant.project.name}.lua" token="_LAM2_VERSION_NUMBER or -1" value="${finalVersion}" encoding="UTF-8" />
 
         <zip destfile="${targetdir}/${ant.project.name}r${fileVersion}.zip">
             <fileset dir="${tempdir}" />

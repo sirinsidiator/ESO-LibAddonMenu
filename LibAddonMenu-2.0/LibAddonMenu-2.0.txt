@@ -1,4 +1,4 @@
-## APIVersion: 100031 100032
+## APIVersion: 100033 100034
 ## Title: LibAddonMenu-2.0
 ## Version: 2.0 rVERSION_NUMBER
 ## AddOnVersion: VERSION_NUMBER
@@ -15,7 +15,7 @@
 ## You can read the full terms at https://account.elderscrollsonline.com/add-on-terms
 
 development.lua
-LibAddonMenu-2.0\LibAddonMenu-2.0.lua
+LibAddonMenu-2.0.lua
 
 controls\panel.lua
 controls\submenu.lua
