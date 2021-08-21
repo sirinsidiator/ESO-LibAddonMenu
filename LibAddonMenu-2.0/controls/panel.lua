@@ -34,6 +34,9 @@ local function RefreshPanel(control)
         if updateControl ~= control and updateControl.UpdateValue then
             updateControl:UpdateValue()
         end
+        if updateControl ~= control and updateControl.UpdateChoices then
+            updateControl:UpdateChoices()
+        end
         if updateControl.UpdateDisabled then
             updateControl:UpdateDisabled()
         end

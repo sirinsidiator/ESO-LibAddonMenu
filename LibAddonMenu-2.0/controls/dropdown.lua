@@ -121,6 +121,8 @@ local function SetupTooltips(comboBox, choicesTooltips)
 end
 
 local function UpdateChoices(control, choices, choicesValues, choicesTooltips)
+    local previousValue = control.dropdown:GetSelectedItem()
+
     control.dropdown:ClearItems() --remove previous choices --(need to call :SetSelectedItem()?)
     ZO_ClearTable(control.choices)
 
@@ -151,6 +153,10 @@ local function UpdateChoices(control, choices, choicesValues, choicesTooltips)
         end
         control.choices[entry.value or entry.name] = entry.name
         control.dropdown:AddItem(entry, not control.data.sort and ZO_COMBOBOX_SUPRESS_UPDATE) --if sort type/order isn't specified, then don't sort
+    end
+
+    if previousValue ~= "" then
+        control.dropdown:SetSelectedItem(control.choices[previousValue])
     end
 end
 
