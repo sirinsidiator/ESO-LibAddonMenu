@@ -19,7 +19,7 @@
 } ]]
 
 
-local widgetVersion = 22
+local widgetVersion = 23
 local LAM = LibAddonMenu2
 if not LAM:RegisterWidget("dropdown", widgetVersion) then return end
 
@@ -59,7 +59,7 @@ local function UpdateValue(control, forceDefault, value)
         value = LAM.util.GetDefaultValue(control.data.default)
         control.data.setFunc(value)
         control.dropdown:SetSelectedItem(control.choices[value])
-    elseif value then
+    elseif value ~= nil then
         control.data.setFunc(value)
         --after setting this value, let's refresh the others to see if any should be disabled or have their settings changed
         LAM.util.RequestRefreshIfNeeded(control)
@@ -70,7 +70,9 @@ local function UpdateValue(control, forceDefault, value)
 end
 
 local function DropdownCallback(control, choiceText, choice)
-    choice.control:UpdateValue(false, choice.value or choiceText)
+    local updateValue = choice.value
+    if updateValue == nil then updateValue = choiceText end
+    choice.control:UpdateValue(false, updateValue)
 end
 
 local TOOLTIP_HANDLER_NAMESPACE = "LAM2_Dropdown_Tooltip"
@@ -149,7 +151,10 @@ local function UpdateChoices(control, choices, choicesValues, choicesTooltips)
         if choicesTooltips and control.scrollHelper then
             entry.tooltip = choicesTooltips[i]
         end
-        control.choices[entry.value or entry.name] = entry.name
+        local entryValue = entry.value
+        if entryValue == nil then entryValue = entry.name end
+        control.choices[entryValue] = entry.name
+
         control.dropdown:AddItem(entry, not control.data.sort and ZO_COMBOBOX_SUPRESS_UPDATE) --if sort type/order isn't specified, then don't sort
     end
 end
