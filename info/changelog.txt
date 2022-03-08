@@ -1,3 +1,8 @@
+2.0 r33
+- fixed dropdown widget choicesValues not accepting boolean "false" ([url=https://github.com/sirinsidiator/ESO-LibAddonMenu/pull/127]#127[/url], thanks Baertram)
+- switched to a new build system
+- updated for Ascending Tide
+
 2.0 r32
 - updated folder structure ([url=https://github.com/sirinsidiator/ESO-LibAddonMenu/pull/119]#119[/url])
 - added "createFunc", "minHeight" and "maxHeight" properties to custom control ([url=https://github.com/sirinsidiator/ESO-LibAddonMenu/pull/123]#123[/url], thanks Baertram)
