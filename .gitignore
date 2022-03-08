@@ -10,3 +10,4 @@ Thumbs.db
 # build directories
 /target
 /temp
+/.history
