@@ -34,7 +34,12 @@ function LAMCreateControl.header(parent, headerData, controlName)
     header:SetAnchor(TOPLEFT, divider, BOTTOMLEFT)
     header:SetAnchor(BOTTOMRIGHT)
     header:SetText(LAM.util.GetStringFromValue(headerData.name))
-
+    if headerData.tooltip then
+	    header:SetMouseEnabled(true)
+	    header.data = {tooltipText = LAM.util.GetStringFromValue(headerData.tooltip)}
+        header:SetHandler("OnMouseEnter", ZO_Options_OnMouseEnter)
+        header:SetHandler("OnMouseExit", ZO_Options_OnMouseExit)
+    end
     local faqTexture = LAM.util.CreateFAQTexture(control)
     if faqTexture then
         faqTexture:SetAnchor(RIGHT, header, RIGHT, 0, 0)

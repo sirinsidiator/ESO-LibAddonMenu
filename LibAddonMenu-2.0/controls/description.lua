@@ -73,7 +73,18 @@ function LAMCreateControl.description(parent, descriptionData, controlName)
     else
         desc:SetAnchor(TOPLEFT)
     end
-    
+    if descriptionData.tooltip then
+	    desc:SetMouseEnabled(true)
+	    desc.data = {tooltipText = LAM.util.GetStringFromValue(descriptionData.tooltip)}
+        desc:SetHandler("OnMouseEnter", ZO_Options_OnMouseEnter)
+        desc:SetHandler("OnMouseExit", ZO_Options_OnMouseExit)
+	    if control.title then
+	        control.title:SetMouseEnabled(true)
+	        control.title.data = {tooltipText = LAM.util.GetStringFromValue(descriptionData.tooltip)}
+	        control.title:SetHandler("OnMouseEnter", ZO_Options_OnMouseEnter)
+	        control.title:SetHandler("OnMouseExit", ZO_Options_OnMouseExit)
+	    end
+    end   
     if descriptionData.enableLinks then
         desc:SetMouseEnabled(true)
         desc:SetLinkEnabled(true)
