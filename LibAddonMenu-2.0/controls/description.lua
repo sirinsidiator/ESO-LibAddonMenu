@@ -2,6 +2,7 @@
     type = "description",
     text = "My description text to display.", -- or string id or function returning a string
     title = "My Title", -- or string id or function returning a string (optional)
+    tooltip = "My Tooltip", -- or string id or function returning a string (optional)
     width = "full", -- or "half" (optional)
     disabled = function() return db.someBooleanSetting end, -- or boolean (optional)
     enableLinks = nil, -- or true for default tooltips, or function OnLinkClicked handler (optional)
@@ -11,7 +12,7 @@
 } ]]
 
 
-local widgetVersion = 11
+local widgetVersion = 12
 local LAM = LibAddonMenu2
 if not LAM:RegisterWidget("description", widgetVersion) then return end
 
