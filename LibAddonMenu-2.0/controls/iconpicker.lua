@@ -20,7 +20,7 @@
     reference = "MyAddonIconPicker" -- unique global reference to control (optional)
 } ]]
 
-local widgetVersion = 10
+local widgetVersion = 11
 local LAM = LibAddonMenu2
 if not LAM:RegisterWidget("iconpicker", widgetVersion) then return end
 
@@ -85,6 +85,7 @@ function IconPickerMenu:Initialize(name)
         local icon = wm:CreateControl(name .. "Entry" .. pool:GetNextControlId(), scroll, CT_TEXTURE)
         icon:SetMouseEnabled(true)
         icon:SetDrawLevel(3)
+        icon:SetDrawLayer(DL_CONTROLS)
         icon:SetHandler("OnMouseEnter", function()
             mouseOver:SetAnchor(TOPLEFT, icon, TOPLEFT, 0, 0)
             mouseOver:SetAnchor(BOTTOMRIGHT, icon, BOTTOMRIGHT, 0, 0)
