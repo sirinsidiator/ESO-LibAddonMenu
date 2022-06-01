@@ -115,6 +115,7 @@ function IconPickerMenu:Initialize(name)
 
     local function ResetFunction(icon)
         icon:ClearAnchors()
+        icon:SetHidden(true)
     end
 
     self.iconPool = ZO_ObjectPool:New(IconFactory, ResetFunction)
@@ -218,6 +219,7 @@ end
 
 function IconPickerMenu:AddIcon(texturePath, callback, tooltip)
     local icon, key = self.iconPool:AcquireObject()
+    icon:SetHidden(false)
     icon:SetTexture(texturePath)
     icon:SetColor(self.color:UnpackRGBA())
     icon.texture = texturePath
@@ -271,7 +273,7 @@ local function UpdateChoices(control, choices, choicesTooltips)
                 data.setFunc(texture)
                 LAM.util.RequestRefreshIfNeeded(control)
             end, LAM.util.GetStringFromValue(choicesTooltips[i]))
-        addedChoices[texture] = true
+            addedChoices[texture] = true
         end
     end
 end
