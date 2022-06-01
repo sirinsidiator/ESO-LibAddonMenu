@@ -2,6 +2,7 @@
     type = "description",
     text = "My description text to display.", -- or string id or function returning a string
     title = "My Title", -- or string id or function returning a string (optional)
+    tooltip = "My Tooltip", -- or string id or function returning a string (optional)
     width = "full", -- or "half" (optional)
     disabled = function() return db.someBooleanSetting end, -- or boolean (optional)
     enableLinks = nil, -- or true for default tooltips, or function OnLinkClicked handler (optional)
@@ -11,7 +12,7 @@
 } ]]
 
 
-local widgetVersion = 11
+local widgetVersion = 12
 local LAM = LibAddonMenu2
 if not LAM:RegisterWidget("description", widgetVersion) then return end
 
@@ -73,7 +74,18 @@ function LAMCreateControl.description(parent, descriptionData, controlName)
     else
         desc:SetAnchor(TOPLEFT)
     end
-    
+    if descriptionData.tooltip then
+	    desc:SetMouseEnabled(true)
+	    desc.data = {tooltipText = LAM.util.GetStringFromValue(descriptionData.tooltip)}
+        desc:SetHandler("OnMouseEnter", ZO_Options_OnMouseEnter)
+        desc:SetHandler("OnMouseExit", ZO_Options_OnMouseExit)
+	    if control.title then
+	        control.title:SetMouseEnabled(true)
+	        control.title.data = {tooltipText = LAM.util.GetStringFromValue(descriptionData.tooltip)}
+	        control.title:SetHandler("OnMouseEnter", ZO_Options_OnMouseEnter)
+	        control.title:SetHandler("OnMouseExit", ZO_Options_OnMouseExit)
+	    end
+    end   
     if descriptionData.enableLinks then
         desc:SetMouseEnabled(true)
         desc:SetLinkEnabled(true)

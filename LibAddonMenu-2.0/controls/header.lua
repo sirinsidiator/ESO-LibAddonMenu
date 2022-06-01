@@ -1,13 +1,14 @@
 --[[headerData = {
     type = "header",
     name = "My Header", -- or string id or function returning a string
+    tooltip = "My Tooltip", -- or string id or function returning a string (optional)
     width = "full", -- or "half" (optional)
     helpUrl = "https://www.esoui.com/portal.php?id=218&a=faq", -- a string URL or a function that returns the string URL (optional)
     reference = "MyAddonHeader" -- unique global reference to control (optional)
 } ]]
 
 
-local widgetVersion = 9
+local widgetVersion = 10
 local LAM = LibAddonMenu2
 if not LAM:RegisterWidget("header", widgetVersion) then return end
 
@@ -34,7 +35,12 @@ function LAMCreateControl.header(parent, headerData, controlName)
     header:SetAnchor(TOPLEFT, divider, BOTTOMLEFT)
     header:SetAnchor(BOTTOMRIGHT)
     header:SetText(LAM.util.GetStringFromValue(headerData.name))
-
+    if headerData.tooltip then
+	    header:SetMouseEnabled(true)
+	    header.data = {tooltipText = LAM.util.GetStringFromValue(headerData.tooltip)}
+        header:SetHandler("OnMouseEnter", ZO_Options_OnMouseEnter)
+        header:SetHandler("OnMouseExit", ZO_Options_OnMouseExit)
+    end
     local faqTexture = LAM.util.CreateFAQTexture(control)
     if faqTexture then
         faqTexture:SetAnchor(RIGHT, header, RIGHT, 0, 0)
