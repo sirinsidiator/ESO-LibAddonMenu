@@ -11,7 +11,7 @@
     reference = "MyAddonSubmenu" -- unique global reference to control (optional)
 } ]]
 
-local widgetVersion = 14
+local widgetVersion = 15
 local LAM = LibAddonMenu2
 if not LAM:RegisterWidget("submenu", widgetVersion) then return end
 
@@ -85,6 +85,7 @@ function LAMCreateControl.submenu(parent, submenuData, controlName)
     label:SetWrapMode(TEXT_WRAP_MODE_ELLIPSIS)
     label:SetText(LAM.util.GetStringFromValue(submenuData.name))
     label:SetMouseEnabled(true)
+    LAM.util.SetUpTooltip(label, submenuData)
 
     if submenuData.icon then
         control.icon = wm:CreateControl(nil, control, CT_TEXTURE)
@@ -98,23 +99,13 @@ function LAMCreateControl.submenu(parent, submenuData, controlName)
         icon:SetAnchor(TOPLEFT, control, TOPLEFT, 5, 5)
         icon:SetMouseEnabled(true)
         icon:SetDrawLayer(DL_CONTROLS)
+        LAM.util.SetUpTooltip(icon, submenuData, label.data)
         label:SetAnchor(TOP, control, TOP, 0, 5, ANCHOR_CONSTRAINS_Y)
         label:SetAnchor(LEFT, icon, RIGHT, 10, 0, ANCHOR_CONSTRAINS_X)
         label:SetDimensions(width - ICON_SIZE - 5, 30)
     else
         label:SetAnchor(TOPLEFT, control, TOPLEFT, 5, 5)
         label:SetDimensions(width, 30)
-    end
-
-    if submenuData.tooltip then
-        label.data = {tooltipText = LAM.util.GetStringFromValue(submenuData.tooltip)}
-        label:SetHandler("OnMouseEnter", ZO_Options_OnMouseEnter)
-        label:SetHandler("OnMouseExit", ZO_Options_OnMouseExit)
-        if control.icon then
-            control.icon.data = label.data
-            control.icon:SetHandler("OnMouseEnter", ZO_Options_OnMouseEnter)
-            control.icon:SetHandler("OnMouseExit", ZO_Options_OnMouseExit)
-        end
     end
 
     control.scroll = wm:CreateControl(nil, control, CT_SCROLL)

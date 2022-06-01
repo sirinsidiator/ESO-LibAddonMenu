@@ -207,6 +207,14 @@ local function CreateLabelAndContainerControl(parent, controlData, controlName)
     return control
 end
 
+local function SetUpTooltip(control, data, tooltipData)
+    if not data.tooltip then return end
+    control:SetMouseEnabled(true)
+    control.data = tooltipData or {tooltipText = util.GetStringFromValue(data.tooltip)}
+    control:SetHandler("OnMouseEnter", ZO_Options_OnMouseEnter)
+    control:SetHandler("OnMouseExit", ZO_Options_OnMouseExit)
+end
+
 local function GetTopPanel(panel)
     while panel.panel and panel.panel ~= panel do
         panel = panel.panel
@@ -570,6 +578,7 @@ util.GetDefaultValue = GetDefaultValue
 util.GetColorForState = GetColorForState
 util.CreateBaseControl = CreateBaseControl
 util.CreateLabelAndContainerControl = CreateLabelAndContainerControl
+util.SetUpTooltip = SetUpTooltip
 util.RequestRefreshIfNeeded = RequestRefreshIfNeeded
 util.RegisterForRefreshIfNeeded = RegisterForRefreshIfNeeded
 util.RegisterForReloadIfNeeded = RegisterForReloadIfNeeded

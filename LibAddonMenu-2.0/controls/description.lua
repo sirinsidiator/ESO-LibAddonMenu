@@ -12,7 +12,7 @@
 } ]]
 
 
-local widgetVersion = 12
+local widgetVersion = 13
 local LAM = LibAddonMenu2
 if not LAM:RegisterWidget("description", widgetVersion) then return end
 
@@ -62,6 +62,7 @@ function LAMCreateControl.description(parent, descriptionData, controlName)
     desc:SetFont("ZoFontGame")
     desc:SetText(LAM.util.GetStringFromValue(descriptionData.text))
     desc:SetWidth(isHalfWidth and width / 2 or width)
+    LAM.util.SetUpTooltip(desc, descriptionData)
 
     if descriptionData.title then
         control.title = wm:CreateControl(nil, control, CT_LABEL)
@@ -70,22 +71,11 @@ function LAMCreateControl.description(parent, descriptionData, controlName)
         title:SetAnchor(TOPLEFT, control, TOPLEFT)
         title:SetFont("ZoFontWinH4")
         title:SetText(LAM.util.GetStringFromValue(descriptionData.title))
+        LAM.util.SetUpTooltip(title, descriptionData, desc.data)
         desc:SetAnchor(TOPLEFT, title, BOTTOMLEFT)
     else
         desc:SetAnchor(TOPLEFT)
     end
-    if descriptionData.tooltip then
-	    desc:SetMouseEnabled(true)
-	    desc.data = {tooltipText = LAM.util.GetStringFromValue(descriptionData.tooltip)}
-        desc:SetHandler("OnMouseEnter", ZO_Options_OnMouseEnter)
-        desc:SetHandler("OnMouseExit", ZO_Options_OnMouseExit)
-	    if control.title then
-	        control.title:SetMouseEnabled(true)
-	        control.title.data = {tooltipText = LAM.util.GetStringFromValue(descriptionData.tooltip)}
-	        control.title:SetHandler("OnMouseEnter", ZO_Options_OnMouseEnter)
-	        control.title:SetHandler("OnMouseExit", ZO_Options_OnMouseExit)
-	    end
-    end   
     if descriptionData.enableLinks then
         desc:SetMouseEnabled(true)
         desc:SetLinkEnabled(true)
