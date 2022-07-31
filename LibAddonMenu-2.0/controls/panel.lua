@@ -48,10 +48,11 @@ local function ForceDefaults(panel)
 
     for i = 1, #panelControls do
         local updateControl = panelControls[i]
-        if updateControl.UpdateValue and updateControl.data.default ~= nil then
+        local updateControlData = updateControl.data
+        if updateControlData.resetFunc and type(updateControlData.resetFunc) == "function" then
+            updateControlData.resetFunc()
+        elseif updateControl.UpdateValue and updateControlData.default ~= nil then
             updateControl:UpdateValue(true)
-        elseif updateControl.data.resetFunc then
-            updateControl.data.resetFunc()
         end
     end
 
