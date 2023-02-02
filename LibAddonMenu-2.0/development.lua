@@ -8,7 +8,7 @@ SLASH_COMMANDS["/lamdebug"] = function()
     debugging = true
 
     local cm = CALLBACK_MANAGER
-    local LAM = LibStub("LibAddonMenu-2.0")
+    local LAM = LibAddonMenu2 --LibStub("LibAddonMenu-2.0")
 
     local function GetPanelName(control)
         local panel = LAM.util.GetTopPanel(control)
