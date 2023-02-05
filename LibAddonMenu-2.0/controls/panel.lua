@@ -12,7 +12,7 @@
     slashCommand = "/myaddon", -- will register a keybind to open to this panel (don't forget to include the slash!) (optional)
     registerForRefresh = true, -- boolean will refresh all options controls when a setting is changed and when the panel is shown (optional)
     registerForDefaults = true, -- boolean will set all options controls back to default values (optional)
-    resetFunc = function() print("defaults reset") end, -- custom function to run after settings are reset to defaults (optional)
+    resetFunc = function(panel) print("defaults reset") end, -- custom function to run after the panel is reset to defaults (optional)
 } ]]
 
 
@@ -49,15 +49,16 @@ local function ForceDefaults(panel)
     for i = 1, #panelControls do
         local updateControl = panelControls[i]
         local updateControlData = updateControl.data
-        if updateControlData.resetFunc and type(updateControlData.resetFunc) == "function" then
-            updateControlData.resetFunc()
-        elseif updateControl.UpdateValue and updateControlData.default ~= nil then
+        if updateControl.UpdateValue and updateControlData.default ~= nil then
             updateControl:UpdateValue(true)
+        end
+        if updateControlData.resetFunc then
+            updateControlData.resetFunc(updateControl)
         end
     end
 
     if panel.data.resetFunc then
-        panel.data.resetFunc()
+        panel.data.resetFunc(panel)
     end
 
     cm:FireCallbacks("LAM-RefreshPanel", panel)

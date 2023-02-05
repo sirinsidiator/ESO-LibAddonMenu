@@ -11,6 +11,7 @@
     default = {r = defaults.r, g = defaults.g, b = defaults.b, a = defaults.a}, -- (optional) table of default color values (or default = defaultColor, where defaultColor is a table with keys of r, g, b[, a]) or a function that returns the color
     helpUrl = "https://www.esoui.com/portal.php?id=218&a=faq", -- a string URL or a function that returns the string URL (optional)
     reference = "MyAddonColorpicker" -- unique global reference to control (optional)
+    resetFunc = function(colorpickerControl) print("defaults reset") end, -- custom function to run after the control is reset to defaults (optional)
 } ]]
 
 
