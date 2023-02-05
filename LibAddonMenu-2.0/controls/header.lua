@@ -4,7 +4,8 @@
     tooltip = "My Tooltip", -- or string id or function returning a string (optional)
     width = "full", -- or "half" (optional)
     helpUrl = "https://www.esoui.com/portal.php?id=218&a=faq", -- a string URL or a function that returns the string URL (optional)
-    reference = "MyAddonHeader" -- unique global reference to control (optional)
+    reference = "MyAddonHeader", -- unique global reference to control (optional)
+    resetFunc = function(headerControl) d("defaults reset") end, -- custom function to run after the control is reset to defaults (optional)
 } ]]
 
 

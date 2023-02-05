@@ -8,7 +8,8 @@
     disabled = function() return db.someBooleanSetting end, -- or boolean (optional)
     disabledLabel = function() return db.someBooleanSetting end, -- or boolean (optional)
     helpUrl = "https://www.esoui.com/portal.php?id=218&a=faq", -- a string URL or a function that returns the string URL (optional)
-    reference = "MyAddonSubmenu" -- unique global reference to control (optional)
+    reference = "MyAddonSubmenu", -- unique global reference to control (optional)
+    resetFunc = function(submenuControl) d("defaults reset") end, -- custom function to run after the control is reset to defaults (optional)
 } ]]
 
 local widgetVersion = 15

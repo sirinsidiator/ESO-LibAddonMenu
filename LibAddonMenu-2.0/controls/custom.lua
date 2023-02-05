@@ -6,6 +6,7 @@
     width = "full", -- or "half" (optional)
     minHeight = function() return db.minHeightNumber end, --or number for the minimum height of this control. Default: 26 (optional)
     maxHeight = function() return db.maxHeightNumber end, --or number for the maximum height of this control. Default: 4 * minHeight (optional)
+    resetFunc = function(customControl) d("defaults reset") end, -- custom function to run after the control is reset to defaults (optional)
 } ]]
 
 local widgetVersion = 8
