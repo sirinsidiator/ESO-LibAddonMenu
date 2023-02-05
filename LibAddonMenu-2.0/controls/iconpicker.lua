@@ -44,7 +44,7 @@ do
         return iconPicker
     end
 end
-local getIconPickerMenu = LAM.util.GetIconPickerMenu
+local GetIconPickerMenu = LAM.util.GetIconPickerMenu
 
 function IconPickerMenu:New(...)
     local object = ZO_Object.New(self)
@@ -266,10 +266,10 @@ local function UpdateChoices(control, choices, choicesTooltips)
     if not choices then
         choices, choicesTooltips = data.choices, data.choicesTooltips or {}
     end
-    local useIndex = (data.useIndex and LAM.util.GetDefaultValue(data.useIndex)) or false
+    local useIndex = LAM.util.GetDefaultValue(data.useIndex)
     local addedChoices = {}
 
-    local iconPicker = getIconPickerMenu()
+    local iconPicker = GetIconPickerMenu()
     iconPicker:Clear()
     for i = 1, #choices do
         local texture = choices[i]
@@ -301,7 +301,7 @@ local function SetColor(control, color)
         icon:SetColor(icon.color:UnpackRGBA())
     end
 
-    local iconPicker = getIconPickerMenu()
+    local iconPicker = GetIconPickerMenu()
     if iconPicker.parent == control.container and not iconPicker.control:IsHidden() then
         iconPicker:SetColor(icon.color)
     end
@@ -313,7 +313,7 @@ local function UpdateDisabled(control)
     control.dropdown:SetMouseEnabled(not disable)
     control.dropdownButton:SetEnabled(not disable)
 
-    local iconPicker = getIconPickerMenu()
+    local iconPicker = GetIconPickerMenu()
     if iconPicker.parent == control.container and not iconPicker.control:IsHidden() then
         iconPicker:Clear()
     end
@@ -328,7 +328,7 @@ end
 
 local function UpdateValue(control, forceDefault, value)
     local data = control.data
-    local useIndex = (data.useIndex and LAM.util.GetDefaultValue(data.useIndex)) or false
+    local useIndex = LAM.util.GetDefaultValue(data.useIndex)
     if forceDefault then --if we are forcing defaults
         value = LAM.util.GetDefaultValue(data.default)
         data.setFunc(value)
@@ -362,7 +362,7 @@ local function SetIconSize(control, size)
         control:SetHeight(height)
     end
 
-    local iconPicker = getIconPickerMenu()
+    local iconPicker = GetIconPickerMenu()
     if iconPicker.parent == control.container and not iconPicker.control:IsHidden() then
         iconPicker:SetIconSize(size)
         iconPicker:UpdateDimensions()
@@ -374,7 +374,7 @@ function LAMCreateControl.iconpicker(parent, iconpickerData, controlName)
     local control = LAM.util.CreateLabelAndContainerControl(parent, iconpickerData, controlName)
 
     local function ShowIconPicker()
-        local iconPicker = getIconPickerMenu()
+        local iconPicker = GetIconPickerMenu()
         if iconPicker.parent == control.container then
             iconPicker:Clear()
         else
