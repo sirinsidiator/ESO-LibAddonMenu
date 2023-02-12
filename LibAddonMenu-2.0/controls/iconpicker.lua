@@ -281,10 +281,10 @@ local function UpdateChoices(control, choices, choicesValues, choicesTooltips)
     for i = 1, #choices do
         local texture = choices[i]
         if not addedChoices[texture] then -- remove duplicates
-            local textureIndex = choicesValues[i]
+            local textureIndex = (choicesValues ~= nil and choicesValues[i]) or nil
             iconPicker:AddIcon(texture, textureIndex, function(self, lTexture, lTextureIndex)
                 control.icon:SetTexture(lTexture)
-                data.setFunc((lTextureIndex == nil and lTexture) or lTextureIndex)
+                data.setFunc((lTextureIndex ~= nil and lTextureIndex) or lTexture)
                 LAM.util.RequestRefreshIfNeeded(control)
             end, LAM.util.GetStringFromValue(choicesTooltips[i]))
             addedChoices[texture] = true
@@ -335,7 +335,9 @@ local function UpdateDisabled(control)
 end
 
 local function UpdateIconTexture(iconCtrl, choices, choicesValues, value)
-    iconCtrl:SetTexture((choicesValues == nil and value) or choices[choicesValues[value]])
+    if value == nil then return end
+    local texture = (choicesValues ~= nil and choices[choicesValues[value]] ~= nil and choices[choicesValues[value]]) or value
+    iconCtrl:SetTexture(texture)
 end
 
 local function UpdateValue(control, forceDefault, value)
@@ -345,7 +347,7 @@ local function UpdateValue(control, forceDefault, value)
         value = LAM.util.GetDefaultValue(data.default)
         data.setFunc(value)
         UpdateIconTexture(control.icon, data.choices, data.choicesValues, value)
-    elseif value then
+    elseif value ~= nil then
         data.setFunc(value)
         --after setting this value, let's refresh the others to see if any should be disabled or have their settings changed
         LAM.util.RequestRefreshIfNeeded(control)
