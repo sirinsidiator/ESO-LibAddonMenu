@@ -2,7 +2,7 @@
     type = "iconpicker",
     name = "My Icon Picker", -- or string id or function returning a string
     choices = {"texture path 1", "texture path 2", "texture path 3"},
-    useIndex = false, --boolean or function returning a boolean. If true: The setFunc/getFunc will use/return the index of the table choices. If false: The functions will use/return the texturePath value of table choices (optional)
+    choicesValues = {textureIndex1, textureIndex2, textureIndex3}, -- table of number texturePathIndex. If specified, these values will get passed to setFunc instead of the String texturePaths of choices (optional)
     getFunc = function() return db.var end,
     setFunc = function(var) db.var = var doStuff() end,
     tooltip = "Color Picker's tooltip text.", -- or string id or function returning a string (optional)
@@ -112,7 +112,7 @@ function IconPickerMenu:Initialize(name)
         end)
         icon:SetHandler("OnMouseUp", function(control, ...)
             PlaySound("Click")
-            icon.OnSelect(icon, icon.texture)
+            icon.OnSelect(icon, icon.texture, icon.textureIndex)
             self:Clear()
         end)
         return icon
@@ -222,12 +222,13 @@ function IconPickerMenu:Clear()
     self.customOnMouseExit = nil
 end
 
-function IconPickerMenu:AddIcon(texturePath, callback, tooltip)
+function IconPickerMenu:AddIcon(texturePath, textureIndex, callback, tooltip)
     local icon, key = self.iconPool:AcquireObject()
     icon:SetHidden(false)
     icon:SetTexture(texturePath)
     icon:SetColor(self.color:UnpackRGBA())
     icon.texture = texturePath
+    icon.textureIndex = textureIndex
     icon.tooltip = tooltip
     icon.OnSelect = callback
     self.icons[#self.icons + 1] = icon
@@ -261,12 +262,18 @@ end
 
 -------------------------------------------------------------
 
-local function UpdateChoices(control, choices, choicesTooltips)
+local function UpdateChoices(control, choices, choicesValues, choicesTooltips)
     local data = control.data
     if not choices then
-        choices, choicesTooltips = data.choices, data.choicesTooltips or {}
+        choices, choicesValues, choicesTooltips = data.choices, data.choicesValues, data.choicesTooltips
     end
-    local useIndex = LAM.util.GetDefaultValue(data.useIndex)
+    if choicesValues then
+        assert(#choices == #choicesValues, "[IconPicker]choices and choicesValues need to have the same size")
+    end
+    if choicesTooltips then
+        assert(#choices == #choicesTooltips, "[IconPicker]choices and choicesTooltips need to have the same size")
+    end
+
     local addedChoices = {}
 
     local iconPicker = GetIconPickerMenu()
@@ -274,9 +281,10 @@ local function UpdateChoices(control, choices, choicesTooltips)
     for i = 1, #choices do
         local texture = choices[i]
         if not addedChoices[texture] then -- remove duplicates
-            iconPicker:AddIcon(texture, function(self, lTexture)
+            local textureIndex = choicesValues[i]
+            iconPicker:AddIcon(texture, textureIndex, function(self, lTexture, lTextureIndex)
                 control.icon:SetTexture(lTexture)
-                data.setFunc((not useIndex and lTexture) or i)
+                data.setFunc((lTextureIndex == nil and lTexture) or lTextureIndex)
                 LAM.util.RequestRefreshIfNeeded(control)
             end, LAM.util.GetStringFromValue(choicesTooltips[i]))
             addedChoices[texture] = true
@@ -326,22 +334,24 @@ local function UpdateDisabled(control)
     end
 end
 
+local function UpdateIconTexture(iconCtrl, choices, choicesValues, value)
+    iconCtrl.icon:SetTexture((choicesValues == nil and value) or choices[choicesValues[value]])
+end
+
 local function UpdateValue(control, forceDefault, value)
     local data = control.data
-    local useIndex = LAM.util.GetDefaultValue(data.useIndex)
+
     if forceDefault then --if we are forcing defaults
         value = LAM.util.GetDefaultValue(data.default)
         data.setFunc(value)
-        local texturePath = (not useIndex and value) or data.choices[value]
-        control.icon:SetTexture(texturePath)
+        UpdateIconTexture(control.icon, data.choices, data.choicesValues, value)
     elseif value then
         data.setFunc(value)
         --after setting this value, let's refresh the others to see if any should be disabled or have their settings changed
         LAM.util.RequestRefreshIfNeeded(control)
     else
         value = data.getFunc()
-        local texturePath = (not useIndex and value) or data.choices[value]
-        control.icon:SetTexture(texturePath)
+        UpdateIconTexture(control.icon, data.choices, data.choicesValues, value)
     end
 end
 
