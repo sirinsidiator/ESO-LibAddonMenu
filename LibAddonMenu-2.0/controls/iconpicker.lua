@@ -5,7 +5,7 @@
     choicesValues = {textureIndex1, textureIndex2, textureIndex3}, -- table of number texturePathIndex. If specified, these values will get passed to setFunc instead of the String texturePaths of choices (optional)
     getFunc = function() return db.var end,
     setFunc = function(var) db.var = var doStuff() end,
-    tooltip = "Color Picker's tooltip text.", -- or string id or function returning a string (optional)
+    tooltip = "Icon Picker's tooltip text.", -- or string id or function returning a string (optional)
     choicesTooltips = {"icon tooltip 1", "icon tooltip 2", "icon tooltip 3"}, -- or array of string ids or array of functions returning a string (optional)
     maxColumns = 5, -- number of icons in one row (optional)
     visibleRows = 4.5, -- number of visible rows (optional)
@@ -335,7 +335,7 @@ local function UpdateDisabled(control)
 end
 
 local function UpdateIconTexture(iconCtrl, choices, choicesValues, value)
-    iconCtrl.icon:SetTexture((choicesValues == nil and value) or choices[choicesValues[value]])
+    iconCtrl:SetTexture((choicesValues == nil and value) or choices[choicesValues[value]])
 end
 
 local function UpdateValue(control, forceDefault, value)
