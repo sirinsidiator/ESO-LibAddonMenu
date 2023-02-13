@@ -222,7 +222,7 @@ function IconPickerMenu:Clear()
     self.customOnMouseExit = nil
 end
 
-function IconPickerMenu:AddIcon(texturePath, textureIndex, callback, tooltip)
+function IconPickerMenu:AddIcon(texturePath, callback, tooltip, textureIndex)
     local icon, key = self.iconPool:AcquireObject()
     icon:SetHidden(false)
     icon:SetTexture(texturePath)
@@ -262,7 +262,7 @@ end
 
 -------------------------------------------------------------
 
-local function UpdateChoices(control, choices, choicesValues, choicesTooltips)
+local function UpdateChoices(control, choices, choicesTooltips, choicesValues)
     local data = control.data
     if not choices then
         choices, choicesValues, choicesTooltips = data.choices, data.choicesValues, data.choicesTooltips
@@ -282,11 +282,11 @@ local function UpdateChoices(control, choices, choicesValues, choicesTooltips)
         local texture = choices[i]
         if not addedChoices[texture] then -- remove duplicates
             local textureIndex = (choicesValues ~= nil and choicesValues[i]) or nil
-            iconPicker:AddIcon(texture, textureIndex, function(self, lTexture, lTextureIndex)
+            iconPicker:AddIcon(texture, function(self, lTexture, lTextureIndex)
                 control.icon:SetTexture(lTexture)
                 data.setFunc((lTextureIndex ~= nil and lTextureIndex) or lTexture)
                 LAM.util.RequestRefreshIfNeeded(control)
-            end, LAM.util.GetStringFromValue(choicesTooltips[i]))
+            end, LAM.util.GetStringFromValue(choicesTooltips[i]), textureIndex)
             addedChoices[texture] = true
         end
     end
