@@ -3,6 +3,17 @@ LibAddonMenu is a library which offers many functions for add-on authors to simp
 [SIZE="4"][B]Users:[/B][/SIZE]
 
 If the game cannot load some addon because it is missing LibAddonMenu-2.0 as a dependency, simply download and install it like you would any other addon. In case it shows as "out of date" in the game, simply enable the "allow out of date addons" checkbox.
+[QUOTE]
+[COLOR="Red"][SIZE="6"][B]IMPORTANT[/B][/SIZE][/COLOR]
+[SIZE="5"]In case you get an error that contains text like this:
+[COLOR="Cyan"]user:/AddOns/[COLOR="DarkOrange"][B]<some other addon>[/B][/COLOR]/Libs/LibAddonMenu-2.0[/COLOR]
+
+Some other addon you have installed likely contains an old version of LibAddonMenu which is loaded before the most current one.
+
+Make sure to [U]search for LibAddonMenu-2.0 folders[/U] in your AddOns folder and [U]delete all of them[/U]. Afterwards install the latest version of LibAddonMenu-2.0 separately.
+
+[URL="https://kyzderp.notion.site/Add-on-Troubleshooting-2f5a9796dc154c8293ff66cb653a0788?pvs=25#823bb2a26f5c4bf0ba8bf0079546baf3"]Check Kyzderp's guide for more detailed instructions[/URL]
+[/SIZE][/QUOTE]
 
 [SIZE="4"][B]Developers:[/B][/SIZE]
 
@@ -53,4 +64,9 @@ For more examples and information you can take a look at [URL="https://github.co
 [*][B]Dangerous Buttons[/B] - when flagged as such, a button will have red text and ask for confirmation before it runs any action
 [*][B]Required UI Reload[/B] - For cases where settings have to reload the UI or should be stored to disk right away, LAM offers a user friendly way to ask for a UI reload.
 [*]Support for all 5 official languages and 6 custom localisation projects
+[/LIST]
+
+[SIZE="3"]External controls:[/SIZE]
+[LIST]
+[*][B][URL=https://www.esoui.com/downloads/info2932-LibAddonMenu-DatePickerwidget.html]DatePicker Widget[/URL][/B]
 [/LIST]
