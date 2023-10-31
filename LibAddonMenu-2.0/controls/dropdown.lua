@@ -20,7 +20,7 @@
 } ]]
 
 
-local widgetVersion = 23
+local widgetVersion = 24
 local LAM = LibAddonMenu2
 if not LAM:RegisterWidget("dropdown", widgetVersion) then return end
 
@@ -393,6 +393,7 @@ function LAMCreateControl.dropdown(parent, dropdownData, controlName)
     control.dropdown = ZO_ComboBox_ObjectFromContainer(combobox)
     local dropdown = control.dropdown
     dropdown:SetSortsItems(false) -- need to sort ourselves in order to be able to sort by value
+    dropdown.m_dropdown:SetParent(combobox:GetOwningWindow()) -- TODO remove workaround once the problem is fixed in the game
 
     if dropdownData.scrollable then
         local visibleRows = type(dropdownData.scrollable) == "number" and dropdownData.scrollable or DEFAULT_VISIBLE_ROWS
