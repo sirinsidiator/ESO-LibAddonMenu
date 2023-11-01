@@ -3,7 +3,7 @@
 ------------------------------------------------------------------
 
 
-local MAJOR, MINOR = "LibAddonMenu-2.0", _LAM2_VERSION_NUMBER or -1
+local MAJOR, MINOR = "LibAddonMenu-2.0", 35
 
 local lam
 if(not LibStub) then
@@ -52,6 +52,7 @@ local wm = WINDOW_MANAGER
 local em = EVENT_MANAGER
 local sm = SCENE_MANAGER
 local cm = CALLBACK_MANAGER
+local snm = SCREEN_NARRATION_MANAGER
 local tconcat = table.concat
 local tinsert = table.insert
 
@@ -99,6 +100,713 @@ local FAQ_ICON_TOOTIP_TEMPLATE = "%s: %s"
 local function GetColorForState(disabled)
     return disabled and ZO_DEFAULT_DISABLED_COLOR or ZO_DEFAULT_ENABLED_COLOR
 end
+
+
+------------------------------------------------------------------------------------------------------------------------
+--Chat narration of LAM controls -> In accessibility mode, with chat reader enabled
+local HANDLER_NARRATE_NAMESPACE = "LAM2_Narrate_OnMouseEvent"
+local TOOLTIP_HANDLER_NARRATE_NAMESPACE = "LAM2_Dropdown_Narrate_Tooltip"
+local booleanToOnOff = {
+    [false] = GetString(SI_CHECK_BUTTON_OFF):upper(),
+    [true]  = GetString(SI_CHECK_BUTTON_ON):upper(),
+}
+--Special updater functions for the following widget types
+-->All others will use the UpdateValue function to narrate the new set value
+local widgetTypeToSpecialUpdate = {
+    ["button"]  = {base="data", funcName = "func"},
+    ["texture"] = {base="self", funcName = "SetTexture"},
+    --todo: ["slider"] -> The mouse wheel handler changes the value of the slider but does not fire UpdateValue?
+}
+--No OnMouse* events for chat narration for the following widgets
+local skippedWidgets_OnMouseEvents = {
+    ["divider"] = true
+}
+
+local widgetTypes = {
+    ["sliders"] = {
+        ["slider"] = true,
+        --Custom widgets
+        ["soundslider"] = true,
+    },
+    ["dropdowns"] = {
+        ["dropdown"] = true,
+        --Custom widgets
+        ["multiselectdropdown"] = true
+    }
+    --Custom widgets
+    --...
+}
+
+
+local skipNextOnMouseEnterNarration = false
+local uiReaderWasEnabled = false
+local wasColorPickerGamepadDialogHooked = false
+
+
+local function IsAccessibilitySettingEnabled(settingId)
+    return GetSetting_Bool(SETTING_TYPE_ACCESSIBILITY, settingId)
+end
+
+local function ChangeAccessibilitySetting(settingId, newValue)
+    SetSetting(SETTING_TYPE_ACCESSIBILITY, settingId, tonumber(newValue))
+end
+
+local function IsAccessibilityModeEnabled()
+	return IsAccessibilitySettingEnabled(ACCESSIBILITY_SETTING_ACCESSIBILITY_MODE)
+end
+
+local function IsAccessibilityChatReaderEnabled()
+	return IsAccessibilityModeEnabled() and IsAccessibilitySettingEnabled(ACCESSIBILITY_SETTING_TEXT_CHAT_NARRATION)
+end
+
+local function IsAccessibilityUIReaderEnabled()
+	return IsAccessibilityModeEnabled() and IsAccessibilitySettingEnabled(ACCESSIBILITY_SETTING_SCREEN_NARRATION)
+end
+
+--If the gamepad colorpicker is shown all the LAM controls below it still fire their OnMouseEnter etc. which makes it
+--play sounds all the time...
+local function IsGamepadColorPickerShown()
+    return COLOR_PICKER_GAMEPAD:IsShown()
+end
+
+local function didNarrationControlChange(control)
+    local mocCtrl = moc()
+    local ctrlChanged = (mocCtrl == nil or mocCtrl ~= control) or false
+    if mocCtrl ~= nil and ctrlChanged == true then
+        --The current control below the mouse could be the highlight of the selected button,
+        --or a slider's bar, or any other child control of the widget
+        local parent = mocCtrl:GetParent()
+        local parentParent = parent ~= nil and parent:GetParent()
+        if (parent ~= nil and parent == control) or (parentParent ~= nil and parentParent == control) then
+            ctrlChanged = false
+        end
+    end
+    return ctrlChanged
+end
+
+local function AddNarrationData(control, narrationData)
+    if control == nil or narrationData == nil then return end
+    if control.data == nil then
+        control.data = narrationData
+    else
+        for k,v in pairs(narrationData) do
+            control.data[k] = v
+        end
+    end
+end
+
+local function SetOrAddOnMouseHandler(control, handlerName, callbackFunc, handlerNameSpace)
+    handlerNameSpace = handlerNameSpace or HANDLER_NARRATE_NAMESPACE
+    if control:GetHandler(handlerName) ~= nil then
+        ZO_PostHookHandler(control, handlerName, callbackFunc)
+    else
+        control:SetHandler(handlerName, callbackFunc, handlerNameSpace)
+    end
+end
+
+local function StopNarration(UItoo)
+--d(">StopNarration-UItoo: " ..tostring(UItoo))
+    UItoo = UItoo or false
+    if IsAccessibilityChatReaderEnabled() then
+        --ClearActiveNarration()
+        RequestReadPendingNarrationTextToClient(NARRATION_TYPE_TEXT_CHAT)
+        ClearNarrationQueue(NARRATION_TYPE_TEXT_CHAT)
+    end
+    if UItoo == true and IsAccessibilityUIReaderEnabled() then
+        --ClearActiveNarration()
+        RequestReadPendingNarrationTextToClient(NARRATION_TYPE_UI_SCREEN)
+        ClearNarrationQueue(NARRATION_TYPE_UI_SCREEN)
+    end
+end
+
+local function GetKeybindNarration(keybindButtonInfoTable)
+    local keybindNarration = snm:CreateNarratableObject(nil, 100)
+    for i, buttonInfo in ipairs(keybindButtonInfoTable) do
+        local narrationText
+        if buttonInfo.name then
+            local formatter
+            if i == 1 then
+                formatter = buttonInfo.enabled and SI_SCREEN_NARRATION_FIRST_KEYBIND_FORMATTER or SI_SCREEN_NARRATION_DISABLED_FIRST_KEYBIND_FORMATTER
+            else
+                formatter = buttonInfo.enabled and SI_SCREEN_NARRATION_KEYBIND_FORMATTER or SI_SCREEN_NARRATION_DISABLED_KEYBIND_FORMATTER
+            end
+            narrationText = zo_strformat(formatter, buttonInfo.keybindName, buttonInfo.name)
+        else
+            local formatter
+            if i == 1 then
+                formatter = buttonInfo.enabled and SI_SCREEN_NARRATION_FIRST_KEYBIND_FORMATTER_NO_LABEL or SI_SCREEN_NARRATION_DISABLED_FIRST_KEYBIND_FORMATTER_NO_LABEL
+            else
+                formatter = buttonInfo.enabled and SI_SCREEN_NARRATION_KEYBIND_FORMATTER_NO_LABEL or SI_SCREEN_NARRATION_DISABLED_KEYBIND_FORMATTER_NO_LABEL
+            end
+            narrationText = zo_strformat(formatter, buttonInfo.keybindName)
+        end
+        keybindNarration:AddNarrationText(narrationText)
+    end
+    return keybindNarration
+end
+
+local function CreateColorRGBFromValuesTab(valuesTab)
+    local colorDef = ZO_ColorDef:New(unpack(valuesTab))
+    if colorDef == nil then return "" end
+    return tostring(colorDef:ToARGBHex())
+end
+
+local function GetDisabledControlNarratableText(currentText, isDisabled, widgetData)
+    if isDisabled == nil and widgetData ~= nil then
+        isDisabled = GetStringFromValue(widgetData.disabled) or false
+    end
+    if isDisabled == true then
+        currentText = GetString(SI_GAMEPAD_GUILD_HEADER_DISABLED_NARRATION) .. " " .. currentText
+    end
+    return currentText
+end
+
+local function dialogNoChoiceCallbackFunc()
+--d("<dialogNoChoiceCallbackFunc")
+    if IsAccessibilityUIReaderEnabled() and not uiReaderWasEnabled then ChangeAccessibilitySetting(ACCESSIBILITY_SETTING_SCREEN_NARRATION, 0) end
+    StopNarration(true)
+end
+
+local function OnLAMControlMouseExitStopNarrate(control)
+    StopNarration()
+end
+
+local function AddNewChatNarrationText(newText, stopCurrent)
+    if IsAccessibilityUIReaderEnabled() == false then return end
+    stopCurrent = stopCurrent or false
+    if stopCurrent == true then
+        StopNarration()
+    end
+    --Remove any - from the text as it seems to make the text not "always" be read?
+    local newTextClean = string.gsub(newText, "-", "")
+
+    if newTextClean == nil or newTextClean == "" then return end
+    --PlaySound(SOUNDS.TREE_HEADER_CLICK)
+    --[[
+    if LibDebugLogger == nil and DebugLogViewer == nil then
+        --Using this API does no always properly work
+        RequestReadTextChatToClient(newText)
+        --Adding it to the chat as debug message works better/more reliably
+        --But this will add a timestamp which is read, too :-(
+        --CHAT_ROUTER:AddDebugMessage(newText)
+    else
+        --Using this API does no always properly work
+        RequestReadTextChatToClient(newText)
+        --Adding it to the chat as debug message works better/more reliably
+        --But this will add a timestamp which is read, too :-(
+        --Disable DebugLogViewer capture of debug messages?
+        --LibDebugLogger:SetBlockChatOutputEnabled(false)
+        --CHAT_ROUTER:AddDebugMessage(newText)
+        --LibDebugLogger:SetBlockChatOutputEnabled(true)
+    end
+    ]]
+    --RequestReadTextChatToClient(newTextClean) Unreliably reading it, sometimes yes, sometimes now
+    --Switched to UI reader:
+
+    -- this current works when the addon manager is opened and the script is ran in chat
+    local addOnNarationData = {
+        canNarrate = function()
+            return true --LibAddonMenu2 is showing a panel
+        end,
+        selectedNarrationFunction = function()
+            return snm:CreateNarratableObject(newText)
+        end,
+    }
+    snm:RegisterCustomObject(MAJOR, addOnNarationData)
+	snm:QueueCustomEntry(MAJOR)
+    RequestReadPendingNarrationTextToClient(NARRATION_TYPE_UI_SCREEN)
+end
+
+local function ConditionalAddNewChatNarrationText(widget, newText, childControlText, stopCurrent, skipConditionalChecks)
+    skipConditionalChecks = skipConditionalChecks or false
+    --d("ConditionalAddNewChatNarrationText-widget: " ..tostring(widget) .. ", text: " ..tostring(newText) .. ", child: " ..tostring(childControlText) .. ", stopCurrent: " ..tostring(stopCurrent) .. ", skipConditionalChecks: " ..tostring(skipConditionalChecks))
+    if widget == nil or newText == nil or (not skipConditionalChecks and IsGamepadColorPickerShown()) then return end
+    childControlText = childControlText or ""
+
+    AddNewChatNarrationText(string.format("%s %s: %s", widget, newText, childControlText), stopCurrent)
+end
+
+local function OnUpdateDoNarrate(uniqueId, delay, callbackFunc)
+    local updaterName = "LAMNarrateOnUpdate_" ..tostring(uniqueId)
+    em:UnregisterForUpdate(updaterName)
+    if IsAccessibilityUIReaderEnabled() == false or callbackFunc == nil then return end
+    delay = delay or 1000
+    em:RegisterForUpdate(updaterName, delay, function()
+        if IsAccessibilityUIReaderEnabled() == false then em:UnregisterForUpdate(updaterName) return end
+        callbackFunc()
+        em:UnregisterForUpdate(updaterName)
+    end)
+end
+
+local function OnLAMControlTextChangeDoNarrate(control)
+    em:UnregisterForUpdate("LAMNarrateOnTextChange")
+    if control == nil or control.GetText == nil or IsAccessibilityUIReaderEnabled() == false then return end
+    local text = control:GetText()
+    if text == "" then return end
+    --Delay by 1 second and always restart the delay on new typed text/character
+    em:RegisterForUpdate("LAMNarrateOnTextChange", 1000, function()
+        if didNarrationControlChange(control) or IsAccessibilityUIReaderEnabled() == false then em:UnregisterForUpdate("LAMNarrateOnTextChange") return end
+        ConditionalAddNewChatNarrationText("", util.L.SEARCH_FOR .. ":   " .. text, "", true)
+        em:UnregisterForUpdate("LAMNarrateOnTextChange")
+    end)
+end
+
+local function AddDialogTitleBodyKeybindNarration(title, body, onlyConfirmButton)
+    if IsAccessibilityModeEnabled() == false then return end
+    onlyConfirmButton = onlyConfirmButton or false
+    uiReaderWasEnabled = IsAccessibilityUIReaderEnabled()
+    if uiReaderWasEnabled == false then
+        ChangeAccessibilitySetting(ACCESSIBILITY_SETTING_SCREEN_NARRATION, 1)
+    end
+    local narrationStart
+    if body ~= nil then
+        narrationStart = string.format("Dialog: %q,    %s", title, body)
+    else
+        narrationStart = title
+    end
+    local keybindButtonInfoTable = {
+        [1] = {
+            enabled = true,
+            keybindName = ZO_Keybindings_GetHighestPriorityNarrationStringFromAction("DIALOG_PRIMARY") or GetString(SI_ACTION_IS_NOT_BOUND),--Primary keybind
+            name = GetString(SI_DIALOG_CONFIRM),
+        },
+        [2] = {
+            enabled = function() if onlyConfirmButton == true then return false else return true end end,
+            --enabled = true and onlyConfirmButton,
+            keybindName = ZO_Keybindings_GetHighestPriorityNarrationStringFromAction("DIALOG_NEGATIVE") or GetString(SI_ACTION_IS_NOT_BOUND),--Secondary keybind,
+            name = GetString(SI_DIALOG_DISMISS),
+        }
+    }
+    local keybindNarrationOfDialog = GetKeybindNarration(keybindButtonInfoTable)
+    local narrations = {}
+    ZO_AppendNarration(narrations, snm:CreateNarratableObject(narrationStart, 250))
+    ZO_AppendNarration(narrations, keybindNarrationOfDialog)
+    snm:NarrateText(narrations, NARRATION_TYPE_UI_SCREEN)
+end
+
+local function NarrateLAMControlToUI(control, isAddonListRow, wasSelected, valueChanged, doNotClearQueue)
+    --d(">NarrateLAMControlToChat")
+    if control == nil or IsAccessibilityUIReaderEnabled() == false then return end
+    if IsGamepadColorPickerShown() then return end
+
+    isAddonListRow = isAddonListRow or false
+    wasSelected = wasSelected or false
+    valueChanged = valueChanged or false
+    doNotClearQueue = doNotClearQueue or false
+
+    --data of the widget
+    local data = (isAddonListRow == true and control.dataEntry ~= nil and control.dataEntry.data) or control.data
+    if data == nil then return end
+
+    --Widget types
+    local widgetType = data.type
+    local isSubmenu = widgetType == "submenu"
+    local isDropdown = widgetType == "dropdown"
+    local isSoundSlider = widgetType == "soundslider"
+    local isIconPicker = widgetType == "iconpicker"
+
+    local isDisabled = GetStringFromValue(data.disabled) or false
+    local requiresReload = GetStringFromValue(data.requiresReload) or false
+    local hasWarning = GetStringFromValue(data.warning) or false
+    local warningText
+
+    local nameAndValue = GetStringFromValue(data.narrateName or data.name) --LAM addon list row control with dataEntry.data table, or LAM widget control wih .data table
+    local tooltip = GetStringFromValue(data.narrateTooltip or data.tooltip)
+    if widgetType == "description" then
+        if data.title ~= nil and data.text ~= nil then
+            nameAndValue = GetStringFromValue(data.title) .. "   " .. GetStringFromValue(data.text)
+        end
+    end
+    if tooltip == nameAndValue then tooltip = nil end
+--d(">name: " ..tostring(nameAndValue) .. ", tooltip: " ..tostring(tooltip) .. ", widgetType: " ..tostring(widgetType) .. ", hasWarning: " ..tostring(hasWarning))
+    local nameWasNil = false
+
+    if not isAddonListRow then
+        --Submenu's label control
+        if isSubmenu == true and control.GetText ~= nil then
+            nameAndValue = control:GetText()
+        else
+            --Addon panel control
+            if widgetType == "panel" then
+                if data.author ~= nil then
+                    nameAndValue = nameAndValue .. ", " .. zo_strformat(util.L["AUTHOR"], GetStringFromValue(data.author))
+                end
+                if data.version ~= nil then
+                    nameAndValue = nameAndValue .. ", " .. zo_strformat(util.L["VERSION"], GetStringFromValue(data.version))
+                end
+            end
+        end
+        --LAM widget controls - use .data table to get .name, .tooltip and the actual value via the .getFunc()
+        if data.getFunc ~= nil then
+            local valuesTab = {data.getFunc()}
+            local value
+            if #valuesTab == 1 then
+                value = valuesTab[1]
+            else
+                if widgetType == "colorpicker" then
+                    value = CreateColorRGBFromValuesTab(valuesTab)
+                else
+                    local valuesLoop
+                    for k,v in ipairs(valuesTab) do
+                        valuesLoop = (valuesLoop == nil and ("" .. v)) or (valuesLoop .. ", " .. v)
+                    end
+                    value = valuesLoop or ""
+                end
+            end
+
+            --d(">>>value: " .. tostring(value))
+            if value ~= nil then
+                if isDropdown == true and data.choicesValues ~= nil and data.choices ~= nil then
+                    local indexAtChoices = ZO_KeyOfFirstElementInNonContiguousTable(data.choicesValues, value)
+                    value = data.choices[indexAtChoices]
+                elseif isSoundSlider == true and ConvertLAMSoundSliderSoundIndexToName ~= nil and ConvertLAMSoundSliderSoundNameToIndex ~= nil then
+                    --Sound slider should provide the number of the selected sound + the name
+                    local saveSoundIndex = (data.saveSoundIndex ~= nil and GetStringFromValue(data.saveSoundIndex)) or false
+                    local soundIndex
+                    if not saveSoundIndex then
+                        soundIndex = ConvertLAMSoundSliderSoundNameToIndex(value)
+                    else
+                        soundIndex = value
+                        value = ConvertLAMSoundSliderSoundIndexToName(soundIndex)
+                    end
+                    value = string.format("%s, %s: %s", tostring(soundIndex), GetString(SI_INVENTORY_SORT_TYPE_NAME), value)
+                elseif isIconPicker == true and data.choices ~= nil and data.choicesTooltips ~= nil and #data.choices > 0 and #data.choices == #data.choicesTooltips then
+                    --todo
+                    local indexOfValue = ZO_IndexOfElementInNumericallyIndexedTable(data.choices, value)
+                    local tooltipText = (indexOfValue ~= nil and indexOfValue > 0) and data.choicesTooltips[indexOfValue]
+                    if tooltipText ~= nil then
+                        value = tooltipText
+                    end
+                end
+                if type(value) == "boolean" then
+                    value = booleanToOnOff[value]
+                end
+                if valueChanged == true then
+                    nameAndValue = string.format("%s: %s", util.L.CURRENT_VALUE, tostring(value))
+                else
+                    if nameAndValue == nil then
+                        nameAndValue = GetStringFromValue(data.tooltipText) or tooltip
+                        nameAndValue = nameAndValue or "Unknown name"
+                        nameWasNil = true
+                    end
+                    nameAndValue = string.format("%s:   %s, %s: %s", widgetType, nameAndValue, util.L.CURRENT_VALUE, tostring(value))
+                end
+            end
+        else
+            if widgetType ~= nil then
+                if isSubmenu and not isDisabled then
+                    local openState = ((control.widgetControl == nil or not control.widgetControl.open) and GetString(SI_ITEM_SETS_BOOK_HEADER_EXPAND)) or GetString(SI_ITEM_SETS_BOOK_HEADER_COLLAPSE)
+                    nameAndValue = string.format("%s:   %s, %s", widgetType, nameAndValue, openState)
+                else
+                    nameAndValue = string.format("%s:   %s", widgetType, nameAndValue)
+                end
+            end
+        end
+
+        nameAndValue = GetDisabledControlNarratableText(nameAndValue, isDisabled, nil)
+        if isDisabled == false then
+            if requiresReload == true then
+                nameAndValue = util.L.RELOAD_DIALOG_TITLE .. " " .. nameAndValue
+            end
+            if hasWarning ~= false then
+                warningText = string.format("%s: %s", util.L.WARNING, hasWarning)
+                if tooltip and tooltip == hasWarning then tooltip = nil end
+            end
+        end
+
+    end
+    if isAddonListRow == true and wasSelected == true then
+        nameAndValue = nameAndValue .. util.L.SELECTED
+        AddNewChatNarrationText(nameAndValue, true)
+        return
+    end
+    if warningText ~= nil and not valueChanged then
+        AddNewChatNarrationText(warningText, true)
+    end
+    AddNewChatNarrationText(nameAndValue, (warningText == nil and not doNotClearQueue and true) or false)
+    if not nameWasNil and not valueChanged and tooltip ~= nil then
+        AddNewChatNarrationText(string.format("%s: %s", util.L.TOOLTIP, tooltip), false)
+    end
+end
+
+local function OnLAMControlMouseEnterDoNarrate(control, isAddonListRow, wasSelected, valueChanged, delay, narrateControl)
+    if control == nil or IsAccessibilityUIReaderEnabled() == false then return end
+    narrateControl = narrateControl or control
+    delay = delay or 250
+    --Delay the narration a bit to check if the control below the mouse is still the same ->
+    --If we moved the mouse quickly above several controls e.g.
+    zo_callLater(function()
+        if skipNextOnMouseEnterNarration == true then skipNextOnMouseEnterNarration = false return end
+        if IsGamepadColorPickerShown() then return end
+        if not wasSelected and didNarrationControlChange(control) then return end
+        NarrateLAMControlToUI(narrateControl, isAddonListRow, wasSelected, valueChanged)
+    end, delay)
+end
+
+local function DefaultNarrateOnMouseUpHandler(ctrl, mouseButton, upInside)
+    if not upInside or mouseButton ~= MOUSE_BUTTON_INDEX_LEFT then return end
+    OnLAMControlMouseEnterDoNarrate(ctrl, false, false, true, nil)
+end
+
+local function NarrateDropdownTooltip(control)
+--d(">NarrateDropdownTooltip")
+    OnLAMControlMouseEnterDoNarrate(control, false, false, false, 100)
+end
+
+local function SetupDropdownNarrateTooltips(dropdown, widgetControl)
+    -- allow for tooltips on the drop down entries
+    local originalShow = dropdown.ShowDropdownInternal
+    dropdown.ShowDropdownInternal = function(comboBox)
+--d(">ShowDropDownInternal")
+        ConditionalAddNewChatNarrationText("", zo_strformat(SI_KEEP_CHANGE_GATE_OPENED, "dropdown"), "", true)
+        originalShow(comboBox)
+        local entries = ZO_Menu.items
+        for i = 1, #entries do
+            local control = entries[i].item
+            local narrateName = (control.nameLabel ~= nil and control.nameLabel:GetText()) or nil
+--d(">narrateName: " .. tostring(narrateName))
+            if narrateName ~= nil then
+                control.data = control.data or {}
+                control.data.narrateName = narrateName
+                control.data.type = ""
+                SetOrAddOnMouseHandler(control, "OnMouseEnter", NarrateDropdownTooltip, TOOLTIP_HANDLER_NARRATE_NAMESPACE)
+            end
+        end
+    end
+
+    local originalHide = dropdown.HideDropdownInternal
+    dropdown.HideDropdownInternal = function(self)
+--d(">HideDropDownInternal")
+        ConditionalAddNewChatNarrationText("", zo_strformat(SI_KEEP_CHANGE_GATE_CLOSED, "dropdown"), "", true)
+        local entries = ZO_Menu.items
+        for i = 1, #entries do
+            local control = entries[i].item
+            if control.data ~= nil and control.data.narrateName ~= nil then
+                control.data.narrateName = nil
+                control.data.type = nil
+                control:SetHandler("OnMouseEnter", nil, TOOLTIP_HANDLER_NARRATE_NAMESPACE)
+            end
+        end
+        originalHide(self)
+
+        --Play the actual value of the dropdown again
+        NarrateLAMControlToUI(widgetControl, false, false, true)
+        --As the dropdown closes the mouse cursor might be above another LAM control below, wich will be narrated then
+        -->Skip that once and instead narrate the current dropdown's selected value
+        skipNextOnMouseEnterNarration = true
+    end
+end
+
+local function SetupColorPickerGamepadNarration()
+    local colorPickerGP = COLOR_PICKER_GAMEPAD
+    --OnMouseEnter events for the color picker colorControl, alpha and saturation sliders
+    ZO_PostHookHandler(colorPickerGP.valueSlider, "OnMouseEnter", function()
+        ConditionalAddNewChatNarrationText("", GetString(SI_SCREEN_NARRATION_COLOR_PICKER_CHANGE_SATURATION_NARRATION), "", false, true)
+    end)
+    ZO_PostHookHandler(colorPickerGP.alphaSlider, "OnMouseEnter", function()
+        ConditionalAddNewChatNarrationText("", GetString(SI_COLOR_PICKER_ALPHA), "", false, true)
+    end)
+    ZO_PostHookHandler(colorPickerGP.colorSelect, "OnMouseEnter", function()
+        ConditionalAddNewChatNarrationText("", GetString(SI_SCREEN_NARRATION_COLOR_PICKER_CHANGE_COLOR_NARRATION), "", false, true)
+    end)
+    colorPickerGP.previewInitialTexture:SetMouseEnabled(true)
+    colorPickerGP.previewInitialTexture:SetHandler("OnMouseEnter", function()
+        ConditionalAddNewChatNarrationText("", GetString(SI_KEYBINDINGS_KEYBOARD_RESET_TITLE), "", false, true)
+    end, HANDLER_NARRATE_NAMESPACE)
+    colorPickerGP.previewInitialTexture:SetHandler("OnMouseUp", function(ctrl, button, upInside)
+        if not upInside or button ~= MOUSE_BUTTON_INDEX_LEFT then return end
+        colorPickerGP:SetColor(colorPickerGP.initialR, colorPickerGP.initialG, colorPickerGP.initialB, colorPickerGP.initialA)
+    end, HANDLER_NARRATE_NAMESPACE)
+
+    --Chnage of color
+    ZO_PostHook(colorPickerGP, "UpdateColors", function(colorPickerGB, r, g, b, a)
+        OnUpdateDoNarrate("GamepadColorPicker_UpdateColors", 1000,
+                function()
+                    local colorStr = CreateColorRGBFromValuesTab({r, g, b, a})
+                    if colorStr == nil then return end
+                    ConditionalAddNewChatNarrationText("colorpicker", util.L.CURRENT_VALUE .. ": " .. tostring(colorStr), "", true, true)
+                end)
+    end)
+end
+
+SecurePostHook(COLOR_PICKER_GAMEPAD, "OnDialogShowing", function()
+    if IsAccessibilityModeEnabled() == false then return end
+    --Enable the screen UI reader if not enabled yet
+    uiReaderWasEnabled = IsAccessibilityUIReaderEnabled()
+    if uiReaderWasEnabled == false then
+        ChangeAccessibilitySetting(ACCESSIBILITY_SETTING_SCREEN_NARRATION, 1)
+    end
+
+    --Hook some color picker gamepad controls to play sounds that the screen reader does not play
+    --e.g. change of alpha, or color chosing via mouse
+    if not wasColorPickerGamepadDialogHooked then
+        SetupColorPickerGamepadNarration()
+        wasColorPickerGamepadDialogHooked = true
+    end
+
+    StopNarration()
+end)
+
+SecurePostHook(COLOR_PICKER_GAMEPAD, "OnDialogReleased", function()
+    if IsAccessibilityUIReaderEnabled() and uiReaderWasEnabled == false then
+        StopNarration(true)
+        ChangeAccessibilitySetting(ACCESSIBILITY_SETTING_SCREEN_NARRATION, 0)
+    end
+end)
+
+local function SliderEditOnMouseEnterCallback(control, widgetData)
+    if control == nil or IsAccessibilityUIReaderEnabled() == false then return end
+    local widgetType = GetDisabledControlNarratableText(widgetData.type, nil, widgetData)
+    ConditionalAddNewChatNarrationText(widgetType, widgetData.name, GetString(SI_SCREEN_NARRATION_EDIT_BOX), true)
+end
+
+local function AddLAMControlOnMouseEventsForNarrate(widgetControl, widgetData)
+    local widgetType = widgetData.type
+    if skippedWidgets_OnMouseEvents[widgetType] == true then return end
+
+    widgetData.narrateName = widgetData.name or widgetData.title or widgetData.text or widgetData.reference
+    widgetData.narrateTooltip = widgetData.tooltip or widgetData.tooltipText
+
+    local dataAndHandlerControl = widgetControl
+    if widgetData.type == "submenu" then
+        --The submenu data and OnMouseEnter needs to be added to the label of the submenu
+        dataAndHandlerControl = widgetControl.label
+        dataAndHandlerControl.widgetControl = widgetControl
+    end
+    AddNarrationData(dataAndHandlerControl, widgetData)
+
+    --Container/Submenu label control
+    dataAndHandlerControl:SetMouseEnabled(true)
+    SetOrAddOnMouseHandler(dataAndHandlerControl, "OnMouseEnter", function(ctrl) OnLAMControlMouseEnterDoNarrate(ctrl, false, false) end)
+
+    --Widget controls (slider, editbox, etc.)
+    local specialUpdateFuncName = "UpdateValue"
+    local specialUpdateData = widgetTypeToSpecialUpdate[widgetType]
+    local defaultPostHook = false
+    if specialUpdateData ~= nil then
+        specialUpdateFuncName = specialUpdateData.funcName
+        local specialUpdateBase = specialUpdateData.base
+        if specialUpdateBase == "self" then
+            defaultPostHook = true
+        elseif specialUpdateBase == "data" then
+            if widgetData[specialUpdateFuncName] ~= nil then
+                ZO_PostHook(widgetData, specialUpdateFuncName, function(ctrl)
+                    OnLAMControlMouseEnterDoNarrate(ctrl, false, false, true, nil)
+                end)
+            end
+        end
+    else
+        defaultPostHook = true
+    end
+    if defaultPostHook == true then
+        if widgetControl[specialUpdateFuncName] ~= nil then
+            ZO_PostHook(widgetControl, specialUpdateFuncName, function(ctrl, forceDefault)
+                if forceDefault == true then return end
+                OnLAMControlMouseEnterDoNarrate(ctrl, false, false, true, nil)
+            end)
+        end
+    end
+
+    --------------------------------------------------------------------------------------------------------------------
+    --Widget special OnMouse* events
+    --Checkbox, and other clickable widgets
+    --Add OnMouseUp handler to the line. Clicking it will narrate the new value
+    SetOrAddOnMouseHandler(widgetControl, "OnMouseUp", DefaultNarrateOnMouseUpHandler)
+
+
+    --Single widget related stuff
+    --Editbox -- Add handlers to the editbox too
+    if widgetType == "editbox" then
+        local editBox = widgetControl.editbox
+        if editBox then SetOrAddOnMouseHandler(editBox, "OnMouseEnter", function() SliderEditOnMouseEnterCallback(editBox, widgetData) end) end
+
+        --Dropdown - Add OnMouseEnter handler to the combobox, to narrate the name and current value
+        --And also narrate all possible values in the dropdown
+    elseif widgetType == "dropdown" then
+        local comboBox = widgetControl.combobox
+        if comboBox then SetOrAddOnMouseHandler(comboBox, "OnMouseEnter", function(ctrl) OnLAMControlMouseEnterDoNarrate(ctrl, false, false, false, nil, widgetControl) end) end
+
+        --IconPicker - Add the customOnMouseEnter handlers to the icons to narrate the icon's tooltip, if tooltips are enabled
+    elseif widgetType == "iconpicker" then
+        local dropdown = widgetControl.dropdown
+        local dropdownButton = widgetControl.dropdownButton
+        if dropdown and dropdownButton then
+            local function iconPickerOnOpenPreHook(...)
+                --Narrate the tooltip of the icon, or the texure string of the icon?
+                local narrateIconTooltip = (widgetData.choicesTooltips ~= nil and true) or false
+                --Get the iconpicker and update it'S customOnMouseEnter(icon) for the icons -> Show the choicesTooltips[index] entry at each icon
+                local iconPicker = util.GetIconPickerMenu()
+                if iconPicker ~= nil then
+                    local origCustomOnMouseEnter = iconPicker.customOnMouseEnter
+                    local origCustomOnMouseEnterCopy = origCustomOnMouseEnter
+
+                    iconPicker:SetMouseHandlers(function(icon)
+                        if origCustomOnMouseEnterCopy ~= nil then
+                            origCustomOnMouseEnterCopy(icon)
+                        else
+                            iconPicker:OnMouseEnter(icon)
+                        end
+
+                        local narrateName = ((narrateIconTooltip == true and icon.tooltip and util.GetStringFromValue(icon.tooltip)) or icon.texture) or ""
+                        icon.data = icon.data or {}
+                        if narrateName ~= "" then
+                            icon.data.narrateName = narrateName
+                            icon.data.type = ""
+                            NarrateDropdownTooltip(icon)
+                        else
+                            icon.data = nil
+                        end
+                    end, nil)
+                end
+                return false
+            end
+
+            ZO_PostHookHandler(dropdown,         "OnMouseUp", iconPickerOnOpenPreHook)
+            ZO_PostHookHandler(dropdownButton,   "OnClicked", iconPickerOnOpenPreHook)
+        end
+    end
+
+
+
+    --Multiple widget related stuff
+    --Widgets using a drodpown
+    if widgetTypes["dropdowns"][widgetType] then
+        local dropdown = widgetControl.dropdown
+        if dropdown then
+            SetupDropdownNarrateTooltips(dropdown, widgetControl)
+        end
+
+    --Widgets using a slider, e.g. soundslider: Add handlers to child controls like editfield, sliders and buttons too
+    elseif widgetTypes["sliders"][widgetType] then
+        local sliderCtrl = widgetControl.slider
+        if sliderCtrl ~= nil then
+            SetOrAddOnMouseHandler(sliderCtrl, "OnMouseEnter", function(ctrl) OnLAMControlMouseEnterDoNarrate(ctrl, false, false, false, nil, widgetControl) end)
+            SetOrAddOnMouseHandler(sliderCtrl, "OnMouseUp", function(ctrl) OnLAMControlMouseEnterDoNarrate(ctrl, false, false, true, nil, widgetControl) end)
+        end
+        local sliderValueCtrl = widgetControl.slidervalue --editBox field
+        if sliderValueCtrl ~= nil then
+            SetOrAddOnMouseHandler(sliderValueCtrl, "OnMouseEnter", function() SliderEditOnMouseEnterCallback(sliderValueCtrl, widgetData) end)
+        end
+        local sliderValueBGCtrl = widgetControl.slidervalueBG --editBox backdrop field
+        if sliderValueBGCtrl ~= nil then
+            SetOrAddOnMouseHandler(sliderValueBGCtrl, "OnMouseEnter", function() SliderEditOnMouseEnterCallback(sliderValueCtrl, widgetData) end)
+        end
+
+        --Sound slider only
+        local playSoundButton = widgetControl.playSoundButton
+        if playSoundButton ~= nil then
+            SetOrAddOnMouseHandler(playSoundButton, "OnMouseEnter", function(ctrl)
+                if IsAccessibilityUIReaderEnabled() == false then return end
+                local narratedWidgetType = GetDisabledControlNarratableText(widgetType, nil, widgetData) .. " button"
+                ConditionalAddNewChatNarrationText(narratedWidgetType, playSoundButton.data.tooltipText, "", true)
+            end)
+        end
+    end
+
+end
+--LAM chat narration
+------------------------------------------------------------------------------------------------------------------------
+
 
 local function CreateFAQTexture(control)
     local controlData = control.data
@@ -243,6 +951,10 @@ local function RefreshReloadUIButton()
 
     if lam.applyButton then
         lam.applyButton:SetHidden(not lam.requiresReload)
+        if lam.requiresReload == true then
+            --AddNewChatNarrationText(util.L.RELOAD_DIALOG_TEXT, true)
+            AddDialogTitleBodyKeybindNarration(util.L.RELOAD_DIALOG_TEXT, nil, true)
+        end
     end
 end
 
@@ -289,8 +1001,10 @@ local function GetConfirmDialog()
                 },
                 [2] = {
                     text = SI_DIALOG_CANCEL,
+                    callback = function() dialogNoChoiceCallbackFunc() end,
                 }
-            }
+            },
+            noChoiceCallback = dialogNoChoiceCallbackFunc
         }
     end
     return ESO_Dialogs[LAM_CONFIRM_DIALOG]
@@ -300,8 +1014,12 @@ local function ShowConfirmationDialog(title, body, callback)
     local dialog = GetConfirmDialog()
     dialog.title.text = title
     dialog.mainText.text = body
-    dialog.buttons[1].callback = callback
+    dialog.buttons[1].callback = function(...)
+        callback(...)
+        dialogNoChoiceCallbackFunc()
+    end
     ZO_Dialogs_ShowDialog(LAM_CONFIRM_DIALOG)
+    AddDialogTitleBodyKeybindNarration(title, body)
 end
 
 local function GetDefaultsDialog()
@@ -321,8 +1039,10 @@ local function GetDefaultsDialog()
                 },
                 [2] = {
                     text = SI_DIALOG_CANCEL,
-                }
-            }
+                    callback = function() dialogNoChoiceCallbackFunc() end,
+                },
+            },
+            noChoiceCallback = dialogNoChoiceCallbackFunc
         }
     end
     return ESO_Dialogs[LAM_DEFAULTS_DIALOG]
@@ -333,8 +1053,10 @@ local function ShowDefaultsDialog(panel)
     dialog.buttons[1].callback = function()
         panel:ForceDefaults()
         RefreshReloadUIButton()
+        dialogNoChoiceCallbackFunc()
     end
     ZO_Dialogs_ShowDialog(LAM_DEFAULTS_DIALOG)
+    AddDialogTitleBodyKeybindNarration(GetString(SI_INTERFACE_OPTIONS_RESET_TO_DEFAULT_TOOLTIP), GetString(SI_OPTIONS_RESET_PROMPT))
 end
 
 local function DiscardChangesOnReloadControls()
@@ -441,6 +1163,12 @@ local localization = {
         RELOAD_DIALOG_TEXT = "Some changes require a UI reload in order to take effect. Do you want to reload now or discard the changes?",
         RELOAD_DIALOG_RELOAD_BUTTON = "Reload",
         RELOAD_DIALOG_DISCARD_BUTTON = "Discard",
+        CURRENT_VALUE = "Current value",
+        SELECTED = GetString(SI_SCREEN_NARRATION_SELECTED_ICON_NARRATION):lower(),
+        SEARCH_ADDON_LIST = "Search and filter the addon list by typing an addon or author name",
+        SEARCH_FOR = "Searching for",
+        WARNING = "Warning",
+        TOOLTIP = "Tooltip",
     },
     it = { -- provided by JohnnyKing
         PANEL_NAME = "Addon",
@@ -478,6 +1206,12 @@ local localization = {
         RELOAD_DIALOG_TEXT = "Einige Änderungen werden erst übernommen nachdem die Benutzeroberfläche neu geladen wird. Wollt Ihr sie jetzt neu laden oder die Änderungen verwerfen?",
         RELOAD_DIALOG_RELOAD_BUTTON = "Neu laden",
         RELOAD_DIALOG_DISCARD_BUTTON = "Verwerfen",
+        CURRENT_VALUE = "Aktueller Wert",
+        SELECTED = GetString(SI_SCREEN_NARRATION_SELECTED_ICON_NARRATION):lower(),
+        SEARCH_ADDON_LIST = "AddOn Liste durchsuchen und filter nach AddOn oder Autoren Namen",
+        SEARCH_FOR = "Suche nach",
+        WARNING = "Warnung",
+        TOOLTIP = "Tooltip",
     },
     ru = { -- provided by TERAB1T, updated by andy.s
         PANEL_NAME = "Дополнения",
@@ -572,6 +1306,7 @@ do
     end
 end
 
+
 util.GetTooltipText = GetStringFromValue -- deprecated, use util.GetStringFromValue instead
 util.GetStringFromValue = GetStringFromValue
 util.GetDefaultValue = GetDefaultValue
@@ -586,6 +1321,10 @@ util.GetTopPanel = GetTopPanel
 util.ShowConfirmationDialog = ShowConfirmationDialog
 util.UpdateWarning = UpdateWarning
 util.CreateFAQTexture = CreateFAQTexture
+util.IsAccessibilityModeEnabled = IsAccessibilityModeEnabled
+util.IsAccessibilityChatReaderEnabled = IsAccessibilityChatReaderEnabled
+util.NarrateLAMControlToChat = NarrateLAMControlToUI
+
 
 local ADDON_DATA_TYPE = 1
 local RESELECTING_DURING_REBUILD = true
@@ -743,6 +1482,7 @@ local function OpenCurrentPanel()
         lam.currentPanelOpened = true
         lam.defaultButton:SetHidden(not lam.currentAddonPanel.data.registerForDefaults)
         cm:FireCallbacks("LAM-PanelOpened", lam.currentAddonPanel)
+        StopNarration()
     end
 end
 
@@ -751,6 +1491,7 @@ local function CloseCurrentPanel()
     if lam.currentAddonPanel and lam.currentPanelOpened then
         lam.currentPanelOpened = false
         cm:FireCallbacks("LAM-PanelClosed", lam.currentAddonPanel)
+        StopNarration()
     end
 end
 
@@ -876,6 +1617,8 @@ local function CreateOptionsControls(panel)
                     offsetY = 0
                     anchorTarget = widget
                 end
+                --Add chat reader narration data at OnMouseEnter, and OnMouseUp of the widget's control
+                AddLAMControlOnMouseEventsForNarrate(widget, widgetData)
                 return false, offsetY, anchorTarget, isHalf
             end
         end
@@ -1093,14 +1836,16 @@ local function CreateAddonList(name, parent)
     local addonList = wm:CreateControlFromVirtual(name, parent, "ZO_ScrollList")
 
     local function addonListRow_OnMouseDown(control, button)
-        if button == 1 then
+        if button == MOUSE_BUTTON_INDEX_LEFT then
             local data = ZO_ScrollList_GetData(control)
             ZO_ScrollList_SelectData(addonList, data, control)
+            OnLAMControlMouseEnterDoNarrate(control, true, true)
         end
     end
 
     local function addonListRow_OnMouseEnter(control)
-        ZO_ScrollList_MouseEnter(addonList, control)
+        OnLAMControlMouseEnterDoNarrate(control, true)
+        --ZO_ScrollList_MouseEnter(addonList, control)
     end
 
     local function addonListRow_OnMouseExit(control)
@@ -1136,7 +1881,7 @@ local function CreateAddonList(name, parent)
     local function addonListRow_Create(pool)
         local control = addonListRow_CreateRaw(pool)
         control:SetHandler("OnMouseDown", addonListRow_OnMouseDown)
-        --control:SetHandler("OnMouseEnter", addonListRow_OnMouseEnter)
+        control:SetHandler("OnMouseEnter", addonListRow_OnMouseEnter)
         --control:SetHandler("OnMouseExit", addonListRow_OnMouseExit)
         control:SetHeight(28)
         control:SetFont("ZoFontHeader")
@@ -1191,14 +1936,21 @@ local function CreateSearchFilterBox(name, parent)
         end
     end
 
+    local searchNarrationData = {narrateName = GetString(SI_SCREEN_NARRATION_EDIT_BOX_SEARCH_NAME), narrateTooltip=util.L.SEARCH_ADDON_LIST}
+
     local function srchMouseEnter(control)
         srchHover = true
         srchBgUpdateAlpha()
+
+        AddNarrationData(control, searchNarrationData)
+        OnLAMControlMouseEnterDoNarrate(control)
     end
 
     local function srchMouseExit(control)
         srchHover = false
         srchBgUpdateAlpha()
+
+        OnLAMControlMouseExitStopNarrate(control)
     end
 
     boxControl:SetMouseEnabled(true)
@@ -1213,6 +1965,7 @@ local function CreateSearchFilterBox(name, parent)
 
     srchButton:SetHandler("OnClicked", function(self)
         srchEdit:Clear()
+        OnLAMControlMouseExitStopNarrate(self)
         if GetFrameTimeMilliseconds() - focusLostTime < 100 then
             -- re-focus the edit box if it lost focus due to this
             -- button click (note that this handler may run a few
@@ -1231,6 +1984,7 @@ local function CreateSearchFilterBox(name, parent)
     end)
 
     srchEdit:SetHandler("OnEscape", function(self)
+        OnLAMControlMouseExitStopNarrate(self)
         self:Clear()
         self:LoseFocus()
     end)
@@ -1241,6 +1995,7 @@ local function CreateSearchFilterBox(name, parent)
             srchActive = true
             srchBg:SetEdgeColor(ZO_SECOND_CONTRAST_TEXT:UnpackRGBA())
             srchButton:SetState(BSTATE_PRESSED)
+            OnLAMControlTextChangeDoNarrate(self)
         else
             srchActive = false
             srchBg:SetEdgeColor(ZO_DISABLED_TEXT:UnpackRGBA())
@@ -1336,6 +2091,7 @@ local function CreateAddonSettingsWindow()
     applyButton:SetAnchor(TOPRIGHT, panelContainer, BOTTOMRIGHT, 0, 2)
     applyButton:SetHidden(true)
     lam.applyButton = applyButton
+    --todo Add chat narration text handler
 
     return tlw
 end
