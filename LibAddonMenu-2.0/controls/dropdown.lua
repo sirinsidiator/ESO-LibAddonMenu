@@ -68,15 +68,32 @@ local function updateMultiSelectSelected(control, values)
     local dropdown = control.dropdown
     dropdown.m_selectedItemData = {}
     if multiSelectType == "normal" then
-        for _, v in ipairs(values) do
+        for k, v in ipairs(values) do
+            --dropdown:SelectItemByIndex(k, true)
             dropdown:SetSelectedItemByEval(function(entry)
-                return entry.dataEntry.data.name == v
+d("[LAM2]dropdown - k: " .. tostring(k) .. ", v: " ..tostring(v) .. ", entry.value: " ..tostring(entry.value) ..", entry.name: " ..tostring(entry.name))
+FCOCS._debugEntry = entry
+FCOCS._debugEntryV = v
+                if entry.value ~= nil then
+                    return entry.value == v
+                else
+                    return entry.name ~= nil and entry.name == v
+                end
             end, true)
         end
     elseif multiSelectType == "allowed" then
         for k, isAllowed in pairs(values) do
             if isAllowed == true then
-                dropdown:SelectItemByIndex(k, true)
+                dropdown:SetSelectedItemByEval(function(entry)
+d("[LAM2]dropdown - k: " .. tostring(k) .. ", entry.value: " ..tostring(entry.value) ..", entry.name: " ..tostring(entry.name))
+    FCOCS._debugEntry = entry
+    FCOCS._debugEntryK = k
+                    if entry.value ~= nil then
+                        return entry.value == k
+                    else
+                        return entry.name ~= nil and entry.name == k
+                    end
+                end, true)
             end
         end
     end
