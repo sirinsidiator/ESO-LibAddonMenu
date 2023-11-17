@@ -29,8 +29,10 @@ local widgetVersion = 25
 local LAM = LibAddonMenu2
 if not LAM:RegisterWidget("dropdown", widgetVersion) then return end
 
+local GetDefaultValue = LAM.util.GetDefaultValue
+
 local wm = WINDOW_MANAGER
-local cm = CALLBACK_MANAGER
+--local cm = CALLBACK_MANAGER
 local SORT_BY_VALUE         = { ["value"] = {} }
 local SORT_BY_VALUE_NUMERIC = { ["value"] = { isNumeric = true } }
 local SORT_TYPES = {
@@ -61,7 +63,11 @@ local function UpdateDisabled(control)
 end
 
 local function updateMultiSelectSelected(control, values)
-    local multiSelectType = control.data.multiSelectType
+    local data = control.data
+    local choices = data.choices
+    local choicesValues = data.choicesValues
+    local multiSelectType = data.multiSelectType
+--d(">updateMultiSelectSelected.multiSelectType: " ..tostring(multiSelectType))
     assert(multiSelectType == "normal" or multiSelectType == "allowed", string.format("[LAM2]Dropdown - Unknown multiSelectType: %s", multiSelectType))
     assert(values ~= nil, string.format("[LAM2]Dropdown - Values for multiSelect %q are missing", control:GetName()))
 
@@ -69,30 +75,23 @@ local function updateMultiSelectSelected(control, values)
     dropdown.m_selectedItemData = {}
     if multiSelectType == "normal" then
         for k, v in ipairs(values) do
+            local toCompare = choicesValues ~= nil and choicesValues[v] or v
             --dropdown:SelectItemByIndex(k, true)
             dropdown:SetSelectedItemByEval(function(entry)
-d("[LAM2]dropdown - k: " .. tostring(k) .. ", v: " ..tostring(v) .. ", entry.value: " ..tostring(entry.value) ..", entry.name: " ..tostring(entry.name))
-FCOCS._debugEntry = entry
-FCOCS._debugEntryV = v
-                if entry.value ~= nil then
-                    return entry.value == v
-                else
-                    return entry.name ~= nil and entry.name == v
-                end
+--d("[LAM2]dropdown - k: " .. tostring(k) .. ", v: " ..tostring(v) .. ", compare: "..tostring(toCompare) ..", value: " ..tostring(entry.value) ..", name: " ..tostring(entry.name))
+--d(">match value: " ..tostring(entry.value == toCompare) .. "; match name: " ..tostring(entry.name == toCompare))
+                return (entry.value ~= nil and entry.value == toCompare) or entry.name == toCompare
             end, true)
         end
+
     elseif multiSelectType == "allowed" then
         for k, isAllowed in pairs(values) do
             if isAllowed == true then
+                local toCompare = choicesValues ~= nil and choicesValues[k] or k
                 dropdown:SetSelectedItemByEval(function(entry)
-d("[LAM2]dropdown - k: " .. tostring(k) .. ", entry.value: " ..tostring(entry.value) ..", entry.name: " ..tostring(entry.name))
-    FCOCS._debugEntry = entry
-    FCOCS._debugEntryK = k
-                    if entry.value ~= nil then
-                        return entry.value == k
-                    else
-                        return entry.name ~= nil and entry.name == k
-                    end
+--d("[LAM2]dropdown - k: " .. tostring(k) .. ", allowed: " ..tostring(isAllowed) .. ", compare: "..tostring(toCompare) ..", value: " ..tostring(entry.value) ..", name: " ..tostring(entry.name))
+--d(">match value: " ..tostring(entry.value == toCompare) .. "; match name: " ..tostring(entry.name == toCompare))
+                    return (entry.value ~= nil and entry.value == toCompare) or entry.name == toCompare
                 end, true)
             end
         end
@@ -102,6 +101,7 @@ end
 
 local refreshIsNeeded = false
 local function callMultiSelectSetFunc(control, values)
+--d(">callMultiSelectSetFunc-values: " ..tostring(values))
     if values == nil then
         values = {}
         local multiSelectType = control.data.multiSelectType
@@ -125,14 +125,14 @@ end
 
 local function UpdateValue(control, forceDefault, value)
     local isMultiSelectionEnabled = control.isMultiSelectionEnabled
+--d(">UpdateValue-forceDefault: multiSelect: " .. tostring(isMultiSelectionEnabled) ..", forceDefault: " ..tostring(forceDefault) .. ", value: " ..tostring(value))
     if forceDefault then --if we are forcing defaults
+        local value = GetDefaultValue(control.data.default)
         if isMultiSelectionEnabled then
-            local values = LAM.util.GetDefaultValue(control.data.default)
-            values = values or {}
-            updateMultiSelectSelected(control, values)
-            control.data.setFunc(values)
+            value = value or {}
+            updateMultiSelectSelected(control, value)
+            control.data.setFunc(value)
         else
-            value = LAM.util.GetDefaultValue(control.data.default)
             control.data.setFunc(value)
             control.dropdown:SetSelectedItem(control.choices[value])
         end
@@ -141,8 +141,8 @@ local function UpdateValue(control, forceDefault, value)
             --Coming from LAM 2.0 DiscardChangesOnReloadControls? Passing in the saved control.startValue table
             if type(value) ~= "table" then
                 value = nil
-            --else
-                --d(">>table was passed in as value")
+            else
+--d(">>table was passed in as value")
             end
             callMultiSelectSetFunc(control, value)
         else
@@ -151,6 +151,7 @@ local function UpdateValue(control, forceDefault, value)
         --after setting this value, let's refresh the others to see if any should be disabled or have their settings changed
         LAM.util.RequestRefreshIfNeeded(control)
     else
+--d(">>value is nil")
         if isMultiSelectionEnabled then
             local values = control.data.getFunc()
             values = values or {}
@@ -171,9 +172,9 @@ end
 local TOOLTIP_HANDLER_NAMESPACE = "LAM2_Dropdown_Tooltip"
 
 local function DoShowTooltip(control, tooltip)
-    InitializeTooltip(InformationTooltip, control, TOPLEFT, 0, 0, BOTTOMRIGHT)
     local tooltipText = LAM.util.GetStringFromValue(tooltip)
-    if tooltipText ~= nil then
+    if tooltipText ~= nil and tooltipText ~= "" then
+        InitializeTooltip(InformationTooltip, control, TOPLEFT, 0, 0, BOTTOMRIGHT)
         SetTooltipText(InformationTooltip, tooltipText)
         InformationTooltipTopLevel:BringWindowToTop()
     end
@@ -249,15 +250,16 @@ end
 local DEFAULT_VISIBLE_ROWS = 10
 local PADDING_Y = ZO_SCROLLABLE_COMBO_BOX_LIST_PADDING_Y
 local ROUNDING_MARGIN = 0.01 -- needed to avoid rare issue with too many anchors processed
+local SCROLLBAR_PADDING = ZO_SCROLL_BAR_WIDTH
+local PADDING_X = GetMenuPadding()
+local CONTENT_PADDING = PADDING_X * 4
+
 --[[
 local ENTRY_ID = 1
 local LAST_ENTRY_ID = 2
 local OFFSET_X_INDEX = 4
 local SCROLLABLE_ENTRY_TEMPLATE_HEIGHT = ZO_SCROLLABLE_ENTRY_TEMPLATE_HEIGHT
-local SCROLLBAR_PADDING = ZO_SCROLL_BAR_WIDTH
-local PADDING_X = GetMenuPadding()
 local LABEL_OFFSET_X = 2
-local CONTENT_PADDING = PADDING_X * 4
 local ScrollableDropdownHelper = ZO_Object:Subclass()
 
 function ScrollableDropdownHelper:New(...)
@@ -478,6 +480,8 @@ local function SetDropdownHeight(combobox, dropdown, dropdownData)
     local allItemsHeight = (dropdown:GetEntryTemplateHeightWithSpacing() * numEntries) - entrySpacing + (PADDING_Y * 2) + ROUNDING_MARGIN
     dropdown:SetHeight(allItemsHeight)
     ZO_ScrollList_Commit(dropdown.m_scroll)
+
+    return visibleRows, min, max
 end
 
 function LAMCreateControl.dropdown(parent, dropdownData, controlName)
@@ -504,11 +508,76 @@ function LAMCreateControl.dropdown(parent, dropdownData, controlName)
     dropdown:SetSortsItems(false) -- need to sort ourselves in order to be able to sort by value
     dropdown.m_dropdown:SetParent(combobox:GetOwningWindow()) -- TODO remove workaround once the problem is fixed in the game
 
-    --Multiselection
-    local isMultiSelectionEnabled = LAM.util.GetDefaultValue(dropdownData.multiSelect)
+
+    local isMultiSelectionEnabled = GetDefaultValue(dropdownData.multiSelect)
     control.isMultiSelectionEnabled = isMultiSelectionEnabled
+
+    dropdown.CalculateContentWidth = function()
+        local dataType = ZO_ScrollList_GetDataTypeTable(dropdown.m_scroll, 1)
+
+        local dummy = dataType.pool:AcquireObject()
+        dataType.setupCallback(dummy, {
+            m_owner = dropdown,
+            name = "Dummy"
+        }, dropdown)
+
+        local maxWidth = 0
+        local label = dummy.m_label
+        local entries = dropdown.m_sortedItems
+        local numItems = #entries
+        for index = 1, numItems do
+            label:SetText(entries[index].name)
+            local width = label:GetTextWidth()
+            if (width > maxWidth) then
+                maxWidth = width
+            end
+        end
+
+        dataType.pool:ReleaseObject(dummy.key)
+        return maxWidth
+    end
+
+    dropdown.AdjustDimensions = function()
+        local numItems = #dropdown.m_sortedItems
+        local dropdownObject = dropdown.m_dropdown
+        local scroll = dropdownObject:GetNamedChild("Scroll")
+        local scrollContent = scroll:GetNamedChild("Contents")
+        local anchorOffset = 0
+
+        local contentWidth = dropdown.CalculateContentWidth() + CONTENT_PADDING
+        local visibleRows, min, max = SetDropdownHeight(combobox, dropdown, dropdownData)
+
+        if(numItems > visibleRows) then
+            numItems = visibleRows
+            if isMultiSelectionEnabled then
+                if dropdownData.scrollable ~= nil then
+                    if not scroll.scrollbar:IsHidden() then
+                        contentWidth = contentWidth + SCROLLBAR_PADDING
+                        anchorOffset = -SCROLLBAR_PADDING
+                    else
+                        anchorOffset = -6
+                    end
+                else
+                    anchorOffset = -6
+                end
+            else
+                contentWidth = contentWidth + SCROLLBAR_PADDING
+                anchorOffset = -SCROLLBAR_PADDING
+            end
+        else
+            if isMultiSelectionEnabled then
+                anchorOffset = -6
+            end
+        end
+        local width = zo_max(contentWidth, dropdown.m_container:GetWidth())
+        dropdownObject:SetWidth(width)
+
+        scrollContent:SetAnchor(BOTTOMRIGHT, nil, nil, anchorOffset)
+    end
+
+    --Multiselection
     if isMultiSelectionEnabled == true then
-        local multiSelectType = LAM.util.GetDefaultValue(dropdownData.multiSelectType)
+        local multiSelectType = GetDefaultValue(dropdownData.multiSelectType)
         control.data.multiSelectType = multiSelectType or "normal"
 
         --Add context menu to the multiselect dropdown: Select all / Clear all selections
@@ -520,7 +589,7 @@ function LAMCreateControl.dropdown(parent, dropdownData, controlName)
                 local lDropdown = ZO_ComboBox_ObjectFromContainer(combobox)
                 AddMenuItem(GetString(SI_ITEMFILTERTYPE0), function()
                     lDropdown.m_multiSelectItemData = {}
-                    local maxSelections = self.m_maxNumSelections
+                    local maxSelections = lDropdown.m_maxNumSelections
                     for index, _ in pairs(lDropdown.m_sortedItems) do
                         if maxSelections == nil or maxSelections == 0 or maxSelections >= index then
                             lDropdown:SetSelected(index, true)
@@ -531,7 +600,7 @@ function LAMCreateControl.dropdown(parent, dropdownData, controlName)
                 end)
                 AddMenuItem(GetString(SI_KEEPRESOURCETYPE0), function()
                     lDropdown:ClearAllSelections()
-                    control.data.setFunc({})
+                    control:CallMultiSelectSetFunc(nil)
                 end)
                 ShowMenu(combobox)
             else
@@ -540,11 +609,11 @@ function LAMCreateControl.dropdown(parent, dropdownData, controlName)
         end
         combobox:SetHandler("OnMouseUp", onMouseUp)
 
-        local multiSelectionTextFormatter = LAM.util.GetDefaultValue(dropdownData.multiSelectTextFormatter)
-        local multiSelectionNoSelectionText = LAM.util.GetDefaultValue(dropdownData.multiSelectNoSelectionText)
+        local multiSelectionTextFormatter = GetDefaultValue(dropdownData.multiSelectTextFormatter) or GetString(SI_COMBO_BOX_DEFAULT_MULTISELECTION_TEXT_FORMATTER)
+        local multiSelectionNoSelectionText = GetDefaultValue(dropdownData.multiSelectNoSelectionText) or GetString(SI_COMBO_BOX_DEFAULT_NO_SELECTION_TEXT)
         dropdown:EnableMultiSelect(multiSelectionTextFormatter, multiSelectionNoSelectionText)
 
-        local maxSelections = LAM.util.GetDefaultValue(dropdownData.multiSelectMaxSelections)
+        local maxSelections = GetDefaultValue(dropdownData.multiSelectMaxSelections)
         if type(maxSelections) == "number" then
             dropdown:SetMaxSelections(maxSelections)
         end
@@ -554,7 +623,7 @@ function LAMCreateControl.dropdown(parent, dropdownData, controlName)
 
     --After the items are added and the dropdown shows: Change the height of the dropdown
     SecurePostHook(dropdown, "AddMenuItems", function()
-        SetDropdownHeight(combobox, dropdown, dropdownData)
+        dropdown.AdjustDimensions(combobox, dropdown)
     end)
 
     ZO_PreHook(dropdown, "UpdateItems", function(self)
