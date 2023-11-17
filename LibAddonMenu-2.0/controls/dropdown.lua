@@ -46,6 +46,14 @@ local SORT_ORDERS = {
     down = ZO_SORT_ORDER_DOWN,
 }
 
+local DEFAULT_VISIBLE_ROWS = 10
+local PADDING_Y = ZO_SCROLLABLE_COMBO_BOX_LIST_PADDING_Y
+local ROUNDING_MARGIN = 0.01 -- needed to avoid rare issue with too many anchors processed
+local SCROLLBAR_PADDING = ZO_SCROLL_BAR_WIDTH
+local PADDING_X = GetMenuPadding()
+local CONTENT_PADDING = PADDING_X * 4
+
+
 local function UpdateDisabled(control)
     local disable
     if type(control.data.disabled) == "function" then
@@ -67,19 +75,18 @@ local function updateMultiSelectSelected(control, values)
     local choices = data.choices
     local choicesValues = data.choicesValues
     local multiSelectType = data.multiSelectType
---d(">updateMultiSelectSelected.multiSelectType: " ..tostring(multiSelectType))
     assert(multiSelectType == "normal" or multiSelectType == "allowed", string.format("[LAM2]Dropdown - Unknown multiSelectType: %s", multiSelectType))
     assert(values ~= nil, string.format("[LAM2]Dropdown - Values for multiSelect %q are missing", control:GetName()))
+
+    local usesChoicesValues = choicesValues ~= nil
 
     local dropdown = control.dropdown
     dropdown.m_selectedItemData = {}
     if multiSelectType == "normal" then
         for k, v in ipairs(values) do
-            local toCompare = choicesValues ~= nil and choicesValues[v] or v
+            local toCompare = usesChoicesValues and choicesValues[v] or v
             --dropdown:SelectItemByIndex(k, true)
             dropdown:SetSelectedItemByEval(function(entry)
---d("[LAM2]dropdown - k: " .. tostring(k) .. ", v: " ..tostring(v) .. ", compare: "..tostring(toCompare) ..", value: " ..tostring(entry.value) ..", name: " ..tostring(entry.name))
---d(">match value: " ..tostring(entry.value == toCompare) .. "; match name: " ..tostring(entry.name == toCompare))
                 return (entry.value ~= nil and entry.value == toCompare) or entry.name == toCompare
             end, true)
         end
@@ -87,45 +94,42 @@ local function updateMultiSelectSelected(control, values)
     elseif multiSelectType == "allowed" then
         for k, isAllowed in pairs(values) do
             if isAllowed == true then
-                local toCompare = choicesValues ~= nil and choicesValues[k] or k
-                dropdown:SetSelectedItemByEval(function(entry)
---d("[LAM2]dropdown - k: " .. tostring(k) .. ", allowed: " ..tostring(isAllowed) .. ", compare: "..tostring(toCompare) ..", value: " ..tostring(entry.value) ..", name: " ..tostring(entry.name))
---d(">match value: " ..tostring(entry.value == toCompare) .. "; match name: " ..tostring(entry.name == toCompare))
-                    return (entry.value ~= nil and entry.value == toCompare) or entry.name == toCompare
-                end, true)
+                if usesChoicesValues then
+                    local index = tonumber(k)
+                    if type(index) == "number" then
+                        dropdown:SelectItemByIndex(tonumber(k), true)
+                    end
+                elseif not usesChoicesValues then
+                    dropdown:SetSelectedItemByEval(function(entry)
+                        return (entry.value ~= nil and entry.value == k) or entry.name == k
+                    end, true)
+                end
             end
         end
     end
     dropdown:RefreshSelectedItemText()
 end
 
-local refreshIsNeeded = false
 local function callMultiSelectSetFunc(control, values)
---d(">callMultiSelectSetFunc-values: " ..tostring(values))
     if values == nil then
         values = {}
         local multiSelectType = control.data.multiSelectType
+        local isNormalMSType = multiSelectType == "normal"
+        local isAllowedMSType = multiSelectType == "allowed"
         for _, entry in ipairs(control.dropdown:GetSelectedItemData()) do
             local k = (entry.value ~= nil and entry.value) or entry.name
-            if multiSelectType == "normal" then
+            if isNormalMSType then
                 values[#values + 1] = k
-            elseif multiSelectType == "allowed" then
+            elseif isAllowedMSType then
                 values[k] = true
             end
         end
     end
     control.data.setFunc(values)
-
-    --after setting this value, let's refresh the others to see if any should be disabled or have their settings changed
-    -- util.RequestRefreshIfNeeded(control)
-    -->Atention: Closes dropdown! To prevent this set a flag "doRefresh" and hook into OnDropdownHideInternal and check if "doRefresh"
-    --> was set to true > call the refresh then?
-    refreshIsNeeded = true
 end
 
 local function UpdateValue(control, forceDefault, value)
     local isMultiSelectionEnabled = control.isMultiSelectionEnabled
---d(">UpdateValue-forceDefault: multiSelect: " .. tostring(isMultiSelectionEnabled) ..", forceDefault: " ..tostring(forceDefault) .. ", value: " ..tostring(value))
     if forceDefault then --if we are forcing defaults
         local value = GetDefaultValue(control.data.default)
         if isMultiSelectionEnabled then
@@ -142,7 +146,6 @@ local function UpdateValue(control, forceDefault, value)
             if type(value) ~= "table" then
                 value = nil
             else
---d(">>table was passed in as value")
             end
             callMultiSelectSetFunc(control, value)
         else
@@ -151,7 +154,6 @@ local function UpdateValue(control, forceDefault, value)
         --after setting this value, let's refresh the others to see if any should be disabled or have their settings changed
         LAM.util.RequestRefreshIfNeeded(control)
     else
---d(">>value is nil")
         if isMultiSelectionEnabled then
             local values = control.data.getFunc()
             values = values or {}
@@ -245,211 +247,6 @@ local function GrabSortingInfo(sortInfo)
 
     return t
 end
-
-
-local DEFAULT_VISIBLE_ROWS = 10
-local PADDING_Y = ZO_SCROLLABLE_COMBO_BOX_LIST_PADDING_Y
-local ROUNDING_MARGIN = 0.01 -- needed to avoid rare issue with too many anchors processed
-local SCROLLBAR_PADDING = ZO_SCROLL_BAR_WIDTH
-local PADDING_X = GetMenuPadding()
-local CONTENT_PADDING = PADDING_X * 4
-
---[[
-local ENTRY_ID = 1
-local LAST_ENTRY_ID = 2
-local OFFSET_X_INDEX = 4
-local SCROLLABLE_ENTRY_TEMPLATE_HEIGHT = ZO_SCROLLABLE_ENTRY_TEMPLATE_HEIGHT
-local LABEL_OFFSET_X = 2
-local ScrollableDropdownHelper = ZO_Object:Subclass()
-
-function ScrollableDropdownHelper:New(...)
-    local object = ZO_Object.New(self)
-    object:Initialize(...)
-    return object
-end
-
-function ScrollableDropdownHelper:Initialize(panel, control, visibleRows)
-    local combobox = control.combobox
-    local dropdown = control.dropdown
-    self.panel = panel
-    self.control = control
-    self.combobox = combobox
-    self.dropdown = dropdown
-    self.visibleRows = visibleRows
-
-    -- clear anchors so we can adjust the width dynamically
-    dropdown.m_dropdown:ClearAnchors()
-    dropdown.m_dropdown:SetAnchor(TOPLEFT, combobox, BOTTOMLEFT)
-
-    -- handle dropdown or settingsmenu opening/closing
-    local function onShow() return self:OnShow() end
-    local function onHide() self:OnHide() end
-    local function doHide(closedPanel)
-        if closedPanel == panel then self:DoHide() end
-    end
-
-    ZO_PreHook(dropdown, "ShowDropdownOnMouseUp", onShow)
-    ZO_PreHook(dropdown, "HideDropdownInternal", onHide)
-    combobox:SetHandler("OnEffectivelyHidden", onHide)
-    cm:RegisterCallback("LAM-PanelClosed", doHide)
-
-    -- dont fade entries near the edges
-    local scrollList = dropdown.m_scroll
-    scrollList.selectionTemplate = nil
-    scrollList.highlightTemplate = nil
-    ZO_ScrollList_EnableSelection(scrollList, "ZO_SelectionHighlight")
-    ZO_ScrollList_EnableHighlight(scrollList, "ZO_SelectionHighlight")
-    ZO_Scroll_SetUseFadeGradient(scrollList, false)
-
-    -- adjust scroll content anchor to mimic menu padding
-    local scroll = dropdown.m_dropdown:GetNamedChild("Scroll")
-    local anchor1 = {select(2, scroll:GetAnchor(0))}
-    local anchor2 = {select(2, scroll:GetAnchor(1))}
-    anchor1[OFFSET_X_INDEX] = PADDING_X - LABEL_OFFSET_X
-    anchor2[OFFSET_X_INDEX] = -anchor1[OFFSET_X_INDEX]
-    scroll:ClearAnchors()
-    scroll:SetAnchor(unpack(anchor1))
-    scroll:SetAnchor(unpack(anchor2))
-    ZO_ScrollList_Commit(scrollList)
-
-    -- hook mouse enter/exit
-    local function onMouseEnter(control) self:OnMouseEnter(control) end
-    local function onMouseExit(control) self:OnMouseExit(control) end
-
-    -- adjust row setup to mimic the highlight padding
-    local dataType1 = ZO_ScrollList_GetDataTypeTable(dropdown.m_scroll, ENTRY_ID)
-    local dataType2 = ZO_ScrollList_GetDataTypeTable(dropdown.m_scroll, LAST_ENTRY_ID)
-    local oSetup = dataType1.setupCallback -- both types have the same setup function
-    local function SetupEntry(control, data, list)
-        oSetup(control, data, list)
-        control.m_label:SetAnchor(LEFT, nil, nil, LABEL_OFFSET_X)
-        control.m_label:SetAnchor(RIGHT, nil, nil, -LABEL_OFFSET_X)
-        -- no need to store old ones since we have full ownership of our dropdown controls
-        if not control.hookedMouseHandlers then --only do it once per control
-            control.hookedMouseHandlers = true
-            control:SetHandler("OnMouseEnter", onMouseEnter, TOOLTIP_HANDLER_NAMESPACE)
-            control:SetHandler("OnMouseExit", onMouseExit, TOOLTIP_HANDLER_NAMESPACE)
-        end
-    end
-    dataType1.setupCallback = SetupEntry
-    dataType2.setupCallback = SetupEntry
-
-    -- adjust dimensions based on entries
-    local scrollContent = scroll:GetNamedChild("Contents")
-    dropdown.AddMenuItems = ScrollableDropdownHelper.AddMenuItems
-
-    dropdown.AdjustDimensions = function()
-        local numItems = #dropdown.m_sortedItems
-        local contentWidth = self:CalculateContentWidth() + CONTENT_PADDING
-        local anchorOffset = 0
-        if(numItems > self.visibleRows) then
-            numItems = self.visibleRows
-            contentWidth = contentWidth + SCROLLBAR_PADDING
-            anchorOffset = -SCROLLBAR_PADDING
-        end
-
-        local width = zo_max(contentWidth, dropdown.m_container:GetWidth())
-        local height = dropdown:GetEntryTemplateHeightWithSpacing() * numItems - dropdown.m_spacing + (PADDING_Y * 2) + ROUNDING_MARGIN
-
-        dropdown.m_dropdown:SetWidth(width)
-        dropdown.m_dropdown:SetHeight(height)
-        ZO_ScrollList_SetHeight(dropdown.m_scroll, height)
-
-        scrollContent:SetAnchor(BOTTOMRIGHT, nil, nil, anchorOffset)
-    end
-end
-
-local function CreateScrollableComboBoxEntry(self, item, index, isLast)
-    item.m_index = index
-    item.m_owner = self
-    local entryType = isLast and LAST_ENTRY_ID or ENTRY_ID
-    local entry = ZO_ScrollList_CreateDataEntry(entryType, item)
-
-    return entry
-end
-
-function ScrollableDropdownHelper.AddMenuItems(self) -- self refers to the ZO_ScrollableComboBox here
-    ZO_ScrollList_Clear(self.m_scroll)
-
-    local numItems = #self.m_sortedItems
-    local dataList = ZO_ScrollList_GetDataList(self.m_scroll)
-
-    for i = 1, numItems do
-        local item = self.m_sortedItems[i]
-        local entry = CreateScrollableComboBoxEntry(self, item, i, i == numItems)
-        table.insert(dataList, entry)
-    end
-
-    self:AdjustDimensions()
-
-    ZO_ScrollList_Commit(self.m_scroll)
-end
-
-function ScrollableDropdownHelper:OnShow()
-    local dropdown = self.dropdown
-
-    -- don't show if there are no entries
-    if #dropdown.m_sortedItems == 0 then return true end
-
-    if dropdown.m_lastParent ~= ZO_Menus then
-        dropdown.m_lastParent = dropdown.m_dropdown:GetParent()
-        dropdown.m_dropdown:SetParent(ZO_Menus)
-        ZO_Menus:BringWindowToTop()
-    end
-end
-
-function ScrollableDropdownHelper:OnHide()
-    local dropdown = self.dropdown
-    if dropdown.m_lastParent then
-        dropdown.m_dropdown:SetParent(dropdown.m_lastParent)
-        dropdown.m_lastParent = nil
-    end
-end
-
-function ScrollableDropdownHelper:DoHide()
-    local dropdown = self.dropdown
-    if dropdown:IsDropdownVisible() then
-        dropdown:HideDropdown()
-    end
-end
-
-function ScrollableDropdownHelper:CalculateContentWidth()
-    local dropdown = self.dropdown
-    local dataType = ZO_ScrollList_GetDataTypeTable(dropdown.m_scroll, 1)
-
-    local dummy = dataType.pool:AcquireObject()
-    dataType.setupCallback(dummy, {
-        m_owner = dropdown,
-        name = "Dummy"
-    }, dropdown)
-
-    local maxWidth = 0
-    local label = dummy.m_label
-    local entries = dropdown.m_sortedItems
-    local numItems = #entries
-    for index = 1, numItems do
-        label:SetText(entries[index].name)
-        local width = label:GetTextWidth()
-        if (width > maxWidth) then
-            maxWidth = width
-        end
-    end
-
-    dataType.pool:ReleaseObject(dummy.key)
-    return maxWidth
-end
-
-function ScrollableDropdownHelper:OnMouseEnter(control)
-    if control.m_data.tooltip then
-        DoShowTooltip(control, control.m_data.tooltip)
-    end
-end
-function ScrollableDropdownHelper:OnMouseExit(control)
-    if control.m_data.tooltip then
-        HideTooltip()
-    end
-end
-]]
 
 --Change the height of the combobox dropdown
 local function SetDropdownHeight(combobox, dropdown, dropdownData)
