@@ -2,10 +2,10 @@
     type = "iconpicker",
     name = "My Icon Picker", -- or string id or function returning a string
     choices = {"texture path 1", "texture path 2", "texture path 3"},
-    choicesValues = {textureIndex1, textureIndex2, textureIndex3}, -- table of number texturePathIndex. If specified, these values will get passed to setFunc instead of the String texturePaths of choices (optional)
+    useIndex = false, --boolean or function returning a boolean. If true: The setFunc/getFunc will use/return the index of the table choices. If false: The functions will use/return the texturePath value of table choices (optional)
     getFunc = function() return db.var end,
     setFunc = function(var) db.var = var doStuff() end,
-    tooltip = "Icon Picker's tooltip text.", -- or string id or function returning a string (optional)
+    tooltip = "Color Picker's tooltip text.", -- or string id or function returning a string (optional)
     choicesTooltips = {"icon tooltip 1", "icon tooltip 2", "icon tooltip 3"}, -- or array of string ids or array of functions returning a string (optional)
     maxColumns = 5, -- number of icons in one row (optional)
     visibleRows = 4.5, -- number of visible rows (optional)
@@ -29,20 +29,18 @@ if not LAM:RegisterWidget("iconpicker", widgetVersion) then return end
 local wm = WINDOW_MANAGER
 
 local IconPickerMenu = ZO_Object:Subclass()
-do
-    local iconPicker
-    LAM.util.GetIconPickerMenu = function()
-        if not iconPicker then
-            iconPicker = IconPickerMenu:New("LAMIconPicker")
-            local sceneFragment = LAM:GetAddonSettingsFragment()
-            ZO_PreHook(sceneFragment, "OnHidden", function()
-                if not iconPicker.control:IsHidden() then
-                    iconPicker:Clear()
-                end
-            end)
-        end
-        return iconPicker
+local iconPicker
+LAM.util.GetIconPickerMenu = function()
+    if not iconPicker then
+        iconPicker = IconPickerMenu:New("LAMIconPicker")
+        local sceneFragment = LAM:GetAddonSettingsFragment()
+        ZO_PreHook(sceneFragment, "OnHidden", function()
+            if not iconPicker.control:IsHidden() then
+                iconPicker:Clear()
+            end
+        end)
     end
+    return iconPicker
 end
 local GetIconPickerMenu = LAM.util.GetIconPickerMenu
 
@@ -112,7 +110,7 @@ function IconPickerMenu:Initialize(name)
         end)
         icon:SetHandler("OnMouseUp", function(control, ...)
             PlaySound("Click")
-            icon.OnSelect(icon, icon.texture, icon.textureIndex)
+            icon.OnSelect(icon, icon.texture)
             self:Clear()
         end)
         return icon
@@ -222,13 +220,12 @@ function IconPickerMenu:Clear()
     self.customOnMouseExit = nil
 end
 
-function IconPickerMenu:AddIcon(texturePath, callback, tooltip, textureIndex)
+function IconPickerMenu:AddIcon(texturePath, callback, tooltip)
     local icon, key = self.iconPool:AcquireObject()
     icon:SetHidden(false)
     icon:SetTexture(texturePath)
     icon:SetColor(self.color:UnpackRGBA())
     icon.texture = texturePath
-    icon.textureIndex = textureIndex
     icon.tooltip = tooltip
     icon.OnSelect = callback
     self.icons[#self.icons + 1] = icon
@@ -262,18 +259,12 @@ end
 
 -------------------------------------------------------------
 
-local function UpdateChoices(control, choices, choicesTooltips, choicesValues)
+local function UpdateChoices(control, choices, choicesTooltips)
     local data = control.data
     if not choices then
-        choices, choicesValues, choicesTooltips = data.choices, data.choicesValues, data.choicesTooltips
+        choices, choicesTooltips = data.choices, data.choicesTooltips or {}
     end
-    if choicesValues then
-        assert(#choices == #choicesValues, "[IconPicker]choices and choicesValues need to have the same size")
-    end
-    if choicesTooltips then
-        assert(#choices == #choicesTooltips, "[IconPicker]choices and choicesTooltips need to have the same size")
-    end
-
+    local useIndex = LAM.util.GetDefaultValue(data.useIndex)
     local addedChoices = {}
 
     local iconPicker = GetIconPickerMenu()
@@ -281,12 +272,11 @@ local function UpdateChoices(control, choices, choicesTooltips, choicesValues)
     for i = 1, #choices do
         local texture = choices[i]
         if not addedChoices[texture] then -- remove duplicates
-            local textureIndex = (choicesValues ~= nil and choicesValues[i]) or nil
-            iconPicker:AddIcon(texture, function(self, lTexture, lTextureIndex)
+            iconPicker:AddIcon(texture, function(self, lTexture)
                 control.icon:SetTexture(lTexture)
-                data.setFunc((lTextureIndex ~= nil and lTextureIndex) or lTexture)
+                data.setFunc((not useIndex and lTexture) or i)
                 LAM.util.RequestRefreshIfNeeded(control)
-            end, LAM.util.GetStringFromValue(choicesTooltips[i]), textureIndex)
+            end, LAM.util.GetStringFromValue(choicesTooltips[i]))
             addedChoices[texture] = true
         end
     end
@@ -334,26 +324,22 @@ local function UpdateDisabled(control)
     end
 end
 
-local function UpdateIconTexture(iconCtrl, choices, choicesValues, value)
-    if value == nil then return end
-    local texture = (choicesValues ~= nil and choices[choicesValues[value]] ~= nil and choices[choicesValues[value]]) or value
-    iconCtrl:SetTexture(texture)
-end
-
 local function UpdateValue(control, forceDefault, value)
     local data = control.data
-
+    local useIndex = LAM.util.GetDefaultValue(data.useIndex)
     if forceDefault then --if we are forcing defaults
         value = LAM.util.GetDefaultValue(data.default)
         data.setFunc(value)
-        UpdateIconTexture(control.icon, data.choices, data.choicesValues, value)
-    elseif value ~= nil then
+        local texturePath = (not useIndex and value) or data.choices[value]
+        control.icon:SetTexture(texturePath)
+    elseif value then
         data.setFunc(value)
         --after setting this value, let's refresh the others to see if any should be disabled or have their settings changed
         LAM.util.RequestRefreshIfNeeded(control)
     else
         value = data.getFunc()
-        UpdateIconTexture(control.icon, data.choices, data.choicesValues, value)
+        local texturePath = (not useIndex and value) or data.choices[value]
+        control.icon:SetTexture(texturePath)
     end
 end
 
