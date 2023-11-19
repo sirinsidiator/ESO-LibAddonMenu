@@ -32,7 +32,7 @@ if not LAM:RegisterWidget("dropdown", widgetVersion) then return end
 local GetDefaultValue = LAM.util.GetDefaultValue
 
 local wm = WINDOW_MANAGER
---local cm = CALLBACK_MANAGER
+
 local SORT_BY_VALUE         = { ["value"] = {} }
 local SORT_BY_VALUE_NUMERIC = { ["value"] = { isNumeric = true } }
 local SORT_TYPES = {
@@ -84,8 +84,10 @@ local function updateMultiSelectSelected(control, values)
     dropdown.m_selectedItemData = {}
     if multiSelectType == "normal" then
         for k, v in ipairs(values) do
-            local toCompare = usesChoicesValues and choicesValues[v] or v
-            --dropdown:SelectItemByIndex(k, true)
+            local toCompare = v
+            if usesChoicesValues ~= nil then
+                toCompare = choicesValues[v]
+            end
             dropdown:SetSelectedItemByEval(function(entry)
                 return (entry.value ~= nil and entry.value == toCompare) or entry.name == toCompare
             end, true)
@@ -96,8 +98,8 @@ local function updateMultiSelectSelected(control, values)
             if isAllowed == true then
                 if usesChoicesValues then
                     local index = tonumber(k)
-                    if type(index) == "number" then
-                        dropdown:SelectItemByIndex(tonumber(k), true)
+                    if index ~= nil then
+                        dropdown:SelectItemByIndex(index, true)
                     end
                 elseif not usesChoicesValues then
                     dropdown:SetSelectedItemByEval(function(entry)
@@ -249,7 +251,7 @@ local function GrabSortingInfo(sortInfo)
 end
 
 --Change the height of the combobox dropdown
-local function SetDropdownHeight(combobox, dropdown, dropdownData)
+local function SetDropdownHeight(control, dropdown, dropdownData)
     local entrySpacing = dropdown:GetSpacing()
     local numSortedItems = #dropdown.m_sortedItems
     local visibleRows, min, max
@@ -281,6 +283,95 @@ local function SetDropdownHeight(combobox, dropdown, dropdownData)
     return visibleRows, min, max
 end
 
+local function CalculateContentWidth(dropdown)
+    local dataType = ZO_ScrollList_GetDataTypeTable(dropdown.m_scroll, 1)
+
+    local dummy = dataType.pool:AcquireObject()
+    dataType.setupCallback(dummy, {
+        m_owner = dropdown,
+        name = "Dummy"
+    }, dropdown)
+
+    local maxWidth = 0
+    local label = dummy.m_label
+    local entries = dropdown.m_sortedItems
+    local numItems = #entries
+    for index = 1, numItems do
+        label:SetText(entries[index].name)
+        local width = label:GetTextWidth()
+        if (width > maxWidth) then
+            maxWidth = width
+        end
+    end
+
+    dataType.pool:ReleaseObject(dummy.key)
+    return maxWidth
+end
+
+local function AdjustDimensions(control, dropdown, dropdownData)
+    local numItems = #dropdown.m_sortedItems
+    local dropdownObject = dropdown.m_dropdown
+    local scroll = dropdownObject:GetNamedChild("Scroll")
+    local scrollContent = scroll:GetNamedChild("Contents")
+    local anchorOffset = 0
+
+    local isMultiSelectionEnabled = GetDefaultValue(dropdownData.multiSelect)
+
+    local contentWidth = CalculateContentWidth(dropdown) + CONTENT_PADDING
+    local visibleRows, min, max = SetDropdownHeight(control, dropdown, dropdownData)
+
+    if numItems > visibleRows then
+        numItems = visibleRows
+        if isMultiSelectionEnabled then
+            if dropdownData.scrollable ~= nil then
+                if not scroll.scrollbar:IsHidden() then
+                    contentWidth = contentWidth + SCROLLBAR_PADDING
+                    anchorOffset = -SCROLLBAR_PADDING
+                else
+                    anchorOffset = -6
+                end
+            else
+                anchorOffset = -6
+            end
+        else
+            contentWidth = contentWidth + SCROLLBAR_PADDING
+            anchorOffset = -SCROLLBAR_PADDING
+        end
+    else
+        if isMultiSelectionEnabled then
+            anchorOffset = -6
+        end
+    end
+    local width = zo_max(contentWidth, dropdown.m_container:GetWidth())
+    dropdownObject:SetWidth(width)
+
+    scrollContent:SetAnchor(BOTTOMRIGHT, nil, nil, anchorOffset)
+end
+
+local function onMultiSelectComboBoxMouseUp(combobox, button, upInside, alt, shift, ctrl, command)
+    if button == MOUSE_BUTTON_INDEX_RIGHT and upInside then
+        ClearMenu()
+        local lDropdown = ZO_ComboBox_ObjectFromContainer(combobox)
+        AddMenuItem(GetString(SI_ITEMFILTERTYPE0), function()
+            lDropdown.m_multiSelectItemData = {}
+            local maxSelections = lDropdown.m_maxNumSelections
+            for index, _ in pairs(lDropdown.m_sortedItems) do
+                if maxSelections == nil or maxSelections == 0 or maxSelections >= index then
+                    lDropdown:SetSelected(index, true)
+                end
+            end
+            lDropdown:RefreshSelectedItemText()
+            combobox:CallMultiSelectSetFunc(nil)
+        end)
+        AddMenuItem(GetString(SI_KEEPRESOURCETYPE0), function()
+            lDropdown:ClearAllSelections()
+            combobox:CallMultiSelectSetFunc(nil)
+        end)
+        ShowMenu(combobox)
+    end
+end
+
+
 function LAMCreateControl.dropdown(parent, dropdownData, controlName)
     local control = LAM.util.CreateLabelAndContainerControl(parent, dropdownData, controlName)
     control.choices = {}
@@ -309,102 +400,13 @@ function LAMCreateControl.dropdown(parent, dropdownData, controlName)
     local isMultiSelectionEnabled = GetDefaultValue(dropdownData.multiSelect)
     control.isMultiSelectionEnabled = isMultiSelectionEnabled
 
-    dropdown.CalculateContentWidth = function()
-        local dataType = ZO_ScrollList_GetDataTypeTable(dropdown.m_scroll, 1)
-
-        local dummy = dataType.pool:AcquireObject()
-        dataType.setupCallback(dummy, {
-            m_owner = dropdown,
-            name = "Dummy"
-        }, dropdown)
-
-        local maxWidth = 0
-        local label = dummy.m_label
-        local entries = dropdown.m_sortedItems
-        local numItems = #entries
-        for index = 1, numItems do
-            label:SetText(entries[index].name)
-            local width = label:GetTextWidth()
-            if (width > maxWidth) then
-                maxWidth = width
-            end
-        end
-
-        dataType.pool:ReleaseObject(dummy.key)
-        return maxWidth
-    end
-
-    dropdown.AdjustDimensions = function()
-        local numItems = #dropdown.m_sortedItems
-        local dropdownObject = dropdown.m_dropdown
-        local scroll = dropdownObject:GetNamedChild("Scroll")
-        local scrollContent = scroll:GetNamedChild("Contents")
-        local anchorOffset = 0
-
-        local contentWidth = dropdown.CalculateContentWidth() + CONTENT_PADDING
-        local visibleRows, min, max = SetDropdownHeight(combobox, dropdown, dropdownData)
-
-        if(numItems > visibleRows) then
-            numItems = visibleRows
-            if isMultiSelectionEnabled then
-                if dropdownData.scrollable ~= nil then
-                    if not scroll.scrollbar:IsHidden() then
-                        contentWidth = contentWidth + SCROLLBAR_PADDING
-                        anchorOffset = -SCROLLBAR_PADDING
-                    else
-                        anchorOffset = -6
-                    end
-                else
-                    anchorOffset = -6
-                end
-            else
-                contentWidth = contentWidth + SCROLLBAR_PADDING
-                anchorOffset = -SCROLLBAR_PADDING
-            end
-        else
-            if isMultiSelectionEnabled then
-                anchorOffset = -6
-            end
-        end
-        local width = zo_max(contentWidth, dropdown.m_container:GetWidth())
-        dropdownObject:SetWidth(width)
-
-        scrollContent:SetAnchor(BOTTOMRIGHT, nil, nil, anchorOffset)
-    end
-
     --Multiselection
     if isMultiSelectionEnabled == true then
         local multiSelectType = GetDefaultValue(dropdownData.multiSelectType)
         control.data.multiSelectType = multiSelectType or "normal"
 
         --Add context menu to the multiselect dropdown: Select all / Clear all selections
-        control.CallMultiSelectSetFunc = callMultiSelectSetFunc
-        local mouseUp = combobox:GetHandler("OnMouseUp")
-        local function onMouseUp(combobox, button, upInside, alt, shift, ctrl, command)
-            if button == MOUSE_BUTTON_INDEX_RIGHT and upInside then
-                ClearMenu()
-                local lDropdown = ZO_ComboBox_ObjectFromContainer(combobox)
-                AddMenuItem(GetString(SI_ITEMFILTERTYPE0), function()
-                    lDropdown.m_multiSelectItemData = {}
-                    local maxSelections = lDropdown.m_maxNumSelections
-                    for index, _ in pairs(lDropdown.m_sortedItems) do
-                        if maxSelections == nil or maxSelections == 0 or maxSelections >= index then
-                            lDropdown:SetSelected(index, true)
-                        end
-                    end
-                    lDropdown:RefreshSelectedItemText()
-                    control:CallMultiSelectSetFunc(nil)
-                end)
-                AddMenuItem(GetString(SI_KEEPRESOURCETYPE0), function()
-                    lDropdown:ClearAllSelections()
-                    control:CallMultiSelectSetFunc(nil)
-                end)
-                ShowMenu(combobox)
-            else
-                mouseUp(combobox, button, upInside, alt, shift, ctrl, command)
-            end
-        end
-        combobox:SetHandler("OnMouseUp", onMouseUp)
+        combobox:SetHandler("OnMouseUp", onMultiSelectComboBoxMouseUp)
 
         local multiSelectionTextFormatter = GetDefaultValue(dropdownData.multiSelectTextFormatter) or GetString(SI_COMBO_BOX_DEFAULT_MULTISELECTION_TEXT_FORMATTER)
         local multiSelectionNoSelectionText = GetDefaultValue(dropdownData.multiSelectNoSelectionText) or GetString(SI_COMBO_BOX_DEFAULT_NO_SELECTION_TEXT)
@@ -420,7 +422,7 @@ function LAMCreateControl.dropdown(parent, dropdownData, controlName)
 
     --After the items are added and the dropdown shows: Change the height of the dropdown
     SecurePostHook(dropdown, "AddMenuItems", function()
-        dropdown.AdjustDimensions(combobox, dropdown)
+        dropdown.AdjustDimensions(combobox, dropdown, dropdownData)
     end)
 
     ZO_PreHook(dropdown, "UpdateItems", function(self)
@@ -447,6 +449,7 @@ function LAMCreateControl.dropdown(parent, dropdownData, controlName)
     end
 
     control.SetDropdownHeight = SetDropdownHeight
+    control.AdjustDimensions = AdjustDimensions
     control.UpdateChoices = UpdateChoices
     control:UpdateChoices(dropdownData.choices, dropdownData.choicesValues)
     control.UpdateValue = UpdateValue
