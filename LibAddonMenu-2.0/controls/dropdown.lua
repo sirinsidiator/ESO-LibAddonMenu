@@ -3,8 +3,8 @@
     name = "My Dropdown", -- or string id or function returning a string
     choices = {"table", "of", "choices"},
     choicesValues = {"foo", 2, "three"}, -- if specified, these values will get passed to setFunc instead (optional)
-    getFunc = function() return db.var end, -- if multiSelect is true the getFunc must return a table. See multiSelectType for table key and values
-    setFunc = function(var) db.var = var doStuff() end, -- if multiSelect is true the setFunc's var must be a table. See multiSelectType for table key and values
+    getFunc = function() return db.var end, -- if multiSelect is true the getFunc must return a table
+    setFunc = function(var) db.var = var doStuff() end, -- if multiSelect is true the setFunc's var must be a table
     tooltip = "Dropdown's tooltip text.", -- or string id or function returning a string (optional)
     choicesTooltips = {"tooltip 1", "tooltip 2", "tooltip 3"}, -- or array of string ids or array of functions returning a string (optional)
     sort = "name-up", -- or "name-down", "numeric-up", "numeric-down", "value-up", "value-down", "numericvalue-up", "numericvalue-down" (optional) - if not provided, list will not be sorted
@@ -20,7 +20,6 @@
     multiSelect = false, -- boolean or function returning a boolean. If set to true you can select multiple entries at the list (optional)
     multiSelectTextFormatter = SI_COMBO_BOX_DEFAULT_MULTISELECTION_TEXT_FORMATTER, -- or string id or function returning a string. If specified, this will be used with zo_strformat(multiSelectTextFormatter, numSelectedItems) to set the "selected item text". Only incombination with multiSelect = true (optional)
     multiSelectNoSelectionText = SI_COMBO_BOX_DEFAULT_NO_SELECTION_TEXT, -- or string id or function returning a string. Only incombination with multiSelect = true (optional)
-    multiSelectType = "normal", -- String or function returning a string "normal" or "allowed". "normal" = a list with key = number index and value = String / "allowed" = a list with key = any String or number and value = boolean. If value == true then the entry will be added. Default = "normal". Only incombination with multiSelect = true (optional)
     multiSelectMaxSelections = 5, --Number or function returning a number of the maximum of selectable entries. If not specified there is no max selection. Only incombination with multiSelect = true (optional)
 } ]]
 
@@ -74,40 +73,21 @@ local function updateMultiSelectSelected(control, values)
     local data = control.data
     local choices = data.choices
     local choicesValues = data.choicesValues
-    local multiSelectType = data.multiSelectType
-    assert(multiSelectType == "normal" or multiSelectType == "allowed", string.format("[LAM2]Dropdown - Unknown multiSelectType: %s", multiSelectType))
     assert(values ~= nil, string.format("[LAM2]Dropdown - Values for multiSelect %q are missing", control:GetName()))
 
     local usesChoicesValues = choicesValues ~= nil
 
     local dropdown = control.dropdown
     dropdown.m_selectedItemData = {}
-    if multiSelectType == "normal" then
-        for k, v in ipairs(values) do
-            local toCompare = v
-            if usesChoicesValues ~= nil then
-                toCompare = choicesValues[v]
-            end
-            dropdown:SetSelectedItemByEval(function(entry)
-                return (entry.value ~= nil and entry.value == toCompare) or entry.name == toCompare
-            end, true)
-        end
 
-    elseif multiSelectType == "allowed" then
-        for k, isAllowed in pairs(values) do
-            if isAllowed == true then
-                if usesChoicesValues then
-                    local index = tonumber(k)
-                    if index ~= nil then
-                        dropdown:SelectItemByIndex(index, true)
-                    end
-                elseif not usesChoicesValues then
-                    dropdown:SetSelectedItemByEval(function(entry)
-                        return (entry.value ~= nil and entry.value == k) or entry.name == k
-                    end, true)
-                end
-            end
+    for k, v in ipairs(values) do
+        local toCompare = v
+        if usesChoicesValues ~= nil then
+            toCompare = choicesValues[v]
         end
+        dropdown:SetSelectedItemByEval(function(entry)
+            return (entry.value ~= nil and entry.value == toCompare) or entry.name == toCompare
+        end, true)
     end
     dropdown:RefreshSelectedItemText()
 end
@@ -115,19 +95,25 @@ end
 local function callMultiSelectSetFunc(control, values)
     if values == nil then
         values = {}
-        local multiSelectType = control.data.multiSelectType
-        local isNormalMSType = multiSelectType == "normal"
-        local isAllowedMSType = multiSelectType == "allowed"
         for _, entry in ipairs(control.dropdown:GetSelectedItemData()) do
             local k = (entry.value ~= nil and entry.value) or entry.name
-            if isNormalMSType then
-                values[#values + 1] = k
-            elseif isAllowedMSType then
-                values[k] = true
-            end
+            values[#values + 1] = k
         end
     end
     control.data.setFunc(values)
+end
+
+--Return table { [choicesValues[i] or choices[i]] = boolean, ... }
+--Can be used at a setFunc e.g. to convert the SavedVariables (2nd param values) to that other table format
+local function IsSelected(control, values)
+    local isSelectedTab = {}
+    local valuesSaved = values ~= nil and values or control.data.getFunc()
+    if ZO_IsTableEmpty(valuesSaved) then return isSelectedTab end
+
+    for _, value in ipairs(valuesSaved) do
+        isSelectedTab[value] = true
+    end
+    return isSelectedTab
 end
 
 local function UpdateValue(control, forceDefault, value)
@@ -402,9 +388,6 @@ function LAMCreateControl.dropdown(parent, dropdownData, controlName)
 
     --Multiselection
     if isMultiSelectionEnabled == true then
-        local multiSelectType = GetDefaultValue(dropdownData.multiSelectType)
-        control.data.multiSelectType = multiSelectType or "normal"
-
         --Add context menu to the multiselect dropdown: Select all / Clear all selections
         combobox:SetHandler("OnMouseUp", onMultiSelectComboBoxMouseUp)
 
@@ -450,6 +433,7 @@ function LAMCreateControl.dropdown(parent, dropdownData, controlName)
 
     control.SetDropdownHeight = SetDropdownHeight
     control.AdjustDimensions = AdjustDimensions
+    control.IsSelected = IsSelected
     control.UpdateChoices = UpdateChoices
     control:UpdateChoices(dropdownData.choices, dropdownData.choicesValues)
     control.UpdateValue = UpdateValue
