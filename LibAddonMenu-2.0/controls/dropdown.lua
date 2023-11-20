@@ -107,8 +107,13 @@ end
 --Can be used at a setFunc e.g. to convert the SavedVariables (2nd param values) to that other table format
 local function IsSelected(control, values)
     local isSelectedTab = {}
-    local valuesSaved = values ~= nil and values or control.data.getFunc()
+    local data = control.data
+
+    local valuesSaved
+    if values ~= nil then valuesSaved = values else valuesSaved = data.getFunc() end
     if ZO_IsTableEmpty(valuesSaved) then return isSelectedTab end
+
+    if not GetDefaultValue(data.multiSelect) then return valuesSaved end
 
     for _, value in ipairs(valuesSaved) do
         isSelectedTab[value] = true
