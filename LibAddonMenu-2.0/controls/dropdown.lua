@@ -103,27 +103,6 @@ local function callMultiSelectSetFunc(control, values)
     control.data.setFunc(values)
 end
 
---Return table { [choicesValues[i] or choices[i]] = boolean, ... }
---Can be used at a setFunc e.g. to convert the SavedVariables (2nd param values) to that other table format
-local function IsSelected(control, value)
-    local isSelectedTab = {}
-    local data = control.data
-
-    local valuesSaved
-    if value ~= nil then valuesSaved = value else valuesSaved = data.getFunc() end
-
-    if not control.isMultiSelectionEnabled then
-        isSelectedTab[valuesSaved] = true
-        return isSelectedTab
-    end
-
-    if ZO_IsTableEmpty(valuesSaved) then return isSelectedTab end
-    for _, valueSaved in ipairs(valuesSaved) do
-        isSelectedTab[valueSaved] = true
-    end
-    return isSelectedTab
-end
-
 local function UpdateValue(control, forceDefault, value)
     local isMultiSelectionEnabled = control.isMultiSelectionEnabled
     if forceDefault then --if we are forcing defaults
@@ -442,7 +421,6 @@ function LAMCreateControl.dropdown(parent, dropdownData, controlName)
 
     control.SetDropdownHeight = SetDropdownHeight
     control.AdjustDimensions = AdjustDimensions
-    control.IsSelected = IsSelected
     control.UpdateChoices = UpdateChoices
     control:UpdateChoices(dropdownData.choices, dropdownData.choicesValues)
     control.UpdateValue = UpdateValue
