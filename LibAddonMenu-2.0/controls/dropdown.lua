@@ -82,7 +82,7 @@ local function updateMultiSelectSelected(control, values)
 
     for k, v in ipairs(values) do
         local toCompare = v
-        if usesChoicesValues ~= nil then
+        if usesChoicesValues == true then
             toCompare = choicesValues[v]
         end
         dropdown:SetSelectedItemByEval(function(entry)
@@ -334,10 +334,11 @@ local function AdjustDimensions(control, dropdown, dropdownData)
     scrollContent:SetAnchor(BOTTOMRIGHT, nil, nil, anchorOffset)
 end
 
-local function onMultiSelectComboBoxMouseUp(combobox, button, upInside, alt, shift, ctrl, command)
+local function onMultiSelectComboBoxMouseUp(control, combobox, button, upInside, alt, shift, ctrl, command)
     if button == MOUSE_BUTTON_INDEX_RIGHT and upInside then
         ClearMenu()
         local lDropdown = ZO_ComboBox_ObjectFromContainer(combobox)
+
         AddMenuItem(GetString(SI_ITEMFILTERTYPE0), function()
             lDropdown.m_multiSelectItemData = {}
             local maxSelections = lDropdown.m_maxNumSelections
@@ -347,11 +348,11 @@ local function onMultiSelectComboBoxMouseUp(combobox, button, upInside, alt, shi
                 end
             end
             lDropdown:RefreshSelectedItemText()
-            combobox:CallMultiSelectSetFunc(nil)
+            callMultiSelectSetFunc(control, nil)
         end)
         AddMenuItem(GetString(SI_KEEPRESOURCETYPE0), function()
             lDropdown:ClearAllSelections()
-            combobox:CallMultiSelectSetFunc(nil)
+            callMultiSelectSetFunc(control, nil)
         end)
         ShowMenu(combobox)
     end
@@ -389,7 +390,7 @@ function LAMCreateControl.dropdown(parent, dropdownData, controlName)
     --Multiselection
     if isMultiSelectionEnabled == true then
         --Add context menu to the multiselect dropdown: Select all / Clear all selections
-        combobox:SetHandler("OnMouseUp", onMultiSelectComboBoxMouseUp)
+        combobox:SetHandler("OnMouseUp", function(...) onMultiSelectComboBoxMouseUp(control, ...) end, "LAM2DropdownWidgetOnMouseUp")
 
         local multiSelectionTextFormatter = GetDefaultValue(dropdownData.multiSelectTextFormatter) or GetString(SI_COMBO_BOX_DEFAULT_MULTISELECTION_TEXT_FORMATTER)
         local multiSelectionNoSelectionText = GetDefaultValue(dropdownData.multiSelectNoSelectionText) or GetString(SI_COMBO_BOX_DEFAULT_NO_SELECTION_TEXT)
@@ -405,7 +406,7 @@ function LAMCreateControl.dropdown(parent, dropdownData, controlName)
 
     --After the items are added and the dropdown shows: Change the height of the dropdown
     SecurePostHook(dropdown, "AddMenuItems", function()
-        dropdown.AdjustDimensions(combobox, dropdown, dropdownData)
+        control.AdjustDimensions(control, dropdown, dropdownData)
     end)
 
     ZO_PreHook(dropdown, "UpdateItems", function(self)
