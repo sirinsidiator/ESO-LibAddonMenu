@@ -69,7 +69,7 @@ local function UpdateDisabled(control)
     end
 end
 
-local function updateMultiSelectSelected(control, values)
+local function UpdateMultiSelectSelected(control, values)
     local data = control.data
     local choices = data.choices
     local choicesValues = data.choicesValues
@@ -92,7 +92,7 @@ local function updateMultiSelectSelected(control, values)
     dropdown:RefreshSelectedItemText()
 end
 
-local function callMultiSelectSetFunc(control, values)
+local function CallMultiSelectSetFunc(control, values)
     if values == nil then
         values = {}
         for _, entry in ipairs(control.dropdown:GetSelectedItemData()) do
@@ -109,7 +109,7 @@ local function UpdateValue(control, forceDefault, value)
         local value = GetDefaultValue(control.data.default)
         if isMultiSelectionEnabled then
             value = value or {}
-            updateMultiSelectSelected(control, value)
+            UpdateMultiSelectSelected(control, value)
             control.data.setFunc(value)
         else
             control.data.setFunc(value)
@@ -122,7 +122,7 @@ local function UpdateValue(control, forceDefault, value)
                 value = nil
             else
             end
-            callMultiSelectSetFunc(control, value)
+            CallMultiSelectSetFunc(control, value)
         else
             control.data.setFunc(value)
         end
@@ -132,7 +132,7 @@ local function UpdateValue(control, forceDefault, value)
         if isMultiSelectionEnabled then
             local values = control.data.getFunc()
             values = values or {}
-            updateMultiSelectSelected(control, values)
+            UpdateMultiSelectSelected(control, values)
         else
             value = control.data.getFunc()
             control.dropdown:SetSelectedItem(control.choices[value])
@@ -321,7 +321,7 @@ local function AdjustDimensions(control, dropdown, dropdownData)
     scrollContent:SetAnchor(BOTTOMRIGHT, nil, nil, anchorOffset)
 end
 
-local function onMultiSelectComboBoxMouseUp(control, combobox, button, upInside, alt, shift, ctrl, command)
+local function OnMultiSelectComboBoxMouseUp(control, combobox, button, upInside, alt, shift, ctrl, command)
     if button == MOUSE_BUTTON_INDEX_RIGHT and upInside then
         ClearMenu()
         local lDropdown = ZO_ComboBox_ObjectFromContainer(combobox)
@@ -335,11 +335,11 @@ local function onMultiSelectComboBoxMouseUp(control, combobox, button, upInside,
                 end
             end
             lDropdown:RefreshSelectedItemText()
-            callMultiSelectSetFunc(control, nil)
+            CallMultiSelectSetFunc(control, nil)
         end)
         AddMenuItem(GetString(SI_KEEPRESOURCETYPE0), function()
             lDropdown:ClearAllSelections()
-            callMultiSelectSetFunc(control, nil)
+            CallMultiSelectSetFunc(control, nil)
         end)
         ShowMenu(combobox)
     end
@@ -377,7 +377,7 @@ function LAMCreateControl.dropdown(parent, dropdownData, controlName)
     --Multiselection
     if isMultiSelectionEnabled == true then
         --Add context menu to the multiselect dropdown: Select all / Clear all selections
-        combobox:SetHandler("OnMouseUp", function(...) onMultiSelectComboBoxMouseUp(control, ...) end, "LAM2DropdownWidgetOnMouseUp")
+        combobox:SetHandler("OnMouseUp", function(...) OnMultiSelectComboBoxMouseUp(control, ...) end, "LAM2DropdownWidgetOnMouseUp")
 
         local multiSelectionTextFormatter = GetDefaultValue(dropdownData.multiSelectTextFormatter) or GetString(SI_COMBO_BOX_DEFAULT_MULTISELECTION_TEXT_FORMATTER)
         local multiSelectionNoSelectionText = GetDefaultValue(dropdownData.multiSelectNoSelectionText) or GetString(SI_COMBO_BOX_DEFAULT_NO_SELECTION_TEXT)
