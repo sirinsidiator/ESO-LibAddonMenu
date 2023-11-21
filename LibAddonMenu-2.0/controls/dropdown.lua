@@ -109,8 +109,8 @@ local function UpdateValue(control, forceDefault, value)
         local value = GetDefaultValue(control.data.default)
         if isMultiSelectionEnabled then
             value = value or {}
-            UpdateMultiSelectSelected(control, value)
             control.data.setFunc(value)
+            UpdateMultiSelectSelected(control, value)
         else
             control.data.setFunc(value)
             control.dropdown:SetSelectedItem(control.choices[value])
@@ -118,10 +118,7 @@ local function UpdateValue(control, forceDefault, value)
     elseif value ~= nil then
         if isMultiSelectionEnabled then
             --Coming from LAM 2.0 DiscardChangesOnReloadControls? Passing in the saved control.startValue table
-            if type(value) ~= "table" then
-                value = nil
-            else
-            end
+            if type(value) ~= "table" then value = nil end
             CallMultiSelectSetFunc(control, value)
         else
             control.data.setFunc(value)
