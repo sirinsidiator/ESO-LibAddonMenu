@@ -49,6 +49,7 @@ local DEFAULT_VISIBLE_ROWS = 10
 local PADDING_Y = ZO_SCROLLABLE_COMBO_BOX_LIST_PADDING_Y
 local ROUNDING_MARGIN = 0.01 -- needed to avoid rare issue with too many anchors processed
 local SCROLLBAR_PADDING = ZO_SCROLL_BAR_WIDTH
+local MULTISELECT_NO_SCROLLBAR_PADDING = 6
 local PADDING_X = GetMenuPadding()
 local CONTENT_PADDING = PADDING_X * 4
 
@@ -86,7 +87,7 @@ local function UpdateMultiSelectSelected(control, values)
             toCompare = choicesValues[v]
         end
         dropdown:SetSelectedItemByEval(function(entry)
-            return (entry.value ~= nil and entry.value == toCompare) or entry.name == toCompare
+            return (usesChoicesValues == true and entry.value == toCompare) or entry.name == toCompare
         end, true)
     end
     dropdown:RefreshSelectedItemText()
@@ -286,32 +287,28 @@ local function AdjustDimensions(control, dropdown, dropdownData)
     local anchorOffset = 0
 
     local isMultiSelectionEnabled = GetDefaultValue(dropdownData.multiSelect)
+    if isMultiSelectionEnabled then
+        anchorOffset = -MULTISELECT_NO_SCROLLBAR_PADDING
+    end
 
     local contentWidth = CalculateContentWidth(dropdown) + CONTENT_PADDING
-    local visibleRows, min, max = SetDropdownHeight(control, dropdown, dropdownData)
+    local visibleRows = SetDropdownHeight(control, dropdown, dropdownData)
 
+    local hasScrollbar = false
     if numItems > visibleRows then
         numItems = visibleRows
         if isMultiSelectionEnabled then
-            if dropdownData.scrollable ~= nil then
-                if not scroll.scrollbar:IsHidden() then
-                    contentWidth = contentWidth + SCROLLBAR_PADDING
-                    anchorOffset = -SCROLLBAR_PADDING
-                else
-                    anchorOffset = -6
-                end
-            else
-                anchorOffset = -6
-            end
+            hasScrollbar = dropdownData.scrollable ~= nil and not scroll.scrollbar:IsHidden()
         else
-            contentWidth = contentWidth + SCROLLBAR_PADDING
-            anchorOffset = -SCROLLBAR_PADDING
-        end
-    else
-        if isMultiSelectionEnabled then
-            anchorOffset = -6
+            hasScrollbar = true
         end
     end
+
+    if hasScrollbar then
+        contentWidth = contentWidth + SCROLLBAR_PADDING
+        anchorOffset = -SCROLLBAR_PADDING
+    end
+
     local width = zo_max(contentWidth, dropdown.m_container:GetWidth())
     dropdownObject:SetWidth(width)
 
