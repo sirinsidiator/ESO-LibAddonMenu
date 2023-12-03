@@ -94,14 +94,17 @@ local function UpdateMultiSelectSelected(control, values)
 end
 
 local function CallMultiSelectSetFunc(control, values)
+    local data = control.data
     if values == nil then
         values = {}
+        local choicesValues = data.choicesValues
+        local usesChoicesValues = choicesValues ~= nil
         for _, entry in ipairs(control.dropdown:GetSelectedItemData()) do
-            local k = (entry.value ~= nil and entry.value) or entry.name
+            local k = (usesChoicesValues == true and entry.value) or entry.name
             values[#values + 1] = k
         end
     end
-    control.data.setFunc(values)
+    data.setFunc(values)
 end
 
 local function UpdateValue(control, forceDefault, value)
