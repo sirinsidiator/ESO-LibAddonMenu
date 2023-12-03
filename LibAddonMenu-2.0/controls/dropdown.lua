@@ -80,13 +80,17 @@ local function UpdateMultiSelectSelected(control, values)
     local choicesValues = data.choicesValues
     local usesChoicesValues = choicesValues ~= nil
 
-    for k, v in ipairs(values) do
+    for _, v in ipairs(values) do
         local toCompare = v
-        if usesChoicesValues == true then
+        if usesChoicesValues then
             toCompare = choicesValues[v]
         end
         dropdown:SetSelectedItemByEval(function(entry)
-            return (usesChoicesValues == true and entry.value == toCompare) or entry.name == toCompare
+            if usesChoicesValues then
+                return entry.value == toCompare
+            else
+                return entry.name == toCompare
+            end
         end, true)
     end
     dropdown:RefreshSelectedItemText()
