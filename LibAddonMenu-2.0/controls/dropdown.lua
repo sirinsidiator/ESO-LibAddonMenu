@@ -72,14 +72,13 @@ end
 
 local function UpdateMultiSelectSelected(control, values)
     local data = control.data
-    local choices = data.choices
-    local choicesValues = data.choicesValues
     assert(values ~= nil, string.format("[LAM2]Dropdown - Values for multiSelect %q are missing", control:GetName()))
-
-    local usesChoicesValues = choicesValues ~= nil
 
     local dropdown = control.dropdown
     dropdown.m_selectedItemData = {}
+
+    local choicesValues = data.choicesValues
+    local usesChoicesValues = choicesValues ~= nil
 
     for k, v in ipairs(values) do
         local toCompare = v
@@ -97,11 +96,13 @@ local function CallMultiSelectSetFunc(control, values)
     local data = control.data
     if values == nil then
         values = {}
-        local choicesValues = data.choicesValues
-        local usesChoicesValues = choicesValues ~= nil
+        local usesChoicesValues = data.choicesValues ~= nil
         for _, entry in ipairs(control.dropdown:GetSelectedItemData()) do
-            local k = (usesChoicesValues == true and entry.value) or entry.name
-            values[#values + 1] = k
+            if usesChoicesValues then
+                values[#values + 1] = entry.value
+            else
+                values[#values + 1] = entry.name
+            end
         end
     end
     data.setFunc(values)
