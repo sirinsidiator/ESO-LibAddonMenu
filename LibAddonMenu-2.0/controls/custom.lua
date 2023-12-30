@@ -9,7 +9,7 @@
     resetFunc = function(customControl) d("defaults reset") end, -- custom function to run after the control is reset to defaults (optional)
 } ]]
 
-local widgetVersion = 8
+local widgetVersion = 9
 local LAM = LibAddonMenu2
 if not LAM:RegisterWidget("custom", widgetVersion) then return end
 
@@ -31,8 +31,10 @@ function LAMCreateControl.custom(parent, customData, controlName)
 
     if control.isHalfWidth then --note these restrictions
         control:SetDimensionConstraints(width / 2, minHeight, width / 2, maxHeight)
+        control:SetResizeToFitConstrains(ANCHOR_CONSTRAINS_Y)
     else
         control:SetDimensionConstraints(width, minHeight, width, maxHeight)
+        control:SetResizeToFitConstrains(ANCHOR_CONSTRAINS_Y)
     end
 
     control.UpdateValue = UpdateValue
