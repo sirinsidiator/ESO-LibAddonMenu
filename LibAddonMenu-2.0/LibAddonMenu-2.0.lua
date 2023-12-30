@@ -121,7 +121,7 @@ local function CreateFAQTexture(control)
     faqControl.data.tooltipText = FAQ_ICON_TOOTIP_TEMPLATE:format(util.L.WEBSITE, helpUrl)
 
     faqControl:SetMouseEnabled(true)
-    local function onMouseExitFAQ(ctrl)
+    local function onMouseExitFAQ(ctrl, ...)
         ZO_Options_OnMouseExit(ctrl)
         ctrl:SetColor(FAQ_ICON_COLOR:UnpackRGBA())
         ctrl:SetAlpha(FAQ_ICON_MOUSE_EXIT_ALPHA)
