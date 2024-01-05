@@ -2,6 +2,7 @@
     type = "iconpicker",
     name = "My Icon Picker", -- or string id or function returning a string
     choices = {"texture path 1", "texture path 2", "texture path 3"},
+    useIndex = false, --boolean or function returning a boolean. If true: The setFunc/getFunc will use/return the index of the table choices. If false: The functions will use/return the texturePath value of table choices (optional)
     getFunc = function() return db.var end,
     setFunc = function(var) db.var = var doStuff() end,
     tooltip = "Color Picker's tooltip text.", -- or string id or function returning a string (optional)
@@ -21,7 +22,7 @@
     resetFunc = function(iconpickerControl) d("defaults reset") end, -- custom function to run after the control is reset to defaults (optional)
 } ]]
 
-local widgetVersion = 11
+local widgetVersion = 12
 local LAM = LibAddonMenu2
 if not LAM:RegisterWidget("iconpicker", widgetVersion) then return end
 
@@ -41,6 +42,7 @@ LAM.util.GetIconPickerMenu = function()
     end
     return iconPicker
 end
+local GetIconPickerMenu = LAM.util.GetIconPickerMenu
 
 function IconPickerMenu:New(...)
     local object = ZO_Object.New(self)
@@ -262,16 +264,17 @@ local function UpdateChoices(control, choices, choicesTooltips)
     if not choices then
         choices, choicesTooltips = data.choices, data.choicesTooltips or {}
     end
+    local useIndex = LAM.util.GetDefaultValue(data.useIndex)
     local addedChoices = {}
 
-    local iconPicker = LAM.util.GetIconPickerMenu()
+    local iconPicker = GetIconPickerMenu()
     iconPicker:Clear()
     for i = 1, #choices do
         local texture = choices[i]
         if not addedChoices[texture] then -- remove duplicates
-            iconPicker:AddIcon(choices[i], function(self, texture)
-                control.icon:SetTexture(texture)
-                data.setFunc(texture)
+            iconPicker:AddIcon(texture, function(self, lTexture)
+                control.icon:SetTexture(lTexture)
+                data.setFunc((not useIndex and lTexture) or i)
                 LAM.util.RequestRefreshIfNeeded(control)
             end, LAM.util.GetStringFromValue(choicesTooltips[i]))
             addedChoices[texture] = true
@@ -296,7 +299,7 @@ local function SetColor(control, color)
         icon:SetColor(icon.color:UnpackRGBA())
     end
 
-    local iconPicker = LAM.util.GetIconPickerMenu()
+    local iconPicker = GetIconPickerMenu()
     if iconPicker.parent == control.container and not iconPicker.control:IsHidden() then
         iconPicker:SetColor(icon.color)
     end
@@ -308,7 +311,7 @@ local function UpdateDisabled(control)
     control.dropdown:SetMouseEnabled(not disable)
     control.dropdownButton:SetEnabled(not disable)
 
-    local iconPicker = LAM.util.GetIconPickerMenu()
+    local iconPicker = GetIconPickerMenu()
     if iconPicker.parent == control.container and not iconPicker.control:IsHidden() then
         iconPicker:Clear()
     end
@@ -322,17 +325,21 @@ local function UpdateDisabled(control)
 end
 
 local function UpdateValue(control, forceDefault, value)
+    local data = control.data
+    local useIndex = LAM.util.GetDefaultValue(data.useIndex)
     if forceDefault then --if we are forcing defaults
-        value = LAM.util.GetDefaultValue(control.data.default)
-        control.data.setFunc(value)
-        control.icon:SetTexture(value)
+        value = LAM.util.GetDefaultValue(data.default)
+        data.setFunc(value)
+        local texturePath = (not useIndex and value) or data.choices[value]
+        control.icon:SetTexture(texturePath)
     elseif value then
-        control.data.setFunc(value)
+        data.setFunc(value)
         --after setting this value, let's refresh the others to see if any should be disabled or have their settings changed
         LAM.util.RequestRefreshIfNeeded(control)
     else
-        value = control.data.getFunc()
-        control.icon:SetTexture(value)
+        value = data.getFunc()
+        local texturePath = (not useIndex and value) or data.choices[value]
+        control.icon:SetTexture(texturePath)
     end
 end
 
@@ -353,7 +360,7 @@ local function SetIconSize(control, size)
         control:SetHeight(height)
     end
 
-    local iconPicker = LAM.util.GetIconPickerMenu()
+    local iconPicker = GetIconPickerMenu()
     if iconPicker.parent == control.container and not iconPicker.control:IsHidden() then
         iconPicker:SetIconSize(size)
         iconPicker:UpdateDimensions()
@@ -365,7 +372,7 @@ function LAMCreateControl.iconpicker(parent, iconpickerData, controlName)
     local control = LAM.util.CreateLabelAndContainerControl(parent, iconpickerData, controlName)
 
     local function ShowIconPicker()
-        local iconPicker = LAM.util.GetIconPickerMenu()
+        local iconPicker = GetIconPickerMenu()
         if iconPicker.parent == control.container then
             iconPicker:Clear()
         else
