@@ -547,6 +547,21 @@ local localization = {
         RELOAD_DIALOG_RELOAD_BUTTON = "Recarregar",
         RELOAD_DIALOG_DISCARD_BUTTON = "Descartar",
     },
+    tr = {
+        PANEL_NAME= "Eklentiler",
+        AUTHOR = string.format("%s: <<X:1>>", GetString(SI_ADDON_MANAGER_AUTHOR)), -- "Yazar: <<X:1>>"
+        VERSION = "Sürüm: <<X:1>>",
+        WEBSITE = "Web Sitesini Ziyaret Edin",
+        FEEDBACK = "Geri bildirim",
+        TRANSLATION = "Çeviri",
+        DONATION = "Bağış",
+        PANEL_INFO_FONT = "$(CHAT_FONT)|14|soft-shadow-thin",
+        RELOAD_UI_WARNING = "Bu ayarda yapılan değişikliklerin etkili olması için kullanıcı arayüzünün yeniden yüklenmesi gerekir.",
+        RELOAD_DIALOG_TITLE = "Kullanıcı Arayüzünün Yeniden Yüklenmesi Gerekli",
+        RELOAD_DIALOG_TEXT = "Bazı değişikliklerin etkili olması için kullanıcı arayüzünün yeniden yüklenmesi gerekir. Şimdi yeniden yüklemek mi yoksa değişiklikleri iptal etmek mi istiyorsunuz?",
+        RELOAD_DIALOG_RELOAD_BUTTON = "Yeniden Yükle",
+        RELOAD_DIALOG_DISCARD_BUTTON = "İptal et",
+    },
 }
 
 do
