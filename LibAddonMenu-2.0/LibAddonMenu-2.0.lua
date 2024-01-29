@@ -562,6 +562,21 @@ local localization = {
         RELOAD_DIALOG_RELOAD_BUTTON = "Yeniden Yükle",
         RELOAD_DIALOG_DISCARD_BUTTON = "İptal et",
     },
+    ua = {
+        PANEL_NAME = "Додатки",
+        AUTHOR = string.format("%s: <<X:1>>", GetString(SI_ADDON_MANAGER_AUTHOR)), -- "Автор: <<X:1>>"
+        VERSION = "Версія: <<X:1>>",
+        WEBSITE = "Відвідати вебсайт",
+        FEEDBACK = "Відгук",
+        TRANSLATION = "Переклад",
+        DONATION = "Підтримати",
+        PANEL_INFO_FONT = "$(CHAT_FONT)|14|soft-shadow-thin",
+        RELOAD_UI_WARNING = "Зміни цього параметра потребують перезавантаження інтерфейсу, аби вони набули чинності.",
+        RELOAD_DIALOG_TITLE = "Необхідне перезавантаження інтерфейсу",
+        RELOAD_DIALOG_TEXT = "Деякі зміни потребують перезавантаження інтерфейсу, аби вони набули чинності. Перезавантажити зараз чи бажаєте скасувати зміни?",
+        RELOAD_DIALOG_RELOAD_BUTTON = "Перезавантажити",
+        RELOAD_DIALOG_DISCARD_BUTTON = "Скасувати",
+    },
 }
 
 do
