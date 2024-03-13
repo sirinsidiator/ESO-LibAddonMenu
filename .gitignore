@@ -11,3 +11,6 @@ Thumbs.db
 /target
 /temp
 /.history
+
+# vscode
+/.vscode

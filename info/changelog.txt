@@ -1,3 +1,19 @@
+2.0 r36
+- added multiselect feature to dropdown control ([url=https://github.com/sirinsidiator/ESO-LibAddonMenu/pull/135]#135[/url], thanks Baertram)
+- fixed anchor constraint warnings in the interface.log ([url=https://github.com/sirinsidiator/ESO-LibAddonMenu/pull/136]#136[/url], thanks DakJaniels)
+- fixed a bug which could lead to some controls not getting created in some rare cases
+- updated for Scions of Ithelia
+
+2.0 r35
+- added "resetFunc" to each control type which gets called while resetting a panel to default values ([url=https://github.com/sirinsidiator/ESO-LibAddonMenu/pull/130]#130[/url], thanks Baertram)
+- added workaround for dropdown menus getting cut off when used inside submenus
+- updated for Secret of the Telvanni
+
+2.0 r34
+- added tooltips for header and description controls ([url=https://github.com/sirinsidiator/ESO-LibAddonMenu/pull/129]#129[/url], thanks remosito)
+- fixed old icons not being hidden when choices are updated on the icon picker (thanks Gandalf)
+- updated for High Isle
+
 2.0 r33
 - fixed dropdown widget choicesValues not accepting boolean "false" ([url=https://github.com/sirinsidiator/ESO-LibAddonMenu/pull/127]#127[/url], thanks Baertram)
 - switched to a new build system
