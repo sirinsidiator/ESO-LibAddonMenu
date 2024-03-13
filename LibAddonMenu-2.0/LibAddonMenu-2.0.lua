@@ -3,7 +3,7 @@
 ------------------------------------------------------------------
 
 
-local MAJOR, MINOR = "LibAddonMenu-2.0", _LAM2_VERSION_NUMBER or -1
+local MAJOR, MINOR = "LibAddonMenu-2.0", 36
 
 local lam
 if(not LibStub) then
@@ -1306,7 +1306,6 @@ do
     end
 end
 
-
 util.GetTooltipText = GetStringFromValue -- deprecated, use util.GetStringFromValue instead
 util.GetStringFromValue = GetStringFromValue
 util.GetDefaultValue = GetDefaultValue
@@ -1635,6 +1634,7 @@ local function CreateOptionsControls(panel)
         local function SetupCreationCalls(parent, widgetDataTable)
             fifo[#fifo + 1] = PrepareForNextPanel
             local count = #widgetDataTable
+
             for i = 1, zo_ceil(count / THROTTLE_COUNT) do
                 fifo[#fifo + 1] = function()
                     local startIndex = (i - 1) * THROTTLE_COUNT + 1
