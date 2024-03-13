@@ -13,7 +13,7 @@
 } ]]
 
 
-local widgetVersion = 13
+local widgetVersion = 14
 local LAM = LibAddonMenu2
 if not LAM:RegisterWidget("description", widgetVersion) then return end
 
@@ -53,8 +53,10 @@ function LAMCreateControl.description(parent, descriptionData, controlName)
 
     if isHalfWidth then
         control:SetDimensionConstraints(width / 2, 0, width / 2, 0)
+        control:SetResizeToFitConstrains(ANCHOR_CONSTRAINS_Y)
     else
         control:SetDimensionConstraints(width, 0, width, 0)
+        control:SetResizeToFitConstrains(ANCHOR_CONSTRAINS_Y)
     end
 
     control.desc = wm:CreateControl(nil, control, CT_LABEL)

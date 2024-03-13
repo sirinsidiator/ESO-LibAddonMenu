@@ -829,7 +829,7 @@ local function CreateFAQTexture(control)
     faqControl.data.tooltipText = FAQ_ICON_TOOTIP_TEMPLATE:format(util.L.WEBSITE, helpUrl)
 
     faqControl:SetMouseEnabled(true)
-    local function onMouseExitFAQ(ctrl)
+    local function onMouseExitFAQ(ctrl, ...)
         ZO_Options_OnMouseExit(ctrl)
         ctrl:SetColor(FAQ_ICON_COLOR:UnpackRGBA())
         ctrl:SetAlpha(FAQ_ICON_MOUSE_EXIT_ALPHA)
@@ -1635,9 +1635,11 @@ local function CreateOptionsControls(panel)
         local function SetupCreationCalls(parent, widgetDataTable)
             fifo[#fifo + 1] = PrepareForNextPanel
             local count = #widgetDataTable
-            for i = 1, count, THROTTLE_COUNT do
+            for i = 1, zo_ceil(count / THROTTLE_COUNT) do
                 fifo[#fifo + 1] = function()
-                    CreateWidgetsInPanel(parent, widgetDataTable, i, zo_min(i + THROTTLE_COUNT - 1, count))
+                    local startIndex = (i - 1) * THROTTLE_COUNT + 1
+                    local endIndex = zo_min(i * THROTTLE_COUNT, count)
+                    CreateWidgetsInPanel(parent, widgetDataTable, startIndex, endIndex)
                 end
             end
             return count ~= NonContiguousCount(widgetDataTable)
