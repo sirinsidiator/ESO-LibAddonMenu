@@ -24,7 +24,7 @@
 } ]]
 
 
-local widgetVersion = 26
+local widgetVersion = 27
 local LAM = LibAddonMenu2
 if not LAM:RegisterWidget("dropdown", widgetVersion) then return end
 
@@ -173,14 +173,14 @@ local function HideTooltip()
 end
 
 local function SetupTooltips(comboBox)
-    SecurePostHook("ZO_ComboBox_Entry_OnMouseEnter", function(comboBoxRowCtrl)
+    SecurePostHook(ZO_ComboBoxDropdown_Keyboard, "OnEntryMouseEnter", function(comboBoxRowCtrl)
         local lComboBox = comboBoxRowCtrl.m_owner
         if lComboBox ~= nil and lComboBox == comboBox then
             ShowTooltip(comboBoxRowCtrl)
         end
     end)
 
-    SecurePostHook("ZO_ComboBox_Entry_OnMouseExit", function(comboBoxCtrl)
+    SecurePostHook(ZO_ComboBoxDropdown_Keyboard, "OnEntryMouseExit", function(comboBoxCtrl)
         HideTooltip()
     end)
 end
