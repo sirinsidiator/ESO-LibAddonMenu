@@ -76,6 +76,7 @@ local function UpdateMultiSelectSelected(control, values)
 
     local dropdown = control.dropdown
     dropdown.m_selectedItemData = {}
+    dropdown.m_multiSelectItemData = {}
 
     local choicesValues = data.choicesValues
     local usesChoicesValues = choicesValues ~= nil
