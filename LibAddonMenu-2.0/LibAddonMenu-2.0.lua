@@ -2,8 +2,7 @@
 -- Distributed under The Artistic License 2.0 (see LICENSE)     --
 ------------------------------------------------------------------
 
-
-local MAJOR, MINOR = "LibAddonMenu-2.0", 36
+local MAJOR, MINOR = "LibAddonMenu-2.0", _LAM2_VERSION_NUMBER or -1
 
 local lam
 if(not LibStub) then
