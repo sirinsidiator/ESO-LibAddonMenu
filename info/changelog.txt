@@ -1,3 +1,9 @@
+2.0 r37
+- added Turkish and Ukrainian translations ([url=https://github.com/sirinsidiator/ESO-LibAddonMenu/pull/137]#137[/url], thanks Sharlikran)
+- fixed multi-select dropdowns not showing selected entries correctly ([url=https://github.com/sirinsidiator/ESO-LibAddonMenu/pull/140]#140[/url], thanks MycroftJr)
+- fixed dropdown choice tooltips not working correctly (thanks Calamath)
+- updated for Gold Road
+
 2.0 r36
 - added multiselect feature to dropdown control ([url=https://github.com/sirinsidiator/ESO-LibAddonMenu/pull/135]#135[/url], thanks Baertram)
 - fixed anchor constraint warnings in the interface.log ([url=https://github.com/sirinsidiator/ESO-LibAddonMenu/pull/136]#136[/url], thanks DakJaniels)
