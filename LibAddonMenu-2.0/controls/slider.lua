@@ -1,27 +1,23 @@
---[[sliderData = {
-    type = "slider",
-    name = "My Slider", -- or string id or function returning a string
-    getFunc = function() return db.var end,
-    setFunc = function(value) db.var = value doStuff() end,
-    min = 0,
-    max = 20,
-    step = 1, -- (optional)
-    clampInput = true, -- boolean, if set to false the input won't clamp to min and max and allow any number instead (optional)
-    clampFunction = function(value, min, max) return math.max(math.min(value, max), min) end, -- function that is called to clamp the value (optional)
-    decimals = 0, -- when specified the input value is rounded to the specified number of decimals (optional)
-    autoSelect = false, -- boolean, automatically select everything in the text input field when it gains focus (optional)
-    inputLocation = "below", -- or "right", determines where the input field is shown. This should not be used within the addon menu and is for custom sliders (optional) 
-    readOnly = true, -- boolean, you can use the slider, but you can't insert a value manually (optional)
-    tooltip = "Slider's tooltip text.", -- or string id or function returning a string (optional)
-    width = "full", -- or "half" (optional)
-    disabled = function() return db.someBooleanSetting end, --or boolean (optional)
-    warning = "May cause permanent awesomeness.", -- or string id or function returning a string (optional)
-    requiresReload = false, -- boolean, if set to true, the warning text will contain a notice that changes are only applied after an UI reload and any change to the value will make the "Apply Settings" button appear on the panel which will reload the UI when pressed (optional)
-    default = defaults.var, -- default value or function that returns the default value (optional)
-    helpUrl = "https://www.esoui.com/portal.php?id=218&a=faq", -- a string URL or a function that returns the string URL (optional)
-    reference = "MyAddonSlider", -- unique global reference to control (optional)
-    resetFunc = function(sliderControl) d("defaults reset") end, -- custom function to run after the control is reset to defaults (optional)
-} ]]
+---@class LAM2_SliderData: LAM2_LabelAndContainerControlData
+---@field type "slider"
+---@field getFunc fun(): number ex. function() return db.var end
+---@field setFunc fun(value: number) ex. function(value) db.var = value doStuff() end
+---@field min number ex. 0
+---@field max number ex. 20
+---@field step nil|number default 1
+---@field clampInput nil|boolean if set to false the input won't clamp to min and max and allow any number instead
+---@field clampFunction nil|fun(value: number, min: number, max: number) function that is called to clamp the value ex. function(value, min, max) return math.max(math.min(value, max), min) end
+---@field decimals nil|integer when specified the input value is rounded to the specified number of decimals ex. 0
+---@field autoSelect nil|boolean automatically select everything in the text input field when it gains focus
+---@field inputLocation nil|"right" if not "right", the input field will be below. This should not be used within the addon menu and is for custom sliders
+---@field readOnly nil|boolean if true, you can use the slider, but you can't insert a value manually
+---@field disabled nil|boolean|fun(): boolean ex. function() return db.someBooleanSetting
+---@field warning nil|Stringy ex. "May cause permanent awesomeness"
+---@field requiresReload nil|boolean if set to true, the warning text will contain a notice that changes are only applied after an UI reload and any change to the value will make the "Apply Settings" button appear on the panel which will reload the UI when pressed.
+---@field default nil|number|fun(): number default value or function that returns the default value
+---@field helpUrl nil|Stringy ex. "https://www.esoui.com/portal.php?id=218&a=faq"
+---@field resetFunc nil|fun(sliderControl: LAM2_Slider) custom function to run after the control is reset to defaults ex. function(sliderControl) d("defaults reset") end
+
 
 local widgetVersion = 16
 local LAM = LibAddonMenu2
@@ -86,12 +82,15 @@ local function UpdateValue(control, forceDefault, value)
 end
 
 local index = 1
+---@param sliderData LAM2_SliderData
 function LAMCreateControl.slider(parent, sliderData, controlName)
+    ---@class LAM2_Slider: LAM2_LabelAndContainerControl
     local control = LAM.util.CreateLabelAndContainerControl(parent, sliderData, controlName)
     local isInputOnRight = sliderData.inputLocation == "right"
 
     --skipping creating the backdrop...  Is this the actual slider texture?
     control.slider = wm:CreateControl(nil, control.container, CT_SLIDER)
+    ---@class SliderControl2: SliderControl
     local slider = control.slider
     slider:SetAnchor(TOPLEFT)
     slider:SetHeight(14)
@@ -110,24 +109,24 @@ function LAMCreateControl.slider(parent, sliderData, controlName)
     slider:SetHandler("OnMouseEnter", function() ZO_Options_OnMouseEnter(control) end)
     slider:SetHandler("OnMouseExit", function() ZO_Options_OnMouseExit(control) end)
 
-    slider.bg = wm:CreateControl(nil, slider, CT_BACKDROP)
+    slider.bg = wm:CreateControl(nil, slider, CT_BACKDROP) --[[@as BackdropControl]]
     local bg = slider.bg
     bg:SetCenterColor(0, 0, 0)
     bg:SetAnchor(TOPLEFT, slider, TOPLEFT, 0, 4)
     bg:SetAnchor(BOTTOMRIGHT, slider, BOTTOMRIGHT, 0, -4)
     bg:SetEdgeTexture("EsoUI\\Art\\Tooltips\\UI-SliderBackdrop.dds", 32, 4)
 
-    control.minText = wm:CreateControl(nil, slider, CT_LABEL)
+    control.minText = wm:CreateControl(nil, slider, CT_LABEL) --[[@as LabelControl]]
     local minText = control.minText
     minText:SetFont("ZoFontGameSmall")
     minText:SetAnchor(TOPLEFT, slider, BOTTOMLEFT)
-    minText:SetText(sliderData.min)
+    minText:SetText(tostring(sliderData.min))
 
-    control.maxText = wm:CreateControl(nil, slider, CT_LABEL)
+    control.maxText = wm:CreateControl(nil, slider, CT_LABEL) --[[@as LabelControl]]
     local maxText = control.maxText
     maxText:SetFont("ZoFontGameSmall")
     maxText:SetAnchor(TOPRIGHT, slider, BOTTOMRIGHT)
-    maxText:SetText(sliderData.max)
+    maxText:SetText(tostring(sliderData.max))
 
     control.slidervalueBG = wm:CreateControlFromVirtual(nil, slider, "ZO_EditBackdrop")
     if(isInputOnRight) then
@@ -137,7 +136,7 @@ function LAMCreateControl.slider(parent, sliderData, controlName)
         control.slidervalueBG:SetDimensions(50, 16)
         control.slidervalueBG:SetAnchor(TOP, slider, BOTTOM, 0, 0)
     end
-    control.slidervalue = wm:CreateControlFromVirtual(nil, control.slidervalueBG, "ZO_DefaultEditForBackdrop")
+    control.slidervalue = wm:CreateControlFromVirtual(nil, control.slidervalueBG, "ZO_DefaultEditForBackdrop") --[[@as EditControl]]
     local slidervalue = control.slidervalue
     slidervalue:ClearAnchors()
     slidervalue:SetAnchor(TOPLEFT, control.slidervalueBG, TOPLEFT, 3, 1)

@@ -1,16 +1,11 @@
---[[descriptionData = {
-    type = "description",
-    text = "My description text to display.", -- or string id or function returning a string
-    title = "My Title", -- or string id or function returning a string (optional)
-    tooltip = "My Tooltip", -- or string id or function returning a string (optional)
-    width = "full", -- or "half" (optional)
-    disabled = function() return db.someBooleanSetting end, -- or boolean (optional)
-    enableLinks = nil, -- or true for default tooltips, or function OnLinkClicked handler (optional)
-                       -- see: https://wiki.esoui.com/UI_XML#OnLinkClicked
-    helpUrl = "https://www.esoui.com/portal.php?id=218&a=faq", -- a string URL or a function that returns the string URL (optional)
-    reference = "MyAddonDescription", -- unique global reference to control (optional)
-    resetFunc = function(descriptionControl) d("defaults reset") end, -- custom function to run after the control is reset to defaults (optional)
-} ]]
+---@class LAM2_DescriptionData: LAM2_LabelAndContainerControlData
+---@field type "description"
+---@field text Stringy ex. "My description text to display."
+---@field title nil|Stringy ex. "My Title"
+---@field disabled nil|boolean|fun(): boolean ex. function() return db.someBooleanSetting end
+---@field enableLinks nil|true|fun(self, linkData, linkText, button, ctrl, alt, shift, command) true for default tooltips, or function OnLinkClicked handler (see: https://wiki.esoui.com/UI_XML#OnLinkClicked)
+---@field helpUrl nil|Stringy ex. "https://www.esoui.com/portal.php?id=218&a=faq"
+---@field resetFunc nil|fun(descriptionControl: LAM2_Description) custom function to run after the control is reset to defaults ex. function(descriptionControl) d("defaults reset") end
 
 
 local widgetVersion = 14
@@ -46,6 +41,7 @@ local function UpdateValue(control)
 end
 
 function LAMCreateControl.description(parent, descriptionData, controlName)
+    ---@class LAM2_Description: LAM2_BaseControl
     local control = LAM.util.CreateBaseControl(parent, descriptionData, controlName)
     local isHalfWidth = control.isHalfWidth
     local width = control:GetWidth()
@@ -59,7 +55,8 @@ function LAMCreateControl.description(parent, descriptionData, controlName)
         control:SetResizeToFitConstrains(ANCHOR_CONSTRAINS_Y)
     end
 
-    control.desc = wm:CreateControl(nil, control, CT_LABEL)
+    control.desc = wm:CreateControl(nil, control, CT_LABEL) --[[@as LabelControl]]
+    ---@class ControlDesc: LabelControl, ControlWithData
     local desc = control.desc
     desc:SetVerticalAlignment(TEXT_ALIGN_TOP)
     desc:SetFont("ZoFontGame")
@@ -68,7 +65,7 @@ function LAMCreateControl.description(parent, descriptionData, controlName)
     LAM.util.SetUpTooltip(desc, descriptionData)
 
     if descriptionData.title then
-        control.title = wm:CreateControl(nil, control, CT_LABEL)
+        control.title = wm:CreateControl(nil, control, CT_LABEL) --[[@as LabelControl]]
         local title = control.title
         title:SetWidth(isHalfWidth and width / 2 or width)
         title:SetAnchor(TOPLEFT, control, TOPLEFT)

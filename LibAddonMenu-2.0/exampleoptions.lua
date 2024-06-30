@@ -1,3 +1,4 @@
+---@type LAM2_PanelData
 local panelData = {
     type = "panel",
     name = "Window Title",
@@ -9,12 +10,15 @@ local panelData = {
     registerForDefaults = true,	--boolean (optional) (will set all options controls back to default values)
 }
 
+---@type LAM2_ControlData[]
 local optionsTable = {
+    ---@type LAM2_HeaderData
     [1] = {
         type = "header",
         name = "My Header",
         width = "full",	--or "half" (optional)
     },
+    ---@type LAM2_DescriptionData
     [2] = {
         type = "description",
         --title = "My Title",	--(optional)
@@ -22,6 +26,7 @@ local optionsTable = {
         text = "My description text to display. blah blah blah blah blah blah blah - even more sample text!!",
         width = "full",	--or "half" (optional)
     },
+    ---@type LAM2_SingleSelectDropdownData
     [3] = {
         type = "dropdown",
         name = "My Dropdown",
@@ -32,6 +37,7 @@ local optionsTable = {
         width = "half",	--or "full" (optional)
         warning = "Will need to reload the UI.",	--(optional)
     },
+    ---@type LAM2_DropdownData
     [4] = {
         type = "dropdown",
         name = "My Dropdown",
@@ -42,6 +48,7 @@ local optionsTable = {
         width = "half",	--or "full" (optional)
         warning = "Will need to reload the UI.",	--(optional)
     },
+    ---@type LAM2_SliderData
     [5] = {
         type = "slider",
         name = "My Slider",
@@ -54,6 +61,7 @@ local optionsTable = {
         width = "half",	--or "full" (optional)
         default = 5,	--(optional)
     },
+    ---@type LAM2_ButtonData
     [6] = {
         type = "button",
         name = "My Button",
@@ -62,11 +70,13 @@ local optionsTable = {
         width = "half",	--or "full" (optional)
         warning = "Will need to reload the UI.",	--(optional)
     },
+    ---@type LAM2_SubmenuData
     [7] = {
         type = "submenu",
         name = "Submenu Title",
         tooltip = "My submenu tooltip",	--(optional)
         controls = {
+            ---@type LAM2_CheckboxData
             [1] = {
                 type = "checkbox",
                 name = "My Checkbox",
@@ -76,6 +86,7 @@ local optionsTable = {
                 width = "half",	--or "full" (optional)
                 warning = "Will need to reload the UI.",	--(optional)
             },
+            ---@type LAM2_ColorPickerData
             [2] = {
                 type = "colorpicker",
                 name = "My Color Picker",
@@ -85,6 +96,7 @@ local optionsTable = {
                 width = "half",	--or "full" (optional)
                 warning = "warning text",
             },
+            ---@type LAM2_EditboxData
             [3] = {
                 type = "editbox",
                 name = "My Editbox",
@@ -104,6 +116,7 @@ local optionsTable = {
         refreshFunc = function(customControl) end,	--(optional) function to call when panel/controls refresh
         width = "half",	--or "full" (optional)
     },
+    ---@type LAM2_TextureData
     [9] = {
         type = "texture",
         image = "EsoUI\\Art\\ActionBar\\abilityframe64_up.dds",

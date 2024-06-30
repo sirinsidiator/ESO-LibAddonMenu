@@ -1,27 +1,39 @@
---[[dropdownData = {
-    type = "dropdown",
-    name = "My Dropdown", -- or string id or function returning a string
-    choices = {"table", "of", "choices"},
-    choicesValues = {"foo", 2, "three"}, -- if specified, these values will get passed to setFunc instead (optional)
-    getFunc = function() return db.var end, -- if multiSelect is true the getFunc must return a table
-    setFunc = function(var) db.var = var doStuff() end, -- if multiSelect is true the setFunc's var must be a table
-    tooltip = "Dropdown's tooltip text.", -- or string id or function returning a string (optional)
-    choicesTooltips = {"tooltip 1", "tooltip 2", "tooltip 3"}, -- or array of string ids or array of functions returning a string (optional)
-    sort = "name-up", -- or "name-down", "numeric-up", "numeric-down", "value-up", "value-down", "numericvalue-up", "numericvalue-down" (optional) - if not provided, list will not be sorted
-    width = "full", -- or "half" (optional)
-    scrollable = true, -- boolean or number, if set the dropdown will feature a scroll bar if there are a large amount of choices and limit the visible lines to the specified number or 10 if true is used (optional)
-    disabled = function() return db.someBooleanSetting end, -- or boolean (optional)
-    warning = "May cause permanent awesomeness.", -- or string id or function returning a string (optional)
-    requiresReload = false, -- boolean, if set to true, the warning text will contain a notice that changes are only applied after an UI reload and any change to the value will make the "Apply Settings" button appear on the panel which will reload the UI when pressed (optional)
-    default = defaults.var, -- default value or function that returns the default value (optional)
-    helpUrl = "https://www.esoui.com/portal.php?id=218&a=faq", -- a string URL or a function that returns the string URL (optional)
-    reference = "MyAddonDropdown", -- unique global reference to control (optional)
-    resetFunc = function(dropdownControl) d("defaults reset") end, -- custom function to run after the control is reset to defaults (optional)
-    multiSelect = false, -- boolean or function returning a boolean. If set to true you can select multiple entries at the list (optional)
-    multiSelectTextFormatter = SI_COMBO_BOX_DEFAULT_MULTISELECTION_TEXT_FORMATTER, -- or string id or function returning a string. If specified, this will be used with zo_strformat(multiSelectTextFormatter, numSelectedItems) to set the "selected item text". Only incombination with multiSelect = true (optional)
-    multiSelectNoSelectionText = SI_COMBO_BOX_DEFAULT_NO_SELECTION_TEXT, -- or string id or function returning a string. Only incombination with multiSelect = true (optional)
-    multiSelectMaxSelections = 5, --Number or function returning a number of the maximum of selectable entries. If not specified there is no max selection. Only incombination with multiSelect = true (optional)
-} ]]
+---@alias LAM2_SortType "name-up"|"name-down"|"numeric-up"|"numeric-down"|"value-up"|"value-down"|"numericvalue-up"|"numericvalue-down"
+
+---@class LAM2_DropdownData: LAM2_LabelAndContainerControlData
+---@field type "dropdown"
+---@field choices string[] ex. {"table", "of", "choices"}
+---@field getFunc fun(): string|string[] ex. function() return db.var end
+---@field setFunc fun(var: string|string[]) ex. function(var) db.var = var doStuff() end
+---@field choicesValues nil|any[] if specified, these values will get passed to setFunc instead ex. {"foo", 2, "three"}
+---@field choicesTooltips nil|Stringy[] ex. {"tooltip 1", "tooltip 2", "tooltip 3"}
+---@field sort nil|LAM2_SortType if not provided, list will not be sorted
+---@field scrollable nil|boolean|integer if set the dropdown will feature a scroll bar if there are a large amount of choices and limit the visible lines to the specified number or 10 if true is used
+---@field disabled nil|boolean|fun(): boolean ex. function() return db.someBooleanSetting end
+---@field warning nil|Stringy ex. "May cause permanent awesomeness"
+---@field requiresReload nil|boolean if set to true, the warning text will contain a notice that changes are only applied after a UI reload and any change to the value will make the "Apply Settings" button appear on the panel which will reload the UI when pressed
+---@field default nil|string|string[]|fun(): (string|string[]) default value or function that returns the default value
+---@field helpUrl nil|Stringy ex. "https://www.esoui.com/portal.php?id=218&a=faq"
+---@field resetFunc nil|fun(dropdownControl: LAM2_Dropdown) custom function to run after the control is reset to defaults ex. function(dropdownControl) d("defaults reset") end
+---@field multiSelect nil|boolean|fun(): boolean if set to true, you can have multiple entries selected at the same time
+---@field multiSelectTextFormatter nil|Stringy If specified, this will be used with zo_strformat(multiSelectTextFormatter, numSelectedItems) to set the "selected item text". Only in combination with multiSelect = true. ex SI_COMBO_BOX_DEFAULT_MULTISELECTION_TEXT_FORMATTER
+---@field multiSelectNoSelectionText nil|Stringy Only incombination with multiSelect = true. ex. SI_COMBO_BOX_DEFAULT_NO_SELECTION_TEXT
+---@field multiSelectMaxSelections nil|integer|fun(): integer The maximum number of entries that can be selected at once. If not specified there is no limit. Only incombination with multiSelect = true. ex. 5
+
+---@class LAM2_SingleSelectDropdownData: LAM2_DropdownData
+---@field multiSelect nil
+---@field getFunc fun(): string
+---@field setFunc fun(var: string)
+---@field default nil|string|fun(): string
+---@field multiSelectTextFormatter nil
+---@field multiSelectNoSelectionText nil
+---@field multiSelectMaxSelections nil
+
+---@class LAM2_MultiSelectDropdownData: LAM2_DropdownData
+---@field multiSelect true
+---@field getFunc fun(): string[]
+---@field setFunc fun(var: string[])
+---@field default nil|string[]|fun(): string[]
 
 
 local widgetVersion = 27
@@ -160,6 +172,8 @@ local function DoShowTooltip(control, tooltip)
     if tooltipText ~= nil and tooltipText ~= "" then
         InitializeTooltip(InformationTooltip, control, TOPLEFT, 0, 0, BOTTOMRIGHT)
         SetTooltipText(InformationTooltip, tooltipText)
+        ---@type TopLevelWindow
+        InformationTooltipTopLevel = InformationTooltipTopLevel
         InformationTooltipTopLevel:BringWindowToTop()
     end
 end
@@ -190,9 +204,9 @@ local function UpdateChoices(control, choices, choicesValues, choicesTooltips)
     ZO_ClearTable(control.choices)
 
     --build new list of choices
-    local choices = choices or control.data.choices
-    local choicesValues = choicesValues or control.data.choicesValues
-    local choicesTooltips = choicesTooltips or control.data.choicesTooltips
+    choices = choices or control.data.choices
+    choicesValues = choicesValues or control.data.choicesValues
+    choicesTooltips = choicesTooltips or control.data.choicesTooltips
 
     if choicesValues then
         assert(#choices == #choicesValues, "choices and choicesValues need to have the same size")
@@ -216,10 +230,13 @@ local function UpdateChoices(control, choices, choicesValues, choicesTooltips)
         if entryValue == nil then entryValue = entry.name end
         control.choices[entryValue] = entry.name
 
-        control.dropdown:AddItem(entry, not control.data.sort and ZO_COMBOBOX_SUPRESS_UPDATE) --if sort type/order isn't specified, then don't sort
+        -- why the "and 2" at the end?
+        control.dropdown:AddItem(entry, not control.data.sort and ZO_COMBOBOX_SUPPRESS_UPDATE) --if sort type/order isn't specified, then don't sort
     end
 end
 
+---@param sortInfo LAM2_SortType
+---@return ["name"|"numeric"|"value"|"numericvalue", "up"|"down"]
 local function GrabSortingInfo(sortInfo)
     local t, i = {}, 1
     for info in string.gmatch(sortInfo, "([^%-]+)") do
@@ -269,10 +286,11 @@ local function SetDropdownHeight(control, dropdown, dropdownData)
     return visibleRows, min, max
 end
 
+---@param dropdown ZO_ComboBox
 local function CalculateContentWidth(dropdown)
     local dataType = ZO_ScrollList_GetDataTypeTable(dropdown.m_scroll, 1)
 
-    local dummy = dataType.pool:AcquireObject()
+    local dummy = dataType.pool:AcquireObject() --[[@as ZO_ComboBoxDropdown_Keyboard_Entry]]
     local item = {
         m_owner = dropdown,
         name = "Dummy"
@@ -298,10 +316,13 @@ local function CalculateContentWidth(dropdown)
     return maxWidth
 end
 
+---@param control LAM2_Dropdown
+---@param dropdown ZO_ComboBox
+---@param dropdownData LAM2_DropdownData
 local function AdjustDimensions(control, dropdown, dropdownData)
     local numItems = #dropdown.m_sortedItems
     local dropdownObject = dropdown.m_dropdown
-    local scroll = dropdownObject:GetNamedChild("Scroll")
+    local scroll = dropdownObject:GetNamedChild("Scroll") --[[@as ZO_ScrollList]]
     local scrollContent = scroll:GetNamedChild("Contents")
     local anchorOffset = 0
 
@@ -358,8 +379,9 @@ local function OnMultiSelectComboBoxMouseUp(control, combobox, button, upInside,
     end
 end
 
-
+---@param dropdownData LAM2_DropdownData
 function LAMCreateControl.dropdown(parent, dropdownData, controlName)
+    ---@class LAM2_Dropdown: LAM2_LabelAndContainerControl
     local control = LAM.util.CreateLabelAndContainerControl(parent, dropdownData, controlName)
     control.choices = {}
 
@@ -371,7 +393,7 @@ function LAMCreateControl.dropdown(parent, dropdownData, controlName)
     end
     local comboboxCount = (countControl.comboboxCount or 0) + 1
     countControl.comboboxCount = comboboxCount
-    control.combobox = wm:CreateControlFromVirtual(zo_strjoin(nil, name, "Combobox", comboboxCount), control.container, "ZO_ComboBox")
+    control.combobox = wm:CreateControlFromVirtual(zo_strjoin(nil, name, "Combobox", comboboxCount), control.container, "ZO_ComboBox") --[[@as ZO_ComboBox_Control]]
 
     local combobox = control.combobox
     combobox:SetAnchor(TOPLEFT)
@@ -423,7 +445,7 @@ function LAMCreateControl.dropdown(parent, dropdownData, controlName)
         local sortInfo = GrabSortingInfo(dropdownData.sort)
         control.m_sortType, control.m_sortOrder = SORT_TYPES[sortInfo[1]], SORT_ORDERS[sortInfo[2]]
     elseif dropdownData.choicesValues then
-        control.m_sortType, control.m_sortOrder = ZO_SORT_ORDER_UP, SORT_BY_VALUE
+        control.m_sortType, control.m_sortOrder = SORT_BY_VALUE, ZO_SORT_ORDER_UP
     end
 
     if dropdownData.warning ~= nil or dropdownData.requiresReload then
