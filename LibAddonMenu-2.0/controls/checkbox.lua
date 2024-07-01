@@ -1,18 +1,13 @@
---[[checkboxData = {
-    type = "checkbox",
-    name = "My Checkbox", -- or string id or function returning a string
-    getFunc = function() return db.var end,
-    setFunc = function(value) db.var = value doStuff() end,
-    tooltip = "Checkbox's tooltip text.", -- or string id or function returning a string (optional)
-    width = "full", -- or "half" (optional)
-    disabled = function() return db.someBooleanSetting end, -- or boolean (optional)
-    warning = "May cause permanent awesomeness.", -- or string id or function returning a string (optional)
-    requiresReload = false, -- boolean, if set to true, the warning text will contain a notice that changes are only applied after an UI reload and any change to the value will make the "Apply Settings" button appear on the panel which will reload the UI when pressed (optional)
-    default = defaults.var, -- a boolean or function that returns a boolean (optional)
-    helpUrl = "https://www.esoui.com/portal.php?id=218&a=faq", -- a string URL or a function that returns the string URL (optional)
-    reference = "MyAddonCheckbox", -- unique global reference to control (optional)
-    resetFunc = function(checkboxControl) d("defaults reset") end, -- custom function to run after the control is reset to defaults (optional)
-} ]]
+---@class LAM2_CheckboxData: LAM2_LabelAndContainerControlData
+---@field type "checkbox"
+---@field getFunc fun(): boolean ex. function() return db.var end
+---@field setFunc fun(boolean) ex. function(value) db.var = value doStuff() end
+---@field disabled nil|boolean|fun(): boolean ex. function() return db.someBooleanSetting
+---@field warning nil|Stringy ex. "May cause permanent awesomeness"
+---@field requiresReload nil|boolean if set to true, the warning text will contain a notice that changes are only applied after an UI reload and any change to the value will make the "Apply Settings" button appear on the panel which will reload the UI when pressed.
+---@field default nil|boolean|fun(): boolean ex. defaults.var
+---@field helpUrl nil|Stringy ex. "https://www.esoui.com/portal.php?id=218&a=faq"
+---@field resetFunc nil|fun(checkboxControl: LAM2_Checkbox) custom function to run after the control is reset to defaults ex. function(checkboxControl) d("defaults reset") end
 
 
 local widgetVersion = 15
@@ -101,8 +96,10 @@ local function OnMouseExit(control)
     control.checkbox:SetColor(ZO_NORMAL_TEXT:UnpackRGBA())
 end
 
---controlName is optional
+---@param checkboxData LAM2_CheckboxData
+---@param controlName string|nil
 function LAMCreateControl.checkbox(parent, checkboxData, controlName)
+    ---@class LAM2_Checkbox: LAM2_LabelAndContainerControl
     local control = LAM.util.CreateLabelAndContainerControl(parent, checkboxData, controlName)
     control:SetHandler("OnMouseEnter", OnMouseEnter)
     control:SetHandler("OnMouseExit", OnMouseExit)
@@ -113,7 +110,7 @@ function LAMCreateControl.checkbox(parent, checkboxData, controlName)
         control:UpdateValue(false, control.value)
     end)
 
-    control.checkbox = wm:CreateControl(nil, control.container, CT_LABEL)
+    control.checkbox = wm:CreateControl(nil, control.container, CT_LABEL) --[[@as LabelControl]]
     local checkbox = control.checkbox
     checkbox:SetAnchor(LEFT, control.container, LEFT, 0, 0)
     checkbox:SetFont("ZoFontGameBold")

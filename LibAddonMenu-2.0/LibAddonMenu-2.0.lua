@@ -5,6 +5,22 @@
 
 local MAJOR, MINOR = "LibAddonMenu-2.0", _LAM2_VERSION_NUMBER or -1
 
+---@alias Stringy string|fun():string|SafeStringKey a string id, string, or function returning a string
+
+---@class LAM2_ControlData
+---@field type "button"|"checkbox"|"colorpicker"|"custom"|"description"|"divider"|"dropdown"|"editbox"|"header"|"iconpicker"|"panel"|"slider"|"submenu"|"texture"
+---@field name nil|Stringy
+
+---@class LAM2_BaseControlData: LAM2_ControlData
+---@field width nil|"full"|"half" default "full"
+---@field reference nil|string a unique global reference to the created control ex. "MyAddonButton"
+
+---@class LAM2_LabelAndContainerControlData: LAM2_BaseControlData
+---@field tooltip nil|Stringy ex. "Button's tooltip text."
+---@field tooltipText nil|string
+
+---@class LAM2_Control: Control
+
 local lam
 if(not LibStub) then
     lam = {}
@@ -42,6 +58,7 @@ else
     logger = setmetatable({}, { __index = function() return noop end })
 end
 
+---@diagnostic disable-next-line: undefined-global
 if LAMSettingsPanelCreated and not LAMCompatibilityWarning then
     PrintLater("An old version of LibAddonMenu with compatibility issues was detected. For more information on how to proceed search for LibAddonMenu on esoui.com")
     LAMCompatibilityWarning = true
@@ -64,6 +81,7 @@ local LAM_DEFAULTS_DIALOG = "LAM_DEFAULTS"
 local LAM_RELOAD_DIALOG = "LAM_RELOAD_DIALOG"
 
 local addonsForList = {}
+---@type table<string, LAM2_ControlData[]>
 local addonToOptionsMap = {}
 local optionsState = {}
 lam.widgets = lam.widgets or {}
@@ -106,6 +124,7 @@ local function CreateFAQTexture(control)
     local helpUrl = controlData and GetStringFromValue(controlData.helpUrl)
     if not helpUrl or helpUrl == "" then return end
 
+    ---@class FAQControl: TextureControl
     local faqControl = wm:CreateControl(nil, control, CT_TEXTURE)
     control.faqControl = faqControl
 
@@ -144,7 +163,9 @@ local function CreateFAQTexture(control)
     return faqControl
 end
 
+---@param controlData LAM2_BaseControlData
 local function CreateBaseControl(parent, controlData, controlName)
+    ---@class LAM2_BaseControl: LAM2_Control
     local control = wm:CreateControl(controlName or controlData.reference, parent.scroll or parent, CT_CONTROL)
     control.panel = parent.panel or parent -- if this is in a submenu, panel is the submenu's parent
     control.data = controlData
@@ -156,7 +177,10 @@ local function CreateBaseControl(parent, controlData, controlName)
     return control
 end
 
+---@param controlData LAM2_LabelAndContainerControlData
 local function CreateLabelAndContainerControl(parent, controlData, controlName)
+    ---@class LAM2_LabelAndContainerControl: LAM2_BaseControl
+    ---@field data LAM2_LabelAndContainerControlData
     local control = CreateBaseControl(parent, controlData, controlName)
     local width = control:GetWidth()
 
@@ -172,7 +196,7 @@ local function CreateLabelAndContainerControl(parent, controlData, controlName)
         control.labelContainer = container
     end
 
-    local label = wm:CreateControl(nil, labelContainer or control, CT_LABEL)
+    local label = wm:CreateControl(nil, labelContainer or control, CT_LABEL) --[[@as LabelControl]]
     label:SetFont("ZoFontWinH4")
     label:SetHeight(MIN_HEIGHT)
     label:SetWrapMode(TEXT_WRAP_MODE_ELLIPSIS)
@@ -207,6 +231,15 @@ local function CreateLabelAndContainerControl(parent, controlData, controlName)
     return control
 end
 
+---@class TooltipData
+---@field tooltipText string
+
+---@class ControlWithData: Control
+---@field data TooltipData
+
+---@param control ControlWithData
+---@param data LAM2_LabelAndContainerControlData
+---@param tooltipData TooltipData
 local function SetUpTooltip(control, data, tooltipData)
     if not data.tooltip then return end
     control:SetMouseEnabled(true)
@@ -726,15 +759,15 @@ local function PopulateAddonList(addonList, filter)
 end
 
 
---METHOD: REGISTER WIDGET--
---each widget has its version checked before loading,
---so we only have the most recent one in memory
---Usage:
--- widgetType = "string"; the type of widget being registered
--- widgetVersion = integer; the widget's version number
+
 LAMCreateControl = LAMCreateControl or {}
 local lamcc = LAMCreateControl
 
+--METHOD: REGISTER WIDGET--
+--each widget has its version checked before loading,
+--so we only have the most recent one in memory
+---@param widgetType string the type of widget being registered
+---@param widgetVersion integer the widget's version number
 function lam:RegisterWidget(widgetType, widgetVersion)
     if widgets[widgetType] and widgets[widgetType] >= widgetVersion then
         return false
@@ -784,11 +817,10 @@ local function CloseCurrentPanel()
     end
 end
 
+local locSettings = GetString(SI_GAME_MENU_SETTINGS)
 --METHOD: OPEN TO ADDON PANEL--
 --opens to a specific addon's option panel
---Usage:
--- panel = userdata; the panel returned by the :RegisterOptionsPanel method
-local locSettings = GetString(SI_GAME_MENU_SETTINGS)
+---@param panel LAM2_Panel the panel returned by the :RegisterOptionsPanel method
 function lam:OpenToPanel(panel)
 
     -- find and select the panel's row in addon list
@@ -808,7 +840,7 @@ function lam:OpenToPanel(panel)
     ZO_ScrollList_SelectData(addonList, selectedData)
     ZO_ScrollList_RefreshVisible(addonList, selectedData)
 
-    local srchEdit = LAMAddonSettingsWindow:GetNamedChild("SearchFilterEdit")
+    local srchEdit = LAMAddonSettingsWindow:GetNamedChild("SearchFilterEdit") --[[@as EditControl]]
     srchEdit:Clear()
 
     -- note that ZO_ScrollList doesn't require `selectedData` to be actually
@@ -817,7 +849,7 @@ function lam:OpenToPanel(panel)
 
     local function openAddonSettingsMenu()
         local gameMenu = ZO_GameMenu_InGame.gameMenu
-        local settingsMenu = gameMenu.headerControls[locSettings]
+        local settingsMenu = gameMenu.headerControls[locSettings] --[[@as ZO_TreeNode]]
 
         if settingsMenu then -- an instance of ZO_TreeNode
             local children = settingsMenu:GetChildren()
@@ -842,10 +874,13 @@ function lam:OpenToPanel(panel)
 end
 
 local TwinOptionsContainer_Index = 0
+---@param leftWidget Control
+---@param rightWidget Control
 local function TwinOptionsContainer(parent, leftWidget, rightWidget)
     TwinOptionsContainer_Index = TwinOptionsContainer_Index + 1
     local cParent = parent.scroll or parent
     local panel = parent.panel or cParent
+    ---@class Container: Control
     local container = wm:CreateControl("$(parent)TwinContainer" .. tostring(TwinOptionsContainer_Index),
         cParent, CT_CONTROL)
     container:SetResizeToFitDescendents(true)
@@ -869,6 +904,7 @@ end
 --INTERNAL FUNCTION
 --creates controls when options panel is first shown
 --controls anchoring of these controls in the panel
+---@param panel LAM2_Panel
 local function CreateOptionsControls(panel)
     local addonID = panel:GetName()
     if(optionsState[addonID] == OPTIONS_CREATED) then
@@ -1024,9 +1060,9 @@ end
 
 --METHOD: REGISTER ADDON PANEL
 --registers your addon with LibAddonMenu and creates a panel
---Usage:
--- addonID = "string"; unique ID which will be the global name of your panel
--- panelData = table; data object for your panel - see controls\panel.lua
+---@param addonID string unique ID which will be the global name of your panel
+---@param panelData LAM2_PanelData data object for your panel - see controls\panel.lua
+---@return LAM2_Panel
 function lam:RegisterAddonPanel(addonID, panelData)
     CheckSafetyAndInitialize(addonID)
     local container = lam:GetAddonPanelContainer()
@@ -1067,11 +1103,10 @@ end
 --registers the options you want shown for your addon
 --these are stored in a table where each key-value pair is the order
 --of the options in the panel and the data for that control, respectively
---see exampleoptions.lua for an example
---see controls\<widget>.lua for each widget type
---Usage:
--- addonID = "string"; the same string passed to :RegisterAddonPanel
--- optionsTable = table; the table containing all of the options controls and their data
+---@see exampleoptions.lua for an example
+---@see controls/<widget>.lua for each widget type
+---@param addonID string the same string passed to :RegisterAddonPanel
+---@param optionsTable LAM2_ControlData[] a list of data to create options controls from
 function lam:RegisterOptionControls(addonID, optionsTable) --optionsTable = {sliderData, buttonData, etc}
     addonToOptionsMap[addonID] = optionsTable
 end
@@ -1096,7 +1131,7 @@ local function CreateAddonSettingsMenuEntry()
         sm:AddFragment(lam:GetAddonSettingsFragment())
         KEYBOARD_OPTIONS:ChangePanels(lam.panelId)
 
-        local title = LAMAddonSettingsWindow:GetNamedChild("Title")
+        local title = LAMAddonSettingsWindow:GetNamedChild("Title") --[[@as LabelControl]]
         title:SetText(panelData.name)
 
         if not addonListSorted and #addonsForList > 0 then
@@ -1122,7 +1157,7 @@ end
 --INTERNAL FUNCTION
 --creates the left-hand menu in LAM's window
 local function CreateAddonList(name, parent)
-    local addonList = wm:CreateControlFromVirtual(name, parent, "ZO_ScrollList")
+    local addonList = wm:CreateControlFromVirtual(name, parent, "ZO_ScrollList") --[[@as ZO_ScrollList]]
 
     local function addonListRow_OnMouseDown(control, button)
         if button == 1 then
@@ -1166,7 +1201,7 @@ local function CreateAddonList(name, parent)
     local addonListRow_CreateRaw = addonDataType.pool.m_Factory
 
     local function addonListRow_Create(pool)
-        local control = addonListRow_CreateRaw(pool)
+        local control = addonListRow_CreateRaw(pool) --[[@as LabelControl]]
         control:SetHandler("OnMouseDown", addonListRow_OnMouseDown)
         --control:SetHandler("OnMouseEnter", addonListRow_OnMouseEnter)
         --control:SetHandler("OnMouseExit", addonListRow_OnMouseExit)
@@ -1188,19 +1223,19 @@ end
 local function CreateSearchFilterBox(name, parent)
     local boxControl = wm:CreateControl(name, parent, CT_CONTROL)
 
-    local srchButton =  wm:CreateControl("$(parent)Button", boxControl, CT_BUTTON)
+    local srchButton =  wm:CreateControl("$(parent)Button", boxControl, CT_BUTTON) --[[@as ButtonControl]]
     srchButton:SetDimensions(32, 32)
     srchButton:SetAnchor(LEFT, nil, LEFT, 2, 0)
     srchButton:SetNormalTexture("EsoUI/Art/LFG/LFG_tabIcon_groupTools_up.dds")
     srchButton:SetPressedTexture("EsoUI/Art/LFG/LFG_tabIcon_groupTools_down.dds")
     srchButton:SetMouseOverTexture("EsoUI/Art/LFG/LFG_tabIcon_groupTools_over.dds")
 
-    local srchEdit = wm:CreateControlFromVirtual("$(parent)Edit", boxControl, "ZO_DefaultEdit")
+    local srchEdit = wm:CreateControlFromVirtual("$(parent)Edit", boxControl, "ZO_DefaultEdit") --[[@as EditControl]]
     srchEdit:SetAnchor(LEFT, srchButton, RIGHT, 4, 1)
     srchEdit:SetAnchor(RIGHT, nil, RIGHT, -4, 1)
     srchEdit:SetColor(ZO_NORMAL_TEXT:UnpackRGBA())
 
-    local srchBg = wm:CreateControl("$(parent)Bg", boxControl, CT_BACKDROP)
+    local srchBg = wm:CreateControl("$(parent)Bg", boxControl, CT_BACKDROP) --[[@as BackdropControl]]
     srchBg:SetAnchorFill()
     srchBg:SetAlpha(0)
     srchBg:SetCenterColor(0, 0, 0, 0.5)
@@ -1291,6 +1326,8 @@ end
 --creates LAM's Addon Settings top-level window
 local function CreateAddonSettingsWindow()
     local tlw = wm:CreateTopLevelWindow("LAMAddonSettingsWindow")
+    ---@type Window
+    LAMAddonSettingsWindow = LAMAddonSettingsWindow
     tlw:SetHidden(true)
     tlw:SetDimensions(1010, 914) -- same height as ZO_OptionsWindow
 
@@ -1298,14 +1335,14 @@ local function CreateAddonSettingsWindow()
 
     -- create black background for the window (mimic ZO_RightFootPrintBackground)
 
-    local bgLeft = wm:CreateControl("$(parent)BackgroundLeft", tlw, CT_TEXTURE)
+    local bgLeft = wm:CreateControl("$(parent)BackgroundLeft", tlw, CT_TEXTURE) --[[@as TextureControl]]
     bgLeft:SetTexture("EsoUI/Art/Miscellaneous/centerscreen_left.dds")
     bgLeft:SetDimensions(1024, 1024)
     bgLeft:SetAnchor(TOPLEFT, nil, TOPLEFT)
     bgLeft:SetDrawLayer(DL_BACKGROUND)
     bgLeft:SetExcludeFromResizeToFitExtents(true)
 
-    local bgRight = wm:CreateControl("$(parent)BackgroundRight", tlw, CT_TEXTURE)
+    local bgRight = wm:CreateControl("$(parent)BackgroundRight", tlw, CT_TEXTURE) --[[@as TextureControl]]
     bgRight:SetTexture("EsoUI/Art/Miscellaneous/centerscreen_right.dds")
     bgRight:SetDimensions(64, 1024)
     bgRight:SetAnchor(TOPLEFT, bgLeft, TOPRIGHT)
@@ -1314,14 +1351,14 @@ local function CreateAddonSettingsWindow()
 
     -- create gray background for addon list (mimic ZO_TreeUnderlay)
 
-    local underlayLeft = wm:CreateControl("$(parent)UnderlayLeft", tlw, CT_TEXTURE)
+    local underlayLeft = wm:CreateControl("$(parent)UnderlayLeft", tlw, CT_TEXTURE) --[[@as TextureControl]]
     underlayLeft:SetTexture("EsoUI/Art/Miscellaneous/centerscreen_indexArea_left.dds")
     underlayLeft:SetDimensions(256, 1024)
     underlayLeft:SetAnchor(TOPLEFT, bgLeft, TOPLEFT)
     underlayLeft:SetDrawLayer(DL_BACKGROUND)
     underlayLeft:SetExcludeFromResizeToFitExtents(true)
 
-    local underlayRight = wm:CreateControl("$(parent)UnderlayRight", tlw, CT_TEXTURE)
+    local underlayRight = wm:CreateControl("$(parent)UnderlayRight", tlw, CT_TEXTURE) --[[@as TextureControl]]
     underlayRight:SetTexture("EsoUI/Art/Miscellaneous/centerscreen_indexArea_right.dds")
     underlayRight:SetDimensions(128, 1024)
     underlayRight:SetAnchor(TOPLEFT, underlayLeft, TOPRIGHT)
@@ -1330,7 +1367,7 @@ local function CreateAddonSettingsWindow()
 
     -- create title bar (mimic ZO_OptionsWindow)
 
-    local title = wm:CreateControl("$(parent)Title", tlw, CT_LABEL)
+    local title = wm:CreateControl("$(parent)Title", tlw, CT_LABEL) --[[@as LabelControl]]
     title:SetAnchor(TOPLEFT, nil, TOPLEFT, 65, 70)
     title:SetFont("ZoFontWinH1")
     title:SetModifyTextType(MODIFY_TEXT_TYPE_UPPERCASE)

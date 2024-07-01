@@ -1,10 +1,7 @@
---[[dividerData = {
-    type = "divider",
-    width = "full", -- or "half" (optional)
-    height = 10, -- (optional)
-    alpha = 0.25, -- (optional)
-    reference = "MyAddonDivider" -- unique global reference to control (optional)
-} ]]
+---@class LAM2_DividerData: LAM2_BaseControlData
+---@field type "divider"
+---@field height nil|integer ex. 10
+---@field alpha nil|number 0-1. ex. 0.25
 
 
 local widgetVersion = 2
@@ -26,7 +23,9 @@ local function GetValueInRange(value, min, max, default)
     return math.min(math.max(min, value), max)
 end
 
+---@param dividerData LAM2_DividerData
 function LAMCreateControl.divider(parent, dividerData, controlName)
+    ---@class LAM2_Divider: LAM2_BaseControl
     local control = LAM.util.CreateBaseControl(parent, dividerData, controlName)
     local isHalfWidth = control.isHalfWidth
     local width = control:GetWidth()

@@ -1,19 +1,15 @@
---[[colorpickerData = {
-    type = "colorpicker",
-    name = "My Color Picker", -- or string id or function returning a string
-    getFunc = function() return db.r, db.g, db.b, db.a end, -- (alpha is optional)
-    setFunc = function(r,g,b,a) db.r=r, db.g=g, db.b=b, db.a=a end, -- (alpha is optional)
-    tooltip = "Color Picker's tooltip text.", -- or string id or function returning a string (optional)
-    width = "full", -- or "half" (optional)
-    disabled = function() return db.someBooleanSetting end, -- or boolean (optional)
-    warning = "May cause permanent awesomeness.", -- or string id or function returning a string (optional)
-    requiresReload = false, -- boolean, if set to true, the warning text will contain a notice that changes are only applied after an UI reload and any change to the value will make the "Apply Settings" button appear on the panel which will reload the UI when pressed (optional)
-    default = {r = defaults.r, g = defaults.g, b = defaults.b, a = defaults.a}, -- (optional) table of default color values (or default = defaultColor, where defaultColor is a table with keys of r, g, b[, a]) or a function that returns the color
-    helpUrl = "https://www.esoui.com/portal.php?id=218&a=faq", -- a string URL or a function that returns the string URL (optional)
-    reference = "MyAddonColorpicker", -- unique global reference to control (optional)
-    resetFunc = function(colorpickerControl) d("defaults reset") end, -- custom function to run after the control is reset to defaults (optional)
-} ]]
+---@alias ColorTable {["r"]: number, ["g"]: number, ["b"]: number, ["a"]: number|nil}
 
+---@class LAM2_ColorPickerData: LAM2_LabelAndContainerControlData
+---@field type "colorpicker"
+---@field getFunc fun(): number, number, number, number|nil returns r, g, b, a
+---@field setFunc fun(r: number, g: number, b: number, a:number|nil)
+---@field disabled nil|boolean|fun(): boolean ex. function() return db.someBooleanSetting end
+---@field warning Stringy|nil ex. "May cause permanent awesomeness."
+---@field requiresReload boolean|nil if set to true, the warning text will contain a notice that changes are only applied after a UI reload and any change to the value will make the "Apply Settings" button appear on the panel which will reload the UI when pressed
+---@field default nil|ColorTable|fun(): ColorTable table of default color values ex. {r = defaults.r, g = defaults.g, b = defaults.b, a = defaults.a}
+---@field helpUrl Stringy|nil a string URL (or function returning such) ex. "https://www.esoui.com/portal.php?id=218&a=faq"
+---@field resetFunc nil|fun(colorPickerControl: LAM2_ColorPicker) custom function to run after the control is reset to defaults ex. function(colorpickerControl) d("defaults reset") end
 
 local widgetVersion = 15
 local LAM = LibAddonMenu2
@@ -54,18 +50,22 @@ local function UpdateValue(control, forceDefault, valueR, valueG, valueB, valueA
     control.thumb:SetColor(valueR, valueG, valueB, valueA or 1)
 end
 
+---@param colorpickerData LAM2_ColorPickerData
 function LAMCreateControl.colorpicker(parent, colorpickerData, controlName)
+    ---@class LAM2_ColorPicker: LAM2_LabelAndContainerControl
     local control = LAM.util.CreateLabelAndContainerControl(parent, colorpickerData, controlName)
 
+    ---@class LAM2_BorderedContainer: Control
+    ---@field border TextureControl
     control.color = control.container
     local color = control.color
 
-    control.thumb = wm:CreateControl(nil, color, CT_TEXTURE)
+    control.thumb = wm:CreateControl(nil, color, CT_TEXTURE) --[[@as TextureControl]]
     local thumb = control.thumb
     thumb:SetDimensions(36, 18)
     thumb:SetAnchor(LEFT, color, LEFT, 4, 0)
 
-    color.border = wm:CreateControl(nil, color, CT_TEXTURE)
+    color.border = wm:CreateControl(nil, color, CT_TEXTURE) --[[@as TextureControl]]
     local border = color.border
     border:SetTexture("EsoUI\\Art\\ChatWindow\\chatOptions_bgColSwatch_frame.dds")
     border:SetTextureCoords(0, .625, 0, .8125)

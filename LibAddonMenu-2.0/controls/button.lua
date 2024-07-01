@@ -1,17 +1,13 @@
---[[buttonData = {
-    type = "button",
-    name = "My Button", -- string id or function returning a string
-    func = function() end,
-    tooltip = "Button's tooltip text.", -- string id or function returning a string (optional)
-    width = "full", -- or "half" (optional)
-    disabled = function() return db.someBooleanSetting end, -- or boolean (optional)
-    icon = "icon\\path.dds", -- (optional)
-    isDangerous = false, -- boolean, if set to true, the button text will be red and a confirmation dialog with the button label and warning text will show on click before the callback is executed (optional)
-    warning = "Will need to reload the UI.", -- (optional)
-    helpUrl = "https://www.esoui.com/portal.php?id=218&a=faq", -- a string URL or a function that returns the string URL (optional)
-    reference = "MyAddonButton", -- unique global reference to control (optional)
-    resetFunc = function(buttonControl) d("defaults reset") end, -- custom function to run after the control is reset to defaults (optional)
-} ]]
+---@class LAM2_ButtonData: LAM2_BaseControlData
+---@field type "button"
+---@field func fun() will be called when the button is pressed
+---@field tooltip nil|Stringy ex. "Button's tooltip text."
+---@field disabled nil|boolean|fun(): boolean ex. function() return db.someBooleanSetting end
+---@field icon nil|string ex. "icon\\path.dds"
+---@field isDangerous nil|boolean if set to true, the button text will be red and a confirmation dialog with the button label and warning text will show on click before the callback is executed
+---@field warning nil|string ex. "Will need to reload the UI."
+---@field helpUrl nil|string ex. "https://www.esoui.com/portal.php?id=218&a=faq"
+---@field resetFunc nil|fun(buttonControl: LAM2_Button) custom function to run after the control is reset to defaults ex. function(buttonControl) d("defaults reset") end
 
 local widgetVersion = 12
 local LAM = LibAddonMenu2
@@ -30,7 +26,10 @@ end
 --controlName is optional
 local MIN_HEIGHT = 28 -- default_button height
 local HALF_WIDTH_LINE_SPACING = 2
+
+---@param buttonData LAM2_ButtonData
 function LAMCreateControl.button(parent, buttonData, controlName)
+    ---@class LAM2_Button: LAM2_BaseControl
     local control = LAM.util.CreateBaseControl(parent, buttonData, controlName)
     control:SetMouseEnabled(true)
 
@@ -42,17 +41,18 @@ function LAMCreateControl.button(parent, buttonData, controlName)
     end
 
     if buttonData.icon then
-        control.button = wm:CreateControl(nil, control, CT_BUTTON)
+        control.button = wm:CreateControl(nil, control, CT_BUTTON) --[[@as LAM2_ButtonControl]]
         control.button:SetDimensions(26, 26)
         control.button:SetNormalTexture(buttonData.icon)
         control.button:SetPressedOffset(2, 2)
     else
         --control.button = wm:CreateControlFromVirtual(controlName.."Button", control, "ZO_DefaultButton")
-        control.button = wm:CreateControlFromVirtual(nil, control, "ZO_DefaultButton")
+        control.button = wm:CreateControlFromVirtual(nil, control, "ZO_DefaultButton") --[[@as LAM2_ButtonControl]]
         control.button:SetWidth(width / 3)
         control.button:SetText(LAM.util.GetStringFromValue(buttonData.name))
         if buttonData.isDangerous then control.button:SetNormalFontColor(ZO_ERROR_COLOR:UnpackRGBA()) end
     end
+    ---@class LAM2_ButtonControl: ButtonControl
     local button = control.button
     button:SetAnchor(control.isHalfWidth and CENTER or RIGHT)
     button:SetClickSound("Click")

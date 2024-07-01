@@ -1,25 +1,21 @@
---[[iconpickerData = {
-    type = "iconpicker",
-    name = "My Icon Picker", -- or string id or function returning a string
-    choices = {"texture path 1", "texture path 2", "texture path 3"},
-    getFunc = function() return db.var end,
-    setFunc = function(var) db.var = var doStuff() end,
-    tooltip = "Color Picker's tooltip text.", -- or string id or function returning a string (optional)
-    choicesTooltips = {"icon tooltip 1", "icon tooltip 2", "icon tooltip 3"}, -- or array of string ids or array of functions returning a string (optional)
-    maxColumns = 5, -- number of icons in one row (optional)
-    visibleRows = 4.5, -- number of visible rows (optional)
-    iconSize = 28, -- size of the icons (optional)
-    defaultColor = ZO_ColorDef:New("FFFFFF"), -- default color of the icons (optional)
-    width = "full", --or "half" (optional)
-    beforeShow = function(control, iconPicker) return preventShow end, -- (optional)
-    disabled = function() return db.someBooleanSetting end, -- or boolean (optional)
-    warning = "May cause permanent awesomeness.", -- or string id or function returning a string (optional)
-    requiresReload = false, -- boolean, if set to true, the warning text will contain a notice that changes are only applied after an UI reload and any change to the value will make the "Apply Settings" button appear on the panel which will reload the UI when pressed (optional)
-    default = defaults.var, -- default value or function that returns the default value (optional)
-    helpUrl = "https://www.esoui.com/portal.php?id=218&a=faq", -- a string URL or a function that returns the string URL (optional)
-    reference = "MyAddonIconPicker", -- unique global reference to control (optional)
-    resetFunc = function(iconpickerControl) d("defaults reset") end, -- custom function to run after the control is reset to defaults (optional)
-} ]]
+---@class LAM2_IconPickerData: LAM2_LabelAndContainerControlData
+---@field type "iconpicker"
+---@field choices string[] ex. {"texture path 1", "texture path 2", "texture path 3"}
+---@field getFunc fun(): string ex. function() return db.var end
+---@field setFunc fun(string) ex. function(var) db.var = var doStuff() end
+---@field choicesTooltips nil|Stringy[] ex. {"icon tooltip 1", "icon tooltip 2", "icon tooltip 3"}
+---@field maxColumns nil|integer number of icons in one row ex. 5
+---@field visibleRows nil|number number of visible rows ex. 4.5
+---@field iconSize nil|integer size of the icons ex. 28
+---@field defaultColor nil|ZO_ColorDef default color of the icons ex. ZO_ColorDef:New("FFFFFF")
+---@field beforeShow nil|fun(control: LAM2_IconPicker, iconPicker: IconPickerMenu): boolean ex. function(control, iconPicker) return preventShow end
+---@field disabled nil|boolean|fun(): boolean ex. function() return db.someBooleanSetting
+---@field warning nil|Stringy ex. "May cause permanent awesomeness"
+---@field requiresReload nil|boolean if set to true, the warning text will contain a notice that changes are only applied after an UI reload and any change to the value will make the "Apply Settings" button appear on the panel which will reload the UI when pressed.
+---@field default nil|Stringy ex. defaults.var
+---@field helpUrl nil|Stringy ex. "https://www.esoui.com/portal.php?id=218&a=faq"
+---@field resetFunc nil|fun(iconpickerControl: LAM2_IconPicker) custom function to run after the control is reset to defaults ex. function(iconpickerControl) d("defaults reset") end
+
 
 local widgetVersion = 11
 local LAM = LibAddonMenu2
@@ -27,6 +23,15 @@ if not LAM:RegisterWidget("iconpicker", widgetVersion) then return end
 
 local wm = WINDOW_MANAGER
 
+---@class IconPickerIcon: TextureControl
+---@field color ZO_ColorDef
+---@field size integer
+---@field texture string
+---@field tooltip string
+---@field OnSelect fun(icon: IconPickerIcon, texture: string)
+
+---@class IconPickerMenu: ZO_Object
+---@field control TopLevelWindow
 local IconPickerMenu = ZO_Object:Subclass()
 local iconPicker
 LAM.util.GetIconPickerMenu = function()
@@ -43,7 +48,7 @@ LAM.util.GetIconPickerMenu = function()
 end
 
 function IconPickerMenu:New(...)
-    local object = ZO_Object.New(self)
+    local object = ZO_Object.New(self) --[[@as IconPickerMenu]]
     object:Initialize(...)
     return object
 end
@@ -64,26 +69,26 @@ function IconPickerMenu:Initialize(name)
     self.scroll = scroll
     self.scrollContainer = scrollContainer
 
-    local bg = wm:CreateControl(nil, scrollContainer, CT_BACKDROP)
+    local bg = wm:CreateControl(nil, scrollContainer, CT_BACKDROP) --[[@as BackdropControl]]
     bg:SetAnchor(TOPLEFT, scrollContainer, TOPLEFT, 0, -3)
     bg:SetAnchor(BOTTOMRIGHT, scrollContainer, BOTTOMRIGHT, 2, 5)
     bg:SetEdgeTexture("EsoUI\\Art\\Tooltips\\UI-Border.dds", 128, 16)
     bg:SetCenterTexture("EsoUI\\Art\\Tooltips\\UI-TooltipCenter.dds")
     bg:SetInsets(16, 16, -16, -16)
 
-    local mungeOverlay = wm:CreateControl(nil, bg, CT_TEXTURE)
+    local mungeOverlay = wm:CreateControl(nil, bg, CT_TEXTURE) --[[@as TextureControl]]
     mungeOverlay:SetTexture("EsoUI/Art/Tooltips/munge_overlay.dds")
     mungeOverlay:SetDrawLevel(1)
     mungeOverlay:SetAddressMode(TEX_MODE_WRAP)
     mungeOverlay:SetAnchorFill()
 
-    local mouseOver = wm:CreateControl(nil, scrollContainer, CT_TEXTURE)
+    local mouseOver = wm:CreateControl(nil, scrollContainer, CT_TEXTURE) --[[@as TextureControl]]
     mouseOver:SetDrawLevel(2)
     mouseOver:SetTexture("EsoUI/Art/Buttons/minmax_mouseover.dds")
     mouseOver:SetHidden(true)
 
     local function IconFactory(pool)
-        local icon = wm:CreateControl(name .. "Entry" .. pool:GetNextControlId(), scroll, CT_TEXTURE)
+        local icon = wm:CreateControl(name .. "Entry" .. pool:GetNextControlId(), scroll, CT_TEXTURE) --[[@as IconPickerIcon]]
         icon:SetMouseEnabled(true)
         icon:SetDrawLevel(3)
         icon:SetDrawLayer(DL_CONTROLS)
@@ -119,7 +124,7 @@ function IconPickerMenu:Initialize(name)
         icon:SetHidden(true)
     end
 
-    self.iconPool = ZO_ObjectPool:New(IconFactory, ResetFunction)
+    self.iconPool = ZO_ObjectPool:New(IconFactory, ResetFunction) --[[@as ZO_ControlPool]]
     self:SetMaxColumns(1)
     self.icons = {}
     self.color = ZO_DEFAULT_ENABLED_COLOR
@@ -219,7 +224,7 @@ function IconPickerMenu:Clear()
 end
 
 function IconPickerMenu:AddIcon(texturePath, callback, tooltip)
-    local icon, key = self.iconPool:AcquireObject()
+    local icon, key = self.iconPool:AcquireObject() --[[@as IconPickerIcon]]
     icon:SetHidden(false)
     icon:SetTexture(texturePath)
     icon:SetColor(self.color:UnpackRGBA())
@@ -361,7 +366,9 @@ local function SetIconSize(control, size)
     end
 end
 
+---@param iconpickerData LAM2_IconPickerData
 function LAMCreateControl.iconpicker(parent, iconpickerData, controlName)
+    ---@class LAM2_IconPicker: LAM2_LabelAndContainerControl
     local control = LAM.util.CreateLabelAndContainerControl(parent, iconpickerData, controlName)
 
     local function ShowIconPicker()
@@ -393,7 +400,7 @@ function LAMCreateControl.iconpicker(parent, iconpickerData, controlName)
     dropdown:SetHandler("OnMouseEnter", function() ZO_Options_OnMouseEnter(control) end)
     dropdown:SetHandler("OnMouseExit", function() ZO_Options_OnMouseExit(control) end)
 
-    control.icon = wm:CreateControl(nil, dropdown, CT_TEXTURE)
+    control.icon = wm:CreateControl(nil, dropdown, CT_TEXTURE) --[[@as IconPickerIcon]]
     local icon = control.icon
     icon:SetAnchor(LEFT, dropdown, LEFT, 3, 0)
     icon:SetDrawLevel(2)
@@ -404,14 +411,14 @@ function LAMCreateControl.iconpicker(parent, iconpickerData, controlName)
     dropdownButton:SetAnchor(RIGHT, dropdown, RIGHT, -3, 0)
     control.dropdownButton = dropdownButton
 
-    control.bg = wm:CreateControl(nil, dropdown, CT_BACKDROP)
+    control.bg = wm:CreateControl(nil, dropdown, CT_BACKDROP) --[[@as BackdropControl]]
     local bg = control.bg
     bg:SetAnchor(TOPLEFT, dropdown, TOPLEFT, 0, -3)
     bg:SetAnchor(BOTTOMRIGHT, dropdown, BOTTOMRIGHT, 2, 5)
     bg:SetEdgeTexture("EsoUI/Art/Tooltips/UI-Border.dds", 128, 16)
     bg:SetCenterTexture("EsoUI/Art/Tooltips/UI-TooltipCenter.dds")
     bg:SetInsets(16, 16, -16, -16)
-    local mungeOverlay = wm:CreateControl(nil, bg, CT_TEXTURE)
+    local mungeOverlay = wm:CreateControl(nil, bg, CT_TEXTURE) --[[@as TextureControl]]
     mungeOverlay:SetTexture("EsoUI/Art/Tooltips/munge_overlay.dds")
     mungeOverlay:SetDrawLevel(1)
     mungeOverlay:SetAddressMode(TEX_MODE_WRAP)
