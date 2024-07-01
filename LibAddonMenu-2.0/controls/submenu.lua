@@ -146,7 +146,6 @@ function LAMCreateControl.submenu(parent, submenuData, controlName)
     --figure out the cool animation later...
     control.animation = am:CreateTimeline()
     local animation = control.animation
-    -- BUG?: ANIMATION_SIZE = 5 is outside the range of AnimationPlayback (-1 to 2)
     animation:SetPlaybackType(ANIMATION_SIZE, 0) --2nd arg = loop count
 
     control:SetResizeToFitDescendents(true)
