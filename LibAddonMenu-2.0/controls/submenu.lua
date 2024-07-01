@@ -13,7 +13,7 @@
 ---@field resetFunc nil|fun(submenuControl: LAM2_Submenu) custom function to run after the control is reset to defaults ex. function(submenuControl) d("defaults reset") end
 
 
-local widgetVersion = 15
+local widgetVersion = 16
 local LAM = LibAddonMenu2
 if not LAM:RegisterWidget("submenu", widgetVersion) then return end
 
@@ -146,7 +146,7 @@ function LAMCreateControl.submenu(parent, submenuData, controlName)
     --figure out the cool animation later...
     control.animation = am:CreateTimeline()
     local animation = control.animation
-    animation:SetPlaybackType(ANIMATION_SIZE, 0) --2nd arg = loop count
+    animation:SetPlaybackType(ANIMATION_PLAYBACK_ONE_SHOT, 0) --2nd arg = loop count
 
     control:SetResizeToFitDescendents(true)
     control.open = false
