@@ -36,7 +36,7 @@
 ---@field default nil|string[]|fun(): string[]
 
 
-local widgetVersion = 27
+local widgetVersion = 28
 local LAM = LibAddonMenu2
 if not LAM:RegisterWidget("dropdown", widgetVersion) then return end
 
