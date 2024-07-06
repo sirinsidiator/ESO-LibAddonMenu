@@ -1,10 +1,10 @@
----@class LAM2_DescriptionData: LAM2_LabelAndContainerControlData
+---@class LAM2_DescriptionData: LAM2_BaseControlData, LAM2_ControlWithHelpUrlData
 ---@field type "description"
 ---@field text Stringy ex. "My description text to display."
 ---@field title nil|Stringy ex. "My Title"
+---@field tooltip Stringy ex. "Description's tooltip text."
 ---@field disabled nil|boolean|fun(): boolean ex. function() return db.someBooleanSetting end
 ---@field enableLinks nil|true|fun(self, linkData, linkText, button, ctrl, alt, shift, command) true for default tooltips, or function OnLinkClicked handler (see: https://wiki.esoui.com/UI_XML#OnLinkClicked)
----@field helpUrl nil|Stringy ex. "https://www.esoui.com/portal.php?id=218&a=faq"
 ---@field resetFunc nil|fun(descriptionControl: LAM2_Description) custom function to run after the control is reset to defaults ex. function(descriptionControl) d("defaults reset") end
 
 

@@ -5,8 +5,7 @@
 ---@field disabled nil|boolean|fun(): boolean ex. function() return db.someBooleanSetting end
 ---@field icon nil|string ex. "icon\\path.dds"
 ---@field isDangerous nil|boolean if set to true, the button text will be red and a confirmation dialog with the button label and warning text will show on click before the callback is executed
----@field warning nil|string ex. "Will need to reload the UI."
----@field helpUrl nil|string ex. "https://www.esoui.com/portal.php?id=218&a=faq"
+---@field warning nil|Stringy ex. "Will need to reload the UI."
 ---@field resetFunc nil|fun(buttonControl: LAM2_Button) custom function to run after the control is reset to defaults ex. function(buttonControl) d("defaults reset") end
 
 local widgetVersion = 12

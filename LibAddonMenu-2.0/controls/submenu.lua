@@ -1,6 +1,6 @@
 ---@alias IconTextureCoords [number, number, number, number] {left, right, top, bottom}
 
----@class LAM2_SubmenuData: LAM2_ControlData
+---@class LAM2_SubmenuData: LAM2_ControlData, LAM2_ControlWithHelpUrlData
 ---@field type "submenu"
 ---@field icon nil|Stringy ex. "path/to/my/icon.dds"
 ---@field iconTextureCoords nil|IconTextureCoords|fun(): IconTextureCoords
@@ -8,7 +8,6 @@
 ---@field controls nil|LAM2_ControlData[] data for sub-controls to create
 ---@field disabled nil|boolean|fun(): boolean ex. function() return db.someBooleanSetting end
 ---@field disabledLabel nil|boolean|fun(): boolean ex. function() return db.someBooleanSetting end
----@field helpUrl nil|Stringy ex. "https://www.esoui.com/portal.php?id=218&a=faq"
 ---@field reference nil|string a unique global reference to the created control ex. "MyAddonSubmenu"
 ---@field resetFunc nil|fun(submenuControl: LAM2_Submenu) custom function to run after the control is reset to defaults ex. function(submenuControl) d("defaults reset") end
 

@@ -2,8 +2,8 @@
 ---@field type "custom"
 ---@field createFunc nil|fun(customControl: LAM2_Custom) called when this custom control is created
 ---@field refreshFunc nil|fun(customControl: LAM2_Custom) called when the created custom control is refreshed
----@field minHeight nil|number|fun(): number default 26. the minimum height of the control.
----@field maxHeight nil|number|fun(): number default 4*minHeight. the maximum height of the control.
+---@field minHeight nil|integer|fun(): integer default 26. the minimum height of the control.
+---@field maxHeight nil|integer|fun(): integer default 4*minHeight. the maximum height of the control.
 ---@field resetFunc nil|fun(customControl: LAM2_Custom) custom function to run after the control is reset to defaults ex. function(customControl) d("defaults reset") end
 
 

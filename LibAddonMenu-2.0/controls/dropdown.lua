@@ -1,18 +1,21 @@
 ---@alias LAM2_SortType "name-up"|"name-down"|"numeric-up"|"numeric-down"|"value-up"|"value-down"|"numericvalue-up"|"numericvalue-down"
 
+--- TODO: use generic classes instead once they're available?
+---@alias LAM2_DropdownChoice any
+
 ---@class LAM2_DropdownData: LAM2_LabelAndContainerControlData
 ---@field type "dropdown"
 ---@field choices string[] ex. {"table", "of", "choices"}
----@field getFunc fun(): string|string[] ex. function() return db.var end
----@field setFunc fun(var: string|string[]) ex. function(var) db.var = var doStuff() end
----@field choicesValues nil|any[] if specified, these values will get passed to setFunc instead ex. {"foo", 2, "three"}
----@field choicesTooltips nil|Stringy[] ex. {"tooltip 1", "tooltip 2", "tooltip 3"}
+---@field getFunc fun(): LAM2_DropdownChoice|LAM2_DropdownChoice[] ex. function() return db.var end
+---@field setFunc fun(var: LAM2_DropdownChoice|LAM2_DropdownChoice[]) ex. function(var) db.var = var doStuff() end
+---@field choicesValues nil|LAM2_DropdownChoice[] if specified, these values will get passed to setFunc instead ex. {"foo", 2, "three"}
+---@field choicesTooltips nil|string[] ex. {"tooltip 1", "tooltip 2", "tooltip 3"}
 ---@field sort nil|LAM2_SortType if not provided, list will not be sorted
 ---@field scrollable nil|boolean|integer if set the dropdown will feature a scroll bar if there are a large amount of choices and limit the visible lines to the specified number or 10 if true is used
 ---@field disabled nil|boolean|fun(): boolean ex. function() return db.someBooleanSetting end
 ---@field warning nil|Stringy ex. "May cause permanent awesomeness"
 ---@field requiresReload nil|boolean if set to true, the warning text will contain a notice that changes are only applied after a UI reload and any change to the value will make the "Apply Settings" button appear on the panel which will reload the UI when pressed
----@field default nil|string|string[]|fun(): (string|string[]) default value or function that returns the default value
+---@field default nil|LAM2_DropdownChoice|LAM2_DropdownChoice[]|fun(): (LAM2_DropdownChoice|LAM2_DropdownChoice[]) default value or function that returns the default value
 ---@field helpUrl nil|Stringy ex. "https://www.esoui.com/portal.php?id=218&a=faq"
 ---@field resetFunc nil|fun(dropdownControl: LAM2_Dropdown) custom function to run after the control is reset to defaults ex. function(dropdownControl) d("defaults reset") end
 ---@field multiSelect nil|boolean|fun(): boolean if set to true, you can have multiple entries selected at the same time
@@ -22,18 +25,18 @@
 
 ---@class LAM2_SingleSelectDropdownData: LAM2_DropdownData
 ---@field multiSelect nil
----@field getFunc fun(): string
----@field setFunc fun(var: string)
----@field default nil|string|fun(): string
+---@field getFunc fun(): LAM2_DropdownChoice
+---@field setFunc fun(var: LAM2_DropdownChoice)
+---@field default nil|LAM2_DropdownChoice|fun(): LAM2_DropdownChoice
 ---@field multiSelectTextFormatter nil
 ---@field multiSelectNoSelectionText nil
 ---@field multiSelectMaxSelections nil
 
 ---@class LAM2_MultiSelectDropdownData: LAM2_DropdownData
 ---@field multiSelect true
----@field getFunc fun(): string[]
----@field setFunc fun(var: string[])
----@field default nil|string[]|fun(): string[]
+---@field getFunc fun(): LAM2_DropdownChoice[]
+---@field setFunc fun(var: LAM2_DropdownChoice[])
+---@field default nil|LAM2_DropdownChoice[]|fun(): LAM2_DropdownChoice[]
 
 
 local widgetVersion = 28

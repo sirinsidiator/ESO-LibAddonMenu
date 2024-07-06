@@ -16,7 +16,7 @@ local optionsTable = {
     [1] = {
         type = "header",
         name = "My Header",
-        width = "full",	--or "half" (optional)
+        width = "full",	--or "half" (default "full")
     },
     ---@type LAM2_DescriptionData
     [2] = {
@@ -24,7 +24,7 @@ local optionsTable = {
         --title = "My Title",	--(optional)
         title = nil,	--(optional)
         text = "My description text to display. blah blah blah blah blah blah blah - even more sample text!!",
-        width = "full",	--or "half" (optional)
+        width = "full",	--or "half" (default "full")
     },
     ---@type LAM2_SingleSelectDropdownData
     [3] = {
@@ -58,7 +58,7 @@ local optionsTable = {
         step = 1,	--(optional)
         getFunc = function() return 3 end,
         setFunc = function(value) d(value) end,
-        width = "half",	--or "full" (optional)
+        width = "half",	--or "full" (default "full")
         default = 5,	--(optional)
     },
     ---@type LAM2_ButtonData
@@ -67,7 +67,7 @@ local optionsTable = {
         name = "My Button",
         tooltip = "Button's tooltip text.",
         func = function() d("button pressed!") end,
-        width = "half",	--or "full" (optional)
+        width = "half",	--or "full" (default "full")
         warning = "Will need to reload the UI.",	--(optional)
     },
     ---@type LAM2_SubmenuData
@@ -83,7 +83,7 @@ local optionsTable = {
                 tooltip = "Checkbox's tooltip text.",
                 getFunc = function() return true end,
                 setFunc = function(value) d(value) end,
-                width = "half",	--or "full" (optional)
+                width = "half",	--or "full" (default "full")
                 warning = "Will need to reload the UI.",	--(optional)
             },
             ---@type LAM2_ColorPickerData
@@ -93,7 +93,7 @@ local optionsTable = {
                 tooltip = "Color Picker's tooltip text.",
                 getFunc = function() return 1, 0, 0, 1 end,	--(alpha is optional)
                 setFunc = function(r,g,b,a) print(r, g, b, a) end,	--(alpha is optional)
-                width = "half",	--or "full" (optional)
+                width = "half",	--or "full" (default "full")
                 warning = "warning text",
             },
             ---@type LAM2_EditboxData
@@ -104,7 +104,7 @@ local optionsTable = {
                 getFunc = function() return "this is some text" end,
                 setFunc = function(text) print(text) end,
                 isMultiline = false,	--boolean
-                width = "half",	--or "full" (optional)
+                width = "half",	--or "full" (default "full")
                 warning = "Will need to reload the UI.",	--(optional)
                 default = "",	--(optional)
             },
@@ -114,7 +114,7 @@ local optionsTable = {
         type = "custom",
         reference = "MyAddonCustomControl",	--unique name for your control to use as reference
         refreshFunc = function(customControl) end,	--(optional) function to call when panel/controls refresh
-        width = "half",	--or "full" (optional)
+        width = "half",	--or "full" (default "full")
     },
     ---@type LAM2_TextureData
     [9] = {
@@ -123,7 +123,7 @@ local optionsTable = {
         imageWidth = 64,	--max of 250 for half width, 510 for full
         imageHeight = 64,	--max of 100
         tooltip = "Image's tooltip text.",	--(optional)
-        width = "half",	--or "full" (optional)
+        width = "half",	--or "full" (default "full")
     },
 }
 

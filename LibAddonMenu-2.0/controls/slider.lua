@@ -15,7 +15,6 @@
 ---@field warning nil|Stringy ex. "May cause permanent awesomeness"
 ---@field requiresReload nil|boolean if set to true, the warning text will contain a notice that changes are only applied after an UI reload and any change to the value will make the "Apply Settings" button appear on the panel which will reload the UI when pressed.
 ---@field default nil|number|fun(): number default value or function that returns the default value
----@field helpUrl nil|Stringy ex. "https://www.esoui.com/portal.php?id=218&a=faq"
 ---@field resetFunc nil|fun(sliderControl: LAM2_Slider) custom function to run after the control is reset to defaults ex. function(sliderControl) d("defaults reset") end
 
 

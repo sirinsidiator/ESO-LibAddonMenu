@@ -1,6 +1,5 @@
 ---@class LAM2_HeaderData: LAM2_LabelAndContainerControlData
 ---@field type "header"
----@field helpUrl nil|Stringy ex. "https://www.esoui.com/portal.php?id=218&a=faq"
 ---@field resetFunc nil|fun(headerControl: LAM2_Header) custom function to run after the control is reset to defaults ex. function(headerControl) d("defaults reset") end
 
 

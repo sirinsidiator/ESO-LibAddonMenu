@@ -5,10 +5,9 @@
 ---@field getFunc fun(): number, number, number, number|nil returns r, g, b, a
 ---@field setFunc fun(r: number, g: number, b: number, a:number|nil)
 ---@field disabled nil|boolean|fun(): boolean ex. function() return db.someBooleanSetting end
----@field warning Stringy|nil ex. "May cause permanent awesomeness."
----@field requiresReload boolean|nil if set to true, the warning text will contain a notice that changes are only applied after a UI reload and any change to the value will make the "Apply Settings" button appear on the panel which will reload the UI when pressed
+---@field warning nil|Stringy ex. "May cause permanent awesomeness."
+---@field requiresReload nil|boolean if set to true, the warning text will contain a notice that changes are only applied after a UI reload and any change to the value will make the "Apply Settings" button appear on the panel which will reload the UI when pressed
 ---@field default nil|ColorTable|fun(): ColorTable table of default color values ex. {r = defaults.r, g = defaults.g, b = defaults.b, a = defaults.a}
----@field helpUrl Stringy|nil a string URL (or function returning such) ex. "https://www.esoui.com/portal.php?id=218&a=faq"
 ---@field resetFunc nil|fun(colorPickerControl: LAM2_ColorPicker) custom function to run after the control is reset to defaults ex. function(colorpickerControl) d("defaults reset") end
 
 local widgetVersion = 15

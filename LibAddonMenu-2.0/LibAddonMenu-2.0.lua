@@ -5,21 +5,28 @@
 
 local MAJOR, MINOR = "LibAddonMenu-2.0", _LAM2_VERSION_NUMBER or -1
 
----@alias Stringy string|fun():string|SafeStringKey a string id, string, or function returning a string
+---@alias Stringy SafeStringKey|string|fun():(string|nil) a string id, string, or function returning a string
 
 ---@class LAM2_ControlData
 ---@field type "button"|"checkbox"|"colorpicker"|"custom"|"description"|"divider"|"dropdown"|"editbox"|"header"|"iconpicker"|"panel"|"slider"|"submenu"|"texture"
 ---@field name nil|Stringy
 
+---@class LAM2_ControlWithHelpUrlData: LAM2_ControlData
+---@field helpUrl nil|Stringy ex. "https://www.esoui.com/portal.php?id=218&a=faq"
+
 ---@class LAM2_BaseControlData: LAM2_ControlData
 ---@field width nil|"full"|"half" default "full"
 ---@field reference nil|string a unique global reference to the created control ex. "MyAddonButton"
 
----@class LAM2_LabelAndContainerControlData: LAM2_BaseControlData
+---@class LAM2_LabelAndContainerControlData: LAM2_BaseControlData, LAM2_ControlWithHelpUrlData
 ---@field tooltip nil|Stringy ex. "Button's tooltip text."
 ---@field tooltipText nil|string
 
 ---@class LAM2_Control: Control
+
+---@class LAM2_ControlWithHelpUrl: LAM2_Control
+---@field data LAM2_ControlWithHelpUrlData
+---@field faqControl LAM2_FAQControl
 
 local lam
 if(not LibStub) then
@@ -118,13 +125,14 @@ local function GetColorForState(disabled)
     return disabled and ZO_DEFAULT_DISABLED_COLOR or ZO_DEFAULT_ENABLED_COLOR
 end
 
+--- @param control LAM2_ControlWithHelpUrl
 local function CreateFAQTexture(control)
     local controlData = control.data
     if not control or not controlData then logger:Warn("CreateFAQTexture - missing or invalid control") return end
     local helpUrl = controlData and GetStringFromValue(controlData.helpUrl)
     if not helpUrl or helpUrl == "" then return end
 
-    ---@class FAQControl: TextureControl
+    ---@class LAM2_FAQControl: TextureControl
     local faqControl = wm:CreateControl(nil, control, CT_TEXTURE)
     control.faqControl = faqControl
 

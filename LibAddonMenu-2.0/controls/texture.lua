@@ -1,8 +1,9 @@
----@class LAM2_TextureData: LAM2_LabelAndContainerControlData
+---@class LAM2_TextureData: LAM2_BaseControlData
 ---@field type "texture"
 ---@field image string ex. "file/path.dds"
 ---@field imageWidth integer max of 250 for width="half", 510 for "full" ex. 64
 ---@field imageHeight integer max of 100 ex. 32
+---@field tooltip Stringy ex. "Texture's tooltip text."
 
 -- TODO: add texture coords support?
 
