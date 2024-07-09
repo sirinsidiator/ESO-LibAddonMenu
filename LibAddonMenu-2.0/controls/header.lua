@@ -1,12 +1,6 @@
---[[headerData = {
-    type = "header",
-    name = "My Header", -- or string id or function returning a string
-    tooltip = "My Tooltip", -- or string id or function returning a string (optional)
-    width = "full", -- or "half" (optional)
-    helpUrl = "https://www.esoui.com/portal.php?id=218&a=faq", -- a string URL or a function that returns the string URL (optional)
-    reference = "MyAddonHeader", -- unique global reference to control (optional)
-    resetFunc = function(headerControl) d("defaults reset") end, -- custom function to run after the control is reset to defaults (optional)
-} ]]
+---@class LAM2_HeaderData: LAM2_LabelAndContainerControlData
+---@field type "header"
+---@field resetFunc nil|fun(headerControl: LAM2_Header) custom function to run after the control is reset to defaults ex. function(headerControl) d("defaults reset") end
 
 
 local widgetVersion = 11
@@ -20,7 +14,10 @@ local function UpdateValue(control)
 end
 
 local MIN_HEIGHT = 30
+
+---@param headerData LAM2_HeaderData
 function LAMCreateControl.header(parent, headerData, controlName)
+    ---@class LAM2_Header: LAM2_BaseControl
     local control = LAM.util.CreateBaseControl(parent, headerData, controlName)
     local isHalfWidth = control.isHalfWidth
     local width = control:GetWidth()
@@ -31,7 +28,7 @@ function LAMCreateControl.header(parent, headerData, controlName)
     divider:SetWidth(isHalfWidth and width / 2 or width)
     divider:SetAnchor(TOPLEFT)
 
-    control.header = wm:CreateControlFromVirtual(nil, control, "ZO_Options_SectionTitleLabel")
+    control.header = wm:CreateControlFromVirtual(nil, control, "ZO_Options_SectionTitleLabel") --[[@as LabelControl]]
     local header = control.header
     header:SetAnchor(TOPLEFT, divider, BOTTOMLEFT)
     header:SetAnchor(BOTTOMRIGHT)

@@ -1,18 +1,18 @@
---[[submenuData = {
-    type = "submenu",
-    name = "Submenu Title", -- or string id or function returning a string
-    icon = "path/to/my/icon.dds", -- or function returning a string (optional)
-    iconTextureCoords = {left, right, top, bottom}, -- or function returning a table (optional)
-    tooltip = "My submenu tooltip", -- or string id or function returning a string (optional)
-    controls = {sliderData, buttonData} -- used by LAM (optional)
-    disabled = function() return db.someBooleanSetting end, -- or boolean (optional)
-    disabledLabel = function() return db.someBooleanSetting end, -- or boolean (optional)
-    helpUrl = "https://www.esoui.com/portal.php?id=218&a=faq", -- a string URL or a function that returns the string URL (optional)
-    reference = "MyAddonSubmenu", -- unique global reference to control (optional)
-    resetFunc = function(submenuControl) d("defaults reset") end, -- custom function to run after the control is reset to defaults (optional)
-} ]]
+---@alias IconTextureCoords [number, number, number, number] {left, right, top, bottom}
 
-local widgetVersion = 15
+---@class LAM2_SubmenuData: LAM2_ControlData, LAM2_ControlWithHelpUrlData
+---@field type "submenu"
+---@field icon nil|Stringy ex. "path/to/my/icon.dds"
+---@field iconTextureCoords nil|IconTextureCoords|fun(): IconTextureCoords
+---@field tooltip nil|Stringy ex. "My submenu tooltip"
+---@field controls nil|LAM2_ControlData[] data for sub-controls to create
+---@field disabled nil|boolean|fun(): boolean ex. function() return db.someBooleanSetting end
+---@field disabledLabel nil|boolean|fun(): boolean ex. function() return db.someBooleanSetting end
+---@field reference nil|string a unique global reference to the created control ex. "MyAddonSubmenu"
+---@field resetFunc nil|fun(submenuControl: LAM2_Submenu) custom function to run after the control is reset to defaults ex. function(submenuControl) d("defaults reset") end
+
+
+local widgetVersion = 16
 local LAM = LibAddonMenu2
 if not LAM:RegisterWidget("submenu", widgetVersion) then return end
 
@@ -23,6 +23,7 @@ local ICON_SIZE = 32
 local GetDefaultValue = LAM.util.GetDefaultValue
 local GetColorForState = LAM.util.GetColorForState
 
+---@param control LAM2_Submenu
 local function UpdateDisabled(control)
     local disable = GetDefaultValue(control.data.disabled)
     if disable ~= control.disabled then
@@ -47,6 +48,7 @@ local function UpdateDisabled(control)
     end
 end
 
+---@param control LAM2_Submenu
 local function UpdateValue(control)
     control.label:SetText(LAM.util.GetStringFromValue(control.data.name))
 
@@ -75,12 +77,17 @@ local function AnimateSubmenu(clicked)
     end
 end
 
+---@param submenuData LAM2_SubmenuData
 function LAMCreateControl.submenu(parent, submenuData, controlName)
     local width = parent:GetWidth() - 45
+    ---@class LAM2_Submenu: LAM2_Control
+    ---@field disabled boolean
+    ---@field disabledLabel boolean
     local control = wm:CreateControl(controlName or submenuData.reference, parent.scroll or parent, CT_CONTROL)
     control.panel = parent
     control.data = submenuData
 
+    ---@class Label: LabelControl, ControlWithData
     control.label = wm:CreateControlFromVirtual(nil, control, "ZO_Options_SectionTitleLabel")
     local label = control.label
     label:SetWrapMode(TEXT_WRAP_MODE_ELLIPSIS)
@@ -89,7 +96,7 @@ function LAMCreateControl.submenu(parent, submenuData, controlName)
     LAM.util.SetUpTooltip(label, submenuData)
 
     if submenuData.icon then
-        control.icon = wm:CreateControl(nil, control, CT_TEXTURE)
+        control.icon = wm:CreateControl(nil, control, CT_TEXTURE) --[[@as TextureControl]]
         local icon = control.icon
         icon:SetTexture(GetDefaultValue(submenuData.icon))
         if(submenuData.iconTextureCoords) then
@@ -109,13 +116,13 @@ function LAMCreateControl.submenu(parent, submenuData, controlName)
         label:SetDimensions(width, 30)
     end
 
-    control.scroll = wm:CreateControl(nil, control, CT_SCROLL)
+    control.scroll = wm:CreateControl(nil, control, CT_SCROLL) --[[@as ScrollControl]]
     local scroll = control.scroll
     scroll:SetParent(control)
     scroll:SetAnchor(TOPLEFT, control.icon or label, BOTTOMLEFT, 0, 10)
     scroll:SetDimensionConstraints(width + 5, 0, width + 5, 0)
 
-    control.bg = wm:CreateControl(nil, control.icon or label, CT_BACKDROP)
+    control.bg = wm:CreateControl(nil, control.icon or label, CT_BACKDROP) --[[@as BackdropControl]]
     local bg = control.bg
     bg:SetAnchor(TOPLEFT, control.icon or label, TOPLEFT, -5, -5)
     bg:SetAnchor(BOTTOMRIGHT, scroll, BOTTOMRIGHT, -7, 0)
@@ -124,7 +131,7 @@ function LAMCreateControl.submenu(parent, submenuData, controlName)
     bg:SetInsets(16, 16, -16, -16)
     bg:SetDrawLayer(DL_BACKGROUND)
 
-    control.arrow = wm:CreateControl(nil, bg, CT_TEXTURE)
+    control.arrow = wm:CreateControl(nil, bg, CT_TEXTURE) --[[@as TextureControl]]
     local arrow = control.arrow
     arrow:SetDimensions(28, 28)
     arrow:SetTexture("EsoUI\\Art\\Miscellaneous\\list_sortdown.dds") --list_sortup for the other way
@@ -138,7 +145,7 @@ function LAMCreateControl.submenu(parent, submenuData, controlName)
     --figure out the cool animation later...
     control.animation = am:CreateTimeline()
     local animation = control.animation
-    animation:SetPlaybackType(ANIMATION_SIZE, 0) --2nd arg = loop count
+    animation:SetPlaybackType(ANIMATION_PLAYBACK_ONE_SHOT, 0) --2nd arg = loop count
 
     control:SetResizeToFitDescendents(true)
     control.open = false
@@ -159,7 +166,7 @@ function LAMCreateControl.submenu(parent, submenuData, controlName)
     end)
 
     --small strip at the bottom of the submenu that you can click to close it
-    control.btmToggle = wm:CreateControl(nil, control, CT_TEXTURE)
+    control.btmToggle = wm:CreateControl(nil, control, CT_TEXTURE) --[[@as TextureControl]]
     local btmToggle = control.btmToggle
     btmToggle:SetMouseEnabled(true)
     btmToggle:SetAnchor(BOTTOMLEFT, control.scroll, BOTTOMLEFT)

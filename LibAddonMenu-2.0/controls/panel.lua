@@ -1,19 +1,17 @@
---[[panelData = {
-    type = "panel",
-    name = "Window Title", -- or string id or function returning a string
-    displayName = "My Longer Window Title",  -- or string id or function returning a string (optional) (can be useful for long addon names or if you want to colorize it)
-    author = "Seerah",  -- or string id or function returning a string (optional)
-    version = "2.0",  -- or string id or function returning a string (optional)
-    website = "http://www.esoui.com/downloads/info7-LibAddonMenu.html", -- URL of website where the addon can be updated or function (optional)
-    feedback = "https://www.esoui.com/portal.php?uid=5815", -- URL of website where feedback/feature requests/bugs can be reported for the addon or function (optional)
-    translation = "https://www.esoui.com/portal.php?uid=5815", -- URL of website where translation texts of the addon can be helped with or function (optional)
-    donation = "http://www.esoui.com/downloads/info7-LibAddonMenu.html", -- URL of website where a donation for the addon author can be raised or function (optional)
-    keywords = "settings", -- additional keywords for search filter (it looks for matches in name..keywords..author) (optional)
-    slashCommand = "/myaddon", -- will register a keybind to open to this panel (don't forget to include the slash!) (optional)
-    registerForRefresh = true, -- boolean will refresh all options controls when a setting is changed and when the panel is shown (optional)
-    registerForDefaults = true, -- boolean will set all options controls back to default values (optional),
-    resetFunc = function(panel) d("defaults reset") end, -- custom function to run after the panel is reset to defaults (optional)
-} ]]
+---@class LAM2_PanelData: LAM2_ControlData
+---@field type "panel"
+---@field displayName nil|Stringy can be useful for long addon names or if you want to colorize it ex. "My Longer Window Title"
+---@field author nil|Stringy ex. "Seerah"
+---@field version nil|Stringy ex. "2.0"
+---@field website nil|Stringy URL of website where the addon can be updated ex. "http://www.esoui.com/downloads/info7-LibAddonMenu.html"
+---@field feedback nil|Stringy URL of website where feedback/feature requests/bugs can be reported for the addon ex. "https://www.esoui.com/portal.php?uid=5815"
+---@field translation nil|Stringy URL of website where translation texts of the addon can be helped with ex. "https://www.esoui.com/portal.php?uid=5815"
+---@field donation nil|Stringy URL of website where a donation for the addon author can be raised ex. "http://www.esoui.com/downloads/info7-LibAddonMenu.html"
+---@field keywords nil|string additional keywords for search filter (it looks for matches in name..keywords..author) ex. "settings"
+---@field slashCommand nil|string will register a keybind to open to this panel (don't forget to include the slash!) ex. "/myaddon"
+---@field registerForRefresh nil|boolean if true, will refresh all options controls when a setting is changed and when the panel is shown
+---@field registerForDefaults nil|boolean if true, will set all options controls back to default values
+---@field resetFunc nil|fun(panel: LAM2_Panel) custom function to run after the panel is reset to defaults ex. function(panel) d("defaults reset") end
 
 
 local widgetVersion = 15
@@ -74,7 +72,7 @@ local LINK_COLOR_DONATE = ZO_ColorDef:New("FFD700") -- golden
 local LINK_MOUSE_OVER_COLOR_DONATE = ZO_ColorDef:New("FFF6CC")
 
 local function CreateButtonControl(control, label, clickAction, relativeTo)
-    local button = wm:CreateControl(nil, control, CT_BUTTON)
+    local button = wm:CreateControl(nil, control, CT_BUTTON) --[[@as ButtonControl]]
     button:SetClickSound("Click")
     button:SetFont(LAM.util.L["PANEL_INFO_FONT"])
     button:SetNormalFontColor(LINK_COLOR:UnpackRGBA())
@@ -101,17 +99,19 @@ local function CreateButtonControl(control, label, clickAction, relativeTo)
     return button
 end
 
+---@param panelData LAM2_PanelData
 function LAMCreateControl.panel(parent, panelData, controlName)
+    ---@class LAM2_Panel: LAM2_Control
     local control = wm:CreateControl(controlName, parent, CT_CONTROL)
 
-    control.label = wm:CreateControlFromVirtual(nil, control, "ZO_Options_SectionTitleLabel")
+    control.label = wm:CreateControlFromVirtual(nil, control, "ZO_Options_SectionTitleLabel") --[[@as LabelControl]]
     local label = control.label
     label:SetAnchor(TOPLEFT, control, TOPLEFT, 0, 4)
     label:SetText(LAM.util.GetStringFromValue(panelData.displayName or panelData.name))
 
     local previousInfoControl
     if panelData.author or panelData.version then
-        control.info = wm:CreateControl(nil, control, CT_LABEL)
+        control.info = wm:CreateControl(nil, control, CT_LABEL) --[[@as LabelControl]]
         local info = control.info
         info:SetFont(LAM.util.L["PANEL_INFO_FONT"])
         info:SetAnchor(TOPLEFT, label, BOTTOMLEFT, 0, -2)

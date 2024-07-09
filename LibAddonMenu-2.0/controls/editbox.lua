@@ -1,22 +1,16 @@
---[[editboxData = {
-    type = "editbox",
-    name = "My Editbox", -- or string id or function returning a string
-    getFunc = function() return db.text end,
-    setFunc = function(text) db.text = text doStuff() end,
-    tooltip = "Editbox's tooltip text.", -- or string id or function returning a string (optional)
-    isMultiline = true, -- boolean (optional)
-    isExtraWide = true, -- boolean (optional)
-    maxChars = 3000, -- number (optional)
-    textType = TEXT_TYPE_NUMERIC, -- number (optional) or function returning a number. Valid TextType numbers: TEXT_TYPE_ALL, TEXT_TYPE_ALPHABETIC, TEXT_TYPE_ALPHABETIC_NO_FULLWIDTH_LATIN, TEXT_TYPE_NUMERIC, TEXT_TYPE_NUMERIC_UNSIGNED_INT, TEXT_TYPE_PASSWORD
-    width = "full", -- or "half" (optional)
-    disabled = function() return db.someBooleanSetting end, -- or boolean (optional)
-    warning = "May cause permanent awesomeness.", -- or string id or function returning a string (optional)
-    requiresReload = false, -- boolean, if set to true, the warning text will contain a notice that changes are only applied after an UI reload and any change to the value will make the "Apply Settings" button appear on the panel which will reload the UI when pressed (optional)
-    default = defaults.text, -- default value or function that returns the default value (optional)
-    helpUrl = "https://www.esoui.com/portal.php?id=218&a=faq", -- a string URL or a function that returns the string URL (optional)
-    reference = "MyAddonEditbox", -- unique global reference to control (optional)
-    resetFunc = function(editboxControl) d("defaults reset") end, -- custom function to run after the control is reset to defaults (optional)
-} ]]
+---@class LAM2_EditboxData: LAM2_LabelAndContainerControlData
+---@field type "editbox"
+---@field getFunc fun(): string ex. function() return db.txt end
+---@field setFunc fun(string) ex. function(text) db.text = text doStuff() end
+---@field isMultiline nil|boolean
+---@field isExtraWide nil|boolean
+---@field maxChars nil|integer ex. 3000
+---@field textType nil|TextType|fun(): TextType ex. TEXT_TYPE_NUMERIC
+---@field disabled nil|boolean|fun(): boolean ex. function() return db.someBooleanSetting end
+---@field warning nil|Stringy ex. "May cause permanent awesomeness"
+---@field requiresReload nil|boolean if set to true, the warning text will contain a notice that changes are only applied after a UI reload and any change to the value will make the "Apply Settings" button appear on the panel which will reload the UI when pressed.
+---@field default nil|Stringy ex. defaults.text
+---@field resetFunc nil|fun(editboxControl: LAM2_Editbox) custom function to run after the control is reset to defaults ex. function(editboxControl) d("defaults reset") end
 
 
 local widgetVersion = 16
@@ -69,7 +63,10 @@ end
 
 local MIN_HEIGHT = 24
 local HALF_WIDTH_LINE_SPACING = 2
+
+---@param editboxData LAM2_EditboxData
 function LAMCreateControl.editbox(parent, editboxData, controlName)
+    ---@class LAM2_Editbox: LAM2_LabelAndContainerControl
     local control = LAM.util.CreateLabelAndContainerControl(parent, editboxData, controlName)
 
     local container = control.container
@@ -78,7 +75,7 @@ function LAMCreateControl.editbox(parent, editboxData, controlName)
     bg:SetAnchorFill()
 
     if editboxData.isMultiline then
-        control.editbox = wm:CreateControlFromVirtual(nil, bg, "ZO_DefaultEditMultiLineForBackdrop")
+        control.editbox = wm:CreateControlFromVirtual(nil, bg, "ZO_DefaultEditMultiLineForBackdrop") --[[@as EditControl]]
         control.editbox:SetHandler("OnMouseWheel", function(self, delta)
             if self:HasFocus() then --only set focus to new spots if the editbox is currently in use
                 local cursorPos = self:GetCursorPosition()
@@ -99,7 +96,7 @@ function LAMCreateControl.editbox(parent, editboxData, controlName)
             end
         end)
     else
-        control.editbox = wm:CreateControlFromVirtual(nil, bg, "ZO_DefaultEditForBackdrop")
+        control.editbox = wm:CreateControlFromVirtual(nil, bg, "ZO_DefaultEditForBackdrop") --[[@as EditControl]]
 
     end
 

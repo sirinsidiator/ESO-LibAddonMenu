@@ -1,13 +1,11 @@
---[[customData = {
-    type = "custom",
-    reference = "MyAddonCustomControl", -- unique name for your control to use as reference (optional)
-    createFunc = function(customControl) end, -- function to call when this custom control was created (optional)
-    refreshFunc = function(customControl) end, -- function to call when panel/controls refresh (optional)
-    width = "full", -- or "half" (optional)
-    minHeight = function() return db.minHeightNumber end, --or number for the minimum height of this control. Default: 26 (optional)
-    maxHeight = function() return db.maxHeightNumber end, --or number for the maximum height of this control. Default: 4 * minHeight (optional)
-    resetFunc = function(customControl) d("defaults reset") end, -- custom function to run after the control is reset to defaults (optional)
-} ]]
+---@class LAM2_CustomData: LAM2_BaseControlData
+---@field type "custom"
+---@field createFunc nil|fun(customControl: LAM2_Custom) called when this custom control is created
+---@field refreshFunc nil|fun(customControl: LAM2_Custom) called when the created custom control is refreshed
+---@field minHeight nil|integer|fun(): integer default 26. the minimum height of the control.
+---@field maxHeight nil|integer|fun(): integer default 4*minHeight. the maximum height of the control.
+---@field resetFunc nil|fun(customControl: LAM2_Custom) custom function to run after the control is reset to defaults ex. function(customControl) d("defaults reset") end
+
 
 local widgetVersion = 9
 local LAM = LibAddonMenu2
@@ -21,7 +19,10 @@ end
 
 local MIN_HEIGHT = 26
 
+---@param customData LAM2_CustomData
 function LAMCreateControl.custom(parent, customData, controlName)
+    ---@class LAM2_Custom: LAM2_BaseControl
+    ---@field data LAM2_CustomData
     local control = LAM.util.CreateBaseControl(parent, customData, controlName)
     local width = control:GetWidth()
     control:SetResizeToFitDescendents(true)
