@@ -1,3 +1,8 @@
+2.0 r38
+- fixed submenus only opening once after Update 45 ([url=https://github.com/sirinsidiator/ESO-LibAddonMenu/issues/145]#145[/url], thanks Baertram)
+- added new callback "LAM-PanelControlsCreated" which gets called right before a panel is shown for the first time
+- updated for Fallen Banners
+
 2.0 r37
 - added Turkish and Ukrainian translations ([url=https://github.com/sirinsidiator/ESO-LibAddonMenu/pull/137]#137[/url], thanks Sharlikran)
 - fixed multi-select dropdowns not showing selected entries correctly ([url=https://github.com/sirinsidiator/ESO-LibAddonMenu/pull/140]#140[/url], thanks MycroftJr)
