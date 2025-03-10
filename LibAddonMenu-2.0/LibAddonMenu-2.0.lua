@@ -884,6 +884,7 @@ local function CreateOptionsControls(panel)
         OpenCurrentPanel()
     end
 
+    cm:FireCallbacks("LAM-BeforePanelControlsCreated", panel)
     local optionsTable = addonToOptionsMap[addonID]
     if optionsTable then
         local function CreateAndAnchorWidget(parent, widgetData, offsetX, offsetY, anchorTarget, wasHalf)
