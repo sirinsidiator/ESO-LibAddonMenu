@@ -1147,7 +1147,7 @@ local function CreateAddonList(name, parent)
             end
             if selectedData then
                 selectedData.panel:SetHidden(false)
-                PlaySound(SOUNDS.MENU_SUBCATEGORY_SELECTION)
+                PlaySound(SOUNDS.TREE_SUBCATEGORY_CLICK)
             end
         end
     end
