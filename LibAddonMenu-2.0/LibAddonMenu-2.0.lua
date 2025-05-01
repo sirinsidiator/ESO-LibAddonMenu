@@ -517,11 +517,20 @@ local localization = {
         RELOAD_DIALOG_RELOAD_BUTTON = "リロード",
         RELOAD_DIALOG_DISCARD_BUTTON = "破棄",
     },
-    zh = { -- provided by bssthu
-        PANEL_NAME = "插件",
+    zh = { -- provided by Jacko9et
+        PANEL_NAME = GetString(SI_GAME_MENU_ADDONS),
+        AUTHOR = string.format("%s: <<X:1>>", GetString(SI_ADDON_MANAGER_AUTHOR)), -- "Author: <<X:1>>"
         VERSION = "版本: <<X:1>>",
         WEBSITE = "访问网站",
-        PANEL_INFO_FONT = "EsoZh/fonts/univers57.otf|14|soft-shadow-thin",
+        FEEDBACK = GetString(SI_CUSTOMER_SERVICE_SUBMIT_FEEDBACK),
+        TRANSLATION = GetString(SI_ENCHANTING_TRANSLATION_HEADER),
+        DONATION = "捐赠",
+        PANEL_INFO_FONT = "$(CHAT_FONT)|14|soft-shadow-thin",
+        RELOAD_UI_WARNING = "对此设置的更改需要重新加载界面才能生效。",
+        RELOAD_DIALOG_TITLE = "需要重新加载界面",
+        RELOAD_DIALOG_TEXT = "某些更改需要重新加载界面才能生效。您想现在重新加载还是放弃更改？",
+        RELOAD_DIALOG_RELOAD_BUTTON = GetString(SI_ADDON_MANAGER_RELOAD),
+        RELOAD_DIALOG_DISCARD_BUTTON = GetString(SI_CHAMPION_SYSTEM_DISCARD_CHANGES),
     },
     pl = { -- provided by EmiruTegryfon
         PANEL_NAME = "Dodatki",
