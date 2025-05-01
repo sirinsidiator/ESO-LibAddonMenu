@@ -1080,6 +1080,7 @@ end
 --INTERNAL FUNCTION
 --creates LAM's Addon Settings entry in ZO_GameMenu
 local function CreateAddonSettingsMenuEntry()
+    if IsConsoleUI() then return end
     local panelData = {
         id = KEYBOARD_OPTIONS.currentPanelId,
         name = util.L["PANEL_NAME"],
