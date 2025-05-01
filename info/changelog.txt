@@ -1,3 +1,10 @@
+2.0 r39
+- added "compatibility" for console
+[INDENT]- this just makes it so that there are no errors in console flow - actual menu generation will be subject of a future v3[/INDENT]
+- fixed click sound no longer working in addon list ([url=https://github.com/sirinsidiator/ESO-LibAddonMenu/issues/147]#147[/url], thanks DakJaniels)
+- updated Chinese translation ([url=https://github.com/sirinsidiator/ESO-LibAddonMenu/issues/144]#144[/url], thanks Jacko9et)
+- updated for Seasons of the Worm Cult Part 1
+
 2.0 r38
 - fixed submenus only opening once after Update 45 ([url=https://github.com/sirinsidiator/ESO-LibAddonMenu/issues/145]#145[/url], thanks Baertram)
 - added new callback "LAM-PanelControlsCreated" which gets called right before a panel is shown for the first time
