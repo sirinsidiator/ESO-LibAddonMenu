@@ -16,7 +16,7 @@
 } ]]
 
 
-local widgetVersion = 15
+local widgetVersion = 16
 local LAM = LibAddonMenu2
 if not LAM:RegisterWidget("panel", widgetVersion) then return end
 
@@ -125,6 +125,10 @@ function LAMCreateControl.panel(parent, panelData, controlName)
         end
         info:SetText(table.concat(output, SEPARATOR))
         previousInfoControl = info
+
+        --Chat Narration
+        info:SetMouseEnabled(true)
+        info:SetHandler("OnMouseEnter", function(ctrl) LAM.util.NarrateLAMControlToChat(control, false, false, false) end, "LAM2_Narrate_OnMouseEvent")
     end
 
     if panelData.website then
