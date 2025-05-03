@@ -3,6 +3,7 @@
 ## Version: 2.0 r@BUILD_NUMBER@
 ## AddOnVersion: @BUILD_NUMBER@
 ## IsLibrary: true
+## ConsoleDependsOn: LibHarvensAddonSettings
 ## OptionalDependsOn: LibStub LibDebugLogger
 ## Author: Seerah, sirinsidiator, et al.
 ## Contributors: votan, merlight, Garkin, Randactyl, KuroiLight, silvereyes333, Baertram, kyoma, klingo, phuein, Scootworks
