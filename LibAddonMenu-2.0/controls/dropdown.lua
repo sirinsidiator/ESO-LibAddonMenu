@@ -24,7 +24,7 @@
 } ]]
 
 
-local widgetVersion = 27
+local widgetVersion = 28
 local LAM = LibAddonMenu2
 if not LAM:RegisterWidget("dropdown", widgetVersion) then return end
 
@@ -329,6 +329,7 @@ local function AdjustDimensions(control, dropdown, dropdownData)
     end
 
     local width = zo_max(contentWidth, dropdown.m_container:GetWidth())
+    dropdownObject:SetResizeToFitConstrains(ANCHOR_CONSTRAINS_XY)
     dropdownObject:SetWidth(width)
 
     scrollContent:SetAnchor(BOTTOMRIGHT, nil, nil, anchorOffset)
