@@ -256,12 +256,7 @@ local function SetDropdownHeight(control, dropdown, dropdownData)
 
     --Entries to actually calculate the height = "number of sorted items" * "template height" + "number of sorted items -1" * spacing (last item got no spacing)
     local numEntries = zo_clamp(numSortedItems, min, max)
-    local entryHeightWithSpacing
-    if GetAPIVersion() < 101041 then
-        entryHeightWithSpacing = dropdown:GetEntryTemplateHeightWithSpacing()
-    else
-        entryHeightWithSpacing = ZO_COMBO_BOX_ENTRY_TEMPLATE_HEIGHT + dropdown.m_dropdownObject.spacing
-    end
+    local entryHeightWithSpacing = ZO_COMBO_BOX_ENTRY_TEMPLATE_HEIGHT + dropdown.m_dropdownObject.spacing
     local allItemsHeight = (entryHeightWithSpacing * numEntries) - entrySpacing + (PADDING_Y * 2) + ROUNDING_MARGIN
     dropdown:SetHeight(allItemsHeight)
     ZO_ScrollList_Commit(dropdown.m_scroll)
@@ -273,13 +268,10 @@ local function CalculateContentWidth(dropdown)
     local dataType = ZO_ScrollList_GetDataTypeTable(dropdown.m_scroll, 1)
 
     local dummy = dataType.pool:AcquireObject()
-    local item = {
+    local item = dropdown.m_dropdownObject:CreateScrollableEntry({
         m_owner = dropdown,
         name = "Dummy"
-    }
-    if GetAPIVersion() >= 101041 then
-        item = dropdown.m_dropdownObject:CreateScrollableEntry(item, 1, 1)
-    end
+    }, 1, 1)
     dataType.setupCallback(dummy, item, dropdown)
 
     local maxWidth = 0
@@ -382,9 +374,6 @@ function LAMCreateControl.dropdown(parent, dropdownData, controlName)
     control.dropdown = ZO_ComboBox_ObjectFromContainer(combobox)
     local dropdown = control.dropdown
     dropdown:SetSortsItems(false) -- need to sort ourselves in order to be able to sort by value
-    if GetAPIVersion() < 101041 then
-        dropdown.m_dropdown:SetParent(combobox:GetOwningWindow()) -- TODO remove workaround once the problem is fixed in the game
-    end
 
     local isMultiSelectionEnabled = GetDefaultValue(dropdownData.multiSelect)
     control.isMultiSelectionEnabled = isMultiSelectionEnabled
