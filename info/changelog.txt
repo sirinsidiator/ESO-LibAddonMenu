@@ -1,3 +1,30 @@
+2.0 r41
+- added "maxChars" to HAS conversion for console ([url=https://github.com/sirinsidiator/ESO-LibAddonMenu/pull/153]#153[/url], thanks M0RGaming)
+- fixed dropdown width not getting calculated correctly
+- fixed dropdown height no longer being restricted after opening it for the second time
+- updated for Seasons of the Worm Cult Part 2
+
+2.0 r40
+- added (temporary) LAM to HAS conversion for console ([url=https://github.com/sirinsidiator/ESO-LibAddonMenu/pull/149]#149[/url], thanks Dolgubon)
+
+2.0 r39
+- added "compatibility" for console
+[INDENT]- this just makes it so that there are no errors in console flow - actual menu generation will be subject of a future v3[/INDENT]
+- fixed click sound no longer working in addon list ([url=https://github.com/sirinsidiator/ESO-LibAddonMenu/issues/147]#147[/url], thanks DakJaniels)
+- updated Chinese translation ([url=https://github.com/sirinsidiator/ESO-LibAddonMenu/issues/144]#144[/url], thanks Jacko9et)
+- updated for Seasons of the Worm Cult Part 1
+
+2.0 r38
+- fixed submenus only opening once after Update 45 ([url=https://github.com/sirinsidiator/ESO-LibAddonMenu/issues/145]#145[/url], thanks Baertram)
+- added new callback "LAM-PanelControlsCreated" which gets called right before a panel is shown for the first time
+- updated for Fallen Banners
+
+2.0 r37
+- added Turkish and Ukrainian translations ([url=https://github.com/sirinsidiator/ESO-LibAddonMenu/pull/137]#137[/url], thanks Sharlikran)
+- fixed multi-select dropdowns not showing selected entries correctly ([url=https://github.com/sirinsidiator/ESO-LibAddonMenu/pull/140]#140[/url], thanks MycroftJr)
+- fixed dropdown choice tooltips not working correctly (thanks Calamath)
+- updated for Gold Road
+
 2.0 r36
 - added multiselect feature to dropdown control ([url=https://github.com/sirinsidiator/ESO-LibAddonMenu/pull/135]#135[/url], thanks Baertram)
 - fixed anchor constraint warnings in the interface.log ([url=https://github.com/sirinsidiator/ESO-LibAddonMenu/pull/136]#136[/url], thanks DakJaniels)

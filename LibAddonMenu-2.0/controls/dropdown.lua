@@ -24,7 +24,7 @@
 } ]]
 
 
-local widgetVersion = 26
+local widgetVersion = 28
 local LAM = LibAddonMenu2
 if not LAM:RegisterWidget("dropdown", widgetVersion) then return end
 
@@ -48,11 +48,6 @@ local SORT_ORDERS = {
 local DEFAULT_VISIBLE_ROWS = 10
 local PADDING_Y = ZO_SCROLLABLE_COMBO_BOX_LIST_PADDING_Y
 local ROUNDING_MARGIN = 0.01 -- needed to avoid rare issue with too many anchors processed
-local SCROLLBAR_PADDING = ZO_SCROLL_BAR_WIDTH
-local MULTISELECT_NO_SCROLLBAR_PADDING = 6
-local PADDING_X = GetMenuPadding()
-local CONTENT_PADDING = PADDING_X * 4
-
 
 local function UpdateDisabled(control)
     local disable
@@ -153,8 +148,6 @@ local function DropdownCallback(control, choiceText, choice)
     choice.control:UpdateValue(false, updateValue)
 end
 
-local TOOLTIP_HANDLER_NAMESPACE = "LAM2_Dropdown_Tooltip"
-
 local function DoShowTooltip(control, tooltip)
     local tooltipText = LAM.util.GetStringFromValue(tooltip)
     if tooltipText ~= nil and tooltipText ~= "" then
@@ -173,14 +166,14 @@ local function HideTooltip()
 end
 
 local function SetupTooltips(comboBox)
-    SecurePostHook("ZO_ComboBox_Entry_OnMouseEnter", function(comboBoxRowCtrl)
+    SecurePostHook(ZO_ComboBoxDropdown_Keyboard, "OnEntryMouseEnter", function(comboBoxRowCtrl)
         local lComboBox = comboBoxRowCtrl.m_owner
         if lComboBox ~= nil and lComboBox == comboBox then
             ShowTooltip(comboBoxRowCtrl)
         end
     end)
 
-    SecurePostHook("ZO_ComboBox_Entry_OnMouseExit", function(comboBoxCtrl)
+    SecurePostHook(ZO_ComboBoxDropdown_Keyboard, "OnEntryMouseExit", function(comboBoxCtrl)
         HideTooltip()
     end)
 end
@@ -256,82 +249,12 @@ local function SetDropdownHeight(control, dropdown, dropdownData)
 
     --Entries to actually calculate the height = "number of sorted items" * "template height" + "number of sorted items -1" * spacing (last item got no spacing)
     local numEntries = zo_clamp(numSortedItems, min, max)
-    local entryHeightWithSpacing
-    if GetAPIVersion() < 101041 then
-        entryHeightWithSpacing = dropdown:GetEntryTemplateHeightWithSpacing()
-    else
-        entryHeightWithSpacing = ZO_COMBO_BOX_ENTRY_TEMPLATE_HEIGHT + dropdown.m_dropdownObject.spacing
-    end
+    local entryHeightWithSpacing = ZO_COMBO_BOX_ENTRY_TEMPLATE_HEIGHT + dropdown.m_dropdownObject.spacing
     local allItemsHeight = (entryHeightWithSpacing * numEntries) - entrySpacing + (PADDING_Y * 2) + ROUNDING_MARGIN
     dropdown:SetHeight(allItemsHeight)
     ZO_ScrollList_Commit(dropdown.m_scroll)
 
     return visibleRows, min, max
-end
-
-local function CalculateContentWidth(dropdown)
-    local dataType = ZO_ScrollList_GetDataTypeTable(dropdown.m_scroll, 1)
-
-    local dummy = dataType.pool:AcquireObject()
-    local item = {
-        m_owner = dropdown,
-        name = "Dummy"
-    }
-    if GetAPIVersion() >= 101041 then
-        item = dropdown.m_dropdownObject:CreateScrollableEntry(item, 1, 1)
-    end
-    dataType.setupCallback(dummy, item, dropdown)
-
-    local maxWidth = 0
-    local label = dummy.m_label
-    local entries = dropdown.m_sortedItems
-    local numItems = #entries
-    for index = 1, numItems do
-        label:SetText(entries[index].name)
-        local width = label:GetTextWidth()
-        if (width > maxWidth) then
-            maxWidth = width
-        end
-    end
-
-    dataType.pool:ReleaseObject(dummy.key)
-    return maxWidth
-end
-
-local function AdjustDimensions(control, dropdown, dropdownData)
-    local numItems = #dropdown.m_sortedItems
-    local dropdownObject = dropdown.m_dropdown
-    local scroll = dropdownObject:GetNamedChild("Scroll")
-    local scrollContent = scroll:GetNamedChild("Contents")
-    local anchorOffset = 0
-
-    local isMultiSelectionEnabled = GetDefaultValue(dropdownData.multiSelect)
-    if isMultiSelectionEnabled then
-        anchorOffset = -MULTISELECT_NO_SCROLLBAR_PADDING
-    end
-
-    local contentWidth = CalculateContentWidth(dropdown) + CONTENT_PADDING
-    local visibleRows = SetDropdownHeight(control, dropdown, dropdownData)
-
-    local hasScrollbar = false
-    if numItems > visibleRows then
-        numItems = visibleRows
-        if isMultiSelectionEnabled then
-            hasScrollbar = dropdownData.scrollable ~= nil and not scroll.scrollbar:IsHidden()
-        else
-            hasScrollbar = true
-        end
-    end
-
-    if hasScrollbar then
-        contentWidth = contentWidth + SCROLLBAR_PADDING
-        anchorOffset = -SCROLLBAR_PADDING
-    end
-
-    local width = zo_max(contentWidth, dropdown.m_container:GetWidth())
-    dropdownObject:SetWidth(width)
-
-    scrollContent:SetAnchor(BOTTOMRIGHT, nil, nil, anchorOffset)
 end
 
 local function OnMultiSelectComboBoxMouseUp(control, combobox, button, upInside, alt, shift, ctrl, command)
@@ -381,9 +304,7 @@ function LAMCreateControl.dropdown(parent, dropdownData, controlName)
     control.dropdown = ZO_ComboBox_ObjectFromContainer(combobox)
     local dropdown = control.dropdown
     dropdown:SetSortsItems(false) -- need to sort ourselves in order to be able to sort by value
-    if GetAPIVersion() < 101041 then
-        dropdown.m_dropdown:SetParent(combobox:GetOwningWindow()) -- TODO remove workaround once the problem is fixed in the game
-    end
+    dropdown.m_containerWidth = combobox:GetWidth() -- need to replace it, otherwise the minWidth is wrong
 
     local isMultiSelectionEnabled = GetDefaultValue(dropdownData.multiSelect)
     control.isMultiSelectionEnabled = isMultiSelectionEnabled
@@ -404,11 +325,6 @@ function LAMCreateControl.dropdown(parent, dropdownData, controlName)
     else
         dropdown:DisableMultiSelect()
     end
-
-    --After the items are added and the dropdown shows: Change the height of the dropdown
-    SecurePostHook(dropdown, "AddMenuItems", function()
-        control.AdjustDimensions(control, dropdown, dropdownData)
-    end)
 
     ZO_PreHook(dropdown, "UpdateItems", function(self)
         assert(not self.m_sortsItems, "built-in dropdown sorting was reactivated, sorting is handled by LAM")
@@ -434,7 +350,7 @@ function LAMCreateControl.dropdown(parent, dropdownData, controlName)
     end
 
     control.SetDropdownHeight = SetDropdownHeight
-    control.AdjustDimensions = AdjustDimensions
+    control.AdjustDimensions = function() end -- no longer needed, but we keep it just in case someone else calls it from outside
     control.UpdateChoices = UpdateChoices
     control:UpdateChoices(dropdownData.choices, dropdownData.choicesValues)
     control.UpdateValue = UpdateValue
