@@ -48,11 +48,6 @@ local SORT_ORDERS = {
 local DEFAULT_VISIBLE_ROWS = 10
 local PADDING_Y = ZO_SCROLLABLE_COMBO_BOX_LIST_PADDING_Y
 local ROUNDING_MARGIN = 0.01 -- needed to avoid rare issue with too many anchors processed
-local SCROLLBAR_PADDING = ZO_SCROLL_BAR_WIDTH
-local MULTISELECT_NO_SCROLLBAR_PADDING = 6
-local PADDING_X = GetMenuPadding()
-local CONTENT_PADDING = PADDING_X * 4
-
 
 local function UpdateDisabled(control)
     local disable
@@ -152,8 +147,6 @@ local function DropdownCallback(control, choiceText, choice)
     if updateValue == nil then updateValue = choiceText end
     choice.control:UpdateValue(false, updateValue)
 end
-
-local TOOLTIP_HANDLER_NAMESPACE = "LAM2_Dropdown_Tooltip"
 
 local function DoShowTooltip(control, tooltip)
     local tooltipText = LAM.util.GetStringFromValue(tooltip)
@@ -264,69 +257,6 @@ local function SetDropdownHeight(control, dropdown, dropdownData)
     return visibleRows, min, max
 end
 
-local function CalculateContentWidth(dropdown)
-    local dataType = ZO_ScrollList_GetDataTypeTable(dropdown.m_scroll, 1)
-
-    local dummy = dataType.pool:AcquireObject()
-    local item = dropdown.m_dropdownObject:CreateScrollableEntry({
-        m_owner = dropdown,
-        name = "Dummy"
-    }, 1, 1)
-    dataType.setupCallback(dummy, item, dropdown)
-
-    local maxWidth = 0
-    local label = dummy.m_label
-    local entries = dropdown.m_sortedItems
-    local numItems = #entries
-    for index = 1, numItems do
-        label:SetText(entries[index].name)
-        local width = label:GetTextWidth()
-        if (width > maxWidth) then
-            maxWidth = width
-        end
-    end
-
-    dataType.pool:ReleaseObject(dummy.key)
-    return maxWidth
-end
-
-local function AdjustDimensions(control, dropdown, dropdownData)
-    local numItems = #dropdown.m_sortedItems
-    local dropdownObject = dropdown.m_dropdown
-    local scroll = dropdownObject:GetNamedChild("Scroll")
-    local scrollContent = scroll:GetNamedChild("Contents")
-    local anchorOffset = 0
-
-    local isMultiSelectionEnabled = GetDefaultValue(dropdownData.multiSelect)
-    if isMultiSelectionEnabled then
-        anchorOffset = -MULTISELECT_NO_SCROLLBAR_PADDING
-    end
-
-    local contentWidth = CalculateContentWidth(dropdown) + CONTENT_PADDING
-    local visibleRows = SetDropdownHeight(control, dropdown, dropdownData)
-
-    local hasScrollbar = false
-    if numItems > visibleRows then
-        numItems = visibleRows
-        if isMultiSelectionEnabled then
-            hasScrollbar = dropdownData.scrollable ~= nil and not scroll.scrollbar:IsHidden()
-        else
-            hasScrollbar = true
-        end
-    end
-
-    if hasScrollbar then
-        contentWidth = contentWidth + SCROLLBAR_PADDING
-        anchorOffset = -SCROLLBAR_PADDING
-    end
-
-    local width = zo_max(contentWidth, dropdown.m_container:GetWidth())
-    dropdownObject:SetResizeToFitConstrains(ANCHOR_CONSTRAINS_XY)
-    dropdownObject:SetWidth(width)
-
-    scrollContent:SetAnchor(BOTTOMRIGHT, nil, nil, anchorOffset)
-end
-
 local function OnMultiSelectComboBoxMouseUp(control, combobox, button, upInside, alt, shift, ctrl, command)
     if button == MOUSE_BUTTON_INDEX_RIGHT and upInside then
         ClearMenu()
@@ -374,6 +304,7 @@ function LAMCreateControl.dropdown(parent, dropdownData, controlName)
     control.dropdown = ZO_ComboBox_ObjectFromContainer(combobox)
     local dropdown = control.dropdown
     dropdown:SetSortsItems(false) -- need to sort ourselves in order to be able to sort by value
+    dropdown.m_containerWidth = combobox:GetWidth() -- need to replace it, otherwise the minWidth is wrong
 
     local isMultiSelectionEnabled = GetDefaultValue(dropdownData.multiSelect)
     control.isMultiSelectionEnabled = isMultiSelectionEnabled
@@ -394,11 +325,6 @@ function LAMCreateControl.dropdown(parent, dropdownData, controlName)
     else
         dropdown:DisableMultiSelect()
     end
-
-    --After the items are added and the dropdown shows: Change the height of the dropdown
-    SecurePostHook(dropdown, "AddMenuItems", function()
-        control.AdjustDimensions(control, dropdown, dropdownData)
-    end)
 
     ZO_PreHook(dropdown, "UpdateItems", function(self)
         assert(not self.m_sortsItems, "built-in dropdown sorting was reactivated, sorting is handled by LAM")
@@ -424,7 +350,7 @@ function LAMCreateControl.dropdown(parent, dropdownData, controlName)
     end
 
     control.SetDropdownHeight = SetDropdownHeight
-    control.AdjustDimensions = AdjustDimensions
+    control.AdjustDimensions = function() end -- no longer needed, but we keep it just in case someone else calls it from outside
     control.UpdateChoices = UpdateChoices
     control:UpdateChoices(dropdownData.choices, dropdownData.choicesValues)
     control.UpdateValue = UpdateValue
