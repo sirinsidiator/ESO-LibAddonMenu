@@ -1569,6 +1569,7 @@ function lam:convertLamOptionsToHasTable(optionsTable, controlTable)
                 disable = entry.disabled,
                 clickHandler = entry.func,
                 buttonText = entry.name,
+                maxChars = entry.maxChars,
             }
             addToControlTable(newOption, controlTable)
             -- settings:AddSetting(newOption)
