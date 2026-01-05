@@ -1524,7 +1524,7 @@ local function LamToHASDescriptionConverter(entry, controlTable)
 end
 
 local function LamToHASDividerConverter(entry, controlTable)
-    newOption = {
+    local newOption = {
         type = LibHarvensAddonSettings.ST_SECTION,
         label = nil,
     }
