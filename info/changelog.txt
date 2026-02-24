@@ -1,3 +1,6 @@
+2.0 r42 (consoles only)
+- temporarily turned LHAS into an optional dependency, until the situation is resolved. This unfortunately means, there won't be a settings menu for consoles until then.
+
 2.0 r41
 - added "maxChars" to HAS conversion for console ([url=https://github.com/sirinsidiator/ESO-LibAddonMenu/pull/153]#153[/url], thanks M0RGaming)
 - fixed dropdown width not getting calculated correctly
