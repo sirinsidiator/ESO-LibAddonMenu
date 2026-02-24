@@ -1532,6 +1532,7 @@ local function LamToHASDividerConverter(entry, controlTable)
 end
 
 function lam:convertLamOptionsToHasTable(optionsTable, controlTable)
+    if not LibHarvensAddonSettings then return end
     local LAMtoHAS = {
         slider = LibHarvensAddonSettings.ST_SLIDER,
         header = LibHarvensAddonSettings.ST_SECTION,
@@ -1589,7 +1590,7 @@ lam.LHASConversion.settingTables = {}
 lam.LHASConversion.optionControls = {}
 
 function lam:registerConsoleAddonPanel(addonID, panelData)
-    if IsConsoleUI() then
+    if IsConsoleUI() and LibHarvensAddonSettings then
         local LHA = LibHarvensAddonSettings
         local options = {
             allowDefaults = panelData.registerForDefaults, --will allow users to reset the settings to default values
@@ -1603,7 +1604,7 @@ function lam:registerConsoleAddonPanel(addonID, panelData)
 end
 
 function lam:registerConsoleOptionControls(addonID, optionsTable)
-    if not IsConsoleUI() then
+    if not IsConsoleUI() or not LibHarvensAddonSettings then
         return
     end
     if lam.LHASConversion.settingTables[addonID] then
