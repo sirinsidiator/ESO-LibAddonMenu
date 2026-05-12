@@ -1506,36 +1506,46 @@ local function LamtoHASSubmenuConverter(optionsTable, controlTable)
 end
 
 local function LamToHASDescriptionConverter(entry, controlTable)
-    
-    local newOption = {
-        type = LibHarvensAddonSettings.ST_LABEL,
-        label = entry.title,
-        default = entry.default,
-        tooltip = entry.tooltip,
-    }
-    addToControlTable(newOption, controlTable)
-    newOption = {
-        type = LibHarvensAddonSettings.ST_LABEL,
-        label = entry.text,
-        default = entry.default,
-        tooltip = entry.tooltip,
-    }
-    addToControlTable(newOption, controlTable)
+    if entry.title and entry.title ~= "" then
+        addToControlTable(
+            {
+                type = LibHarvensAddonSettings.ST_LABEL,
+                label = entry.title,
+                default = entry.default,
+                tooltip = entry.tooltip,
+            },
+            controlTable
+        )
+    end
+    if entry.text and entry.text ~= "" then
+        addToControlTable(
+            {
+                type = LibHarvensAddonSettings.ST_LABEL,
+                label = entry.text,
+                default = entry.default,
+                tooltip = entry.tooltip,
+            },
+            controlTable
+        )
+    end
 end
 
 local function LamToHASDividerConverter(entry, controlTable)
-    local newOption = {
-        type = LibHarvensAddonSettings.ST_SECTION,
-        label = nil,
-    }
-    addToControlTable(newOption, controlTable)
+    -- ST_SECTION starts a LHAS drill-down nest; use a flat label so rows below stay on the main list.
+    addToControlTable(
+        {
+            type = LibHarvensAddonSettings.ST_LABEL,
+            label = "----------------",
+        },
+        controlTable
+    )
 end
 
 function lam:convertLamOptionsToHasTable(optionsTable, controlTable)
     if not LibHarvensAddonSettings then return end
     local LAMtoHAS = {
         slider = LibHarvensAddonSettings.ST_SLIDER,
-        header = LibHarvensAddonSettings.ST_SECTION,
+        header = LibHarvensAddonSettings.ST_LABEL,
         checkbox = LibHarvensAddonSettings.ST_CHECKBOX,
         colorpicker = LibHarvensAddonSettings.ST_COLOR,
         button = LibHarvensAddonSettings.ST_BUTTON,
