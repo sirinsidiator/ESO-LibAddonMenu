@@ -1,3 +1,6 @@
+2.0 r44 (consoles only)
+- fixed and improved HAS conversion (thanks DakJaniels)
+
 2.0 r43
 - fixed error when playing in XBox Game Pass PC version (thanks DakJaniels)
 - fixed leaking global variable ([url=https://github.com/sirinsidiator/ESO-LibAddonMenu/issues/155]#155[/url], thanks DakJaniels)
