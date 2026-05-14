@@ -1781,7 +1781,7 @@ end
 -- panelData = table; data object for your panel - see controls\panel.lua
 function lam:RegisterAddonPanel(addonID, panelData)
     CheckSafetyAndInitialize(addonID)
-    if IsConsoleUI() then
+    if not IsKeyboardUISupported() then
         lam:registerConsoleAddonPanel(addonID, panelData)
         return
     end
@@ -1829,7 +1829,7 @@ end
 -- addonID = "string"; the same string passed to :RegisterAddonPanel
 -- optionsTable = table; the table containing all of the options controls and their data
 function lam:RegisterOptionControls(addonID, optionsTable) --optionsTable = {sliderData, buttonData, etc}
-    if IsConsoleUI() then
+    if not IsKeyboardUISupported() then
         lam:registerConsoleOptionControls(addonID, optionsTable)
     end
     addonToOptionsMap[addonID] = optionsTable
@@ -1838,7 +1838,7 @@ end
 --INTERNAL FUNCTION
 --creates LAM's Addon Settings entry in ZO_GameMenu
 local function CreateAddonSettingsMenuEntry()
-    if IsConsoleUI() then return end
+    if not IsKeyboardUISupported() then return end
     local panelData = {
         id = KEYBOARD_OPTIONS.currentPanelId,
         name = util.L["PANEL_NAME"],
@@ -2261,35 +2261,46 @@ local function LamtoHASSubmenuConverter(optionsTable, controlTable)
 end
 
 local function LamToHASDescriptionConverter(entry, controlTable)
-    
-    local newOption = {
-        type = LibHarvensAddonSettings.ST_LABEL,
-        label = entry.title,
-        default = entry.default,
-        tooltip = entry.tooltip,
-    }
-    addToControlTable(newOption, controlTable)
-    newOption = {
-        type = LibHarvensAddonSettings.ST_LABEL,
-        label = entry.text,
-        default = entry.default,
-        tooltip = entry.tooltip,
-    }
-    addToControlTable(newOption, controlTable)
+    if entry.title and entry.title ~= "" then
+        addToControlTable(
+            {
+                type = LibHarvensAddonSettings.ST_LABEL,
+                label = entry.title,
+                default = entry.default,
+                tooltip = entry.tooltip,
+            },
+            controlTable
+        )
+    end
+    if entry.text and entry.text ~= "" then
+        addToControlTable(
+            {
+                type = LibHarvensAddonSettings.ST_LABEL,
+                label = entry.text,
+                default = entry.default,
+                tooltip = entry.tooltip,
+            },
+            controlTable
+        )
+    end
 end
 
 local function LamToHASDividerConverter(entry, controlTable)
-    newOption = {
-        type = LibHarvensAddonSettings.ST_SECTION,
-        label = nil,
-    }
-    addToControlTable(newOption, controlTable)
+    -- ST_SECTION starts a LHAS drill-down nest; use a flat label so rows below stay on the main list.
+    addToControlTable(
+        {
+            type = LibHarvensAddonSettings.ST_LABEL,
+            label = "----------------",
+        },
+        controlTable
+    )
 end
 
 function lam:convertLamOptionsToHasTable(optionsTable, controlTable)
+    if not LibHarvensAddonSettings then return end
     local LAMtoHAS = {
         slider = LibHarvensAddonSettings.ST_SLIDER,
-        header = LibHarvensAddonSettings.ST_SECTION,
+        header = LibHarvensAddonSettings.ST_LABEL,
         checkbox = LibHarvensAddonSettings.ST_CHECKBOX,
         colorpicker = LibHarvensAddonSettings.ST_COLOR,
         button = LibHarvensAddonSettings.ST_BUTTON,
@@ -2344,7 +2355,7 @@ lam.LHASConversion.settingTables = {}
 lam.LHASConversion.optionControls = {}
 
 function lam:registerConsoleAddonPanel(addonID, panelData)
-    if IsConsoleUI() then
+    if not IsKeyboardUISupported() and LibHarvensAddonSettings then
         local LHA = LibHarvensAddonSettings
         local options = {
             allowDefaults = panelData.registerForDefaults, --will allow users to reset the settings to default values
@@ -2358,7 +2369,7 @@ function lam:registerConsoleAddonPanel(addonID, panelData)
 end
 
 function lam:registerConsoleOptionControls(addonID, optionsTable)
-    if not IsConsoleUI() then
+    if IsKeyboardUISupported() or not LibHarvensAddonSettings then
         return
     end
     if lam.LHASConversion.settingTables[addonID] then
