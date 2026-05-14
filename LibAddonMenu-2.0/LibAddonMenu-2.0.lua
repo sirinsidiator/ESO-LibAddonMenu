@@ -2,7 +2,8 @@
 -- Distributed under The Artistic License 2.0 (see LICENSE)     --
 ------------------------------------------------------------------
 
-local MAJOR, MINOR = "LibAddonMenu-2.0", _LAM2_VERSION_NUMBER or -1
+
+local MAJOR, MINOR = "LibAddonMenu-2.0", 43
 
 local lam
 if(not LibStub) then
@@ -1673,7 +1674,6 @@ local function CreateOptionsControls(panel)
         local function SetupCreationCalls(parent, widgetDataTable)
             fifo[#fifo + 1] = PrepareForNextPanel
             local count = #widgetDataTable
-
             for i = 1, zo_ceil(count / THROTTLE_COUNT) do
                 fifo[#fifo + 1] = function()
                     local startIndex = (i - 1) * THROTTLE_COUNT + 1
@@ -2234,7 +2234,7 @@ local function LAMtoHASDropdownConverter(option, controlTable)
     }
 
     newOption.setFunction = function(combobox, name, item) option.setFunc(item.data) end
-    
+
     local items = {}
     local labelMap = {}
     if not option.choicesValues then
@@ -2261,46 +2261,36 @@ local function LamtoHASSubmenuConverter(optionsTable, controlTable)
 end
 
 local function LamToHASDescriptionConverter(entry, controlTable)
-    if entry.title and entry.title ~= "" then
-        addToControlTable(
-            {
-                type = LibHarvensAddonSettings.ST_LABEL,
-                label = entry.title,
-                default = entry.default,
-                tooltip = entry.tooltip,
-            },
-            controlTable
-        )
-    end
-    if entry.text and entry.text ~= "" then
-        addToControlTable(
-            {
-                type = LibHarvensAddonSettings.ST_LABEL,
-                label = entry.text,
-                default = entry.default,
-                tooltip = entry.tooltip,
-            },
-            controlTable
-        )
-    end
+
+    local newOption = {
+        type = LibHarvensAddonSettings.ST_LABEL,
+        label = entry.title,
+        default = entry.default,
+        tooltip = entry.tooltip,
+    }
+    addToControlTable(newOption, controlTable)
+    newOption = {
+        type = LibHarvensAddonSettings.ST_LABEL,
+        label = entry.text,
+        default = entry.default,
+        tooltip = entry.tooltip,
+    }
+    addToControlTable(newOption, controlTable)
 end
 
 local function LamToHASDividerConverter(entry, controlTable)
-    -- ST_SECTION starts a LHAS drill-down nest; use a flat label so rows below stay on the main list.
-    addToControlTable(
-        {
-            type = LibHarvensAddonSettings.ST_LABEL,
-            label = "----------------",
-        },
-        controlTable
-    )
+    local newOption = {
+        type = LibHarvensAddonSettings.ST_SECTION,
+        label = nil,
+    }
+    addToControlTable(newOption, controlTable)
 end
 
 function lam:convertLamOptionsToHasTable(optionsTable, controlTable)
     if not LibHarvensAddonSettings then return end
     local LAMtoHAS = {
         slider = LibHarvensAddonSettings.ST_SLIDER,
-        header = LibHarvensAddonSettings.ST_LABEL,
+        header = LibHarvensAddonSettings.ST_SECTION,
         checkbox = LibHarvensAddonSettings.ST_CHECKBOX,
         colorpicker = LibHarvensAddonSettings.ST_COLOR,
         button = LibHarvensAddonSettings.ST_BUTTON,
@@ -2316,9 +2306,9 @@ function lam:convertLamOptionsToHasTable(optionsTable, controlTable)
         indexed = {},
         nameMap = {},
     }
-    
+
     -- LAMHASMissing = {}
-    
+
     for i, entry in ipairs(optionsTable) do
         local newType = LAMtoHAS[entry.type]
         if newType and not entry.isPCOnly then
