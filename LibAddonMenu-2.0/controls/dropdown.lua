@@ -21,16 +21,74 @@
     multiSelectTextFormatter = SI_COMBO_BOX_DEFAULT_MULTISELECTION_TEXT_FORMATTER, -- or string id or function returning a string. If specified, this will be used with zo_strformat(multiSelectTextFormatter, numSelectedItems) to set the "selected item text". Only incombination with multiSelect = true (optional)
     multiSelectNoSelectionText = SI_COMBO_BOX_DEFAULT_NO_SELECTION_TEXT, -- or string id or function returning a string. Only incombination with multiSelect = true (optional)
     multiSelectMaxSelections = 5, --Number or function returning a number of the maximum of selectable entries. If not specified there is no max selection. Only incombination with multiSelect = true (optional)
+    itemFont = function(choiceValue, choiceName) return "MyFontDescriptor|16|soft-shadow-thin" end, -- optional: function(choiceValue, choiceName) returning a font descriptor for SetFont (nil = combo default). choiceValue follows choicesValues when present, otherwise the display string. ZO_ComboBoxDropdown_Keyboard:SetupEntryLabel applies one font to all rows; LAM post-hooks for per-row preview. Collapsed single-select label uses ItemSelectedClickHelper; multi-select affects open list rows only.
 } ]]
 
 
-local widgetVersion = 29
+local widgetVersion = 30
 local LAM = LibAddonMenu2
 if not LAM:RegisterWidget("dropdown", widgetVersion) then return end
 
 local GetDefaultValue = LAM.util.GetDefaultValue
 
 local wm = WINDOW_MANAGER
+
+-- ZO scroll lists recycle row controls; SetupEntryLabel runs for each bind. Register hooks once per load.
+local ITEM_FONT_POSTHOOKS_REGISTERED = false
+
+-- choiceValue for itemFont(choiceValue, choiceName): item.value if choicesValues, else item.name (ZO combo item entry).
+local function GetComboItemCallbackValue(item)
+    local value = item.value
+    if value == nil then
+        value = item.name
+    end
+    return value
+end
+
+-- Stored on each combo item with the widget reference in "control"; not part of ZO's public entry schema.
+local LAM2_COMBO_ENTRY_ITEMFONT_KEY = "lam2ItemFont"
+
+local function PostHook_ComboBoxDropdown_SetupEntryLabel_ItemFont(self, labelControl, data)
+    local item = data and data.GetDataSource and data:GetDataSource()
+    local itemFontFn = item and item[LAM2_COMBO_ENTRY_ITEMFONT_KEY]
+    if type(itemFontFn) ~= "function" then
+        return
+    end
+    local font = itemFontFn(GetComboItemCallbackValue(item), item.name)
+    if font then
+        labelControl:SetFont(font)
+    end
+end
+
+local function PostHook_ComboBox_Base_ItemSelectedClickHelper_ItemFont(self, item, ignoreCallback)
+    if not item or self.m_enableMultiSelect then
+        return
+    end
+    local itemFontFn = item[LAM2_COMBO_ENTRY_ITEMFONT_KEY]
+    if type(itemFontFn) ~= "function" then
+        return
+    end
+    local font = itemFontFn(GetComboItemCallbackValue(item), item.name)
+    if not self.m_selectedItemText then
+        return
+    end
+    if font then
+        self:SetSelectedItemFont(font)
+    else
+        self:SetSelectedItemFont(self:GetDropdownFont())
+    end
+end
+
+local function SetupDropdownItemFontHooks()
+    if ITEM_FONT_POSTHOOKS_REGISTERED then
+        return
+    end
+    ITEM_FONT_POSTHOOKS_REGISTERED = true
+    SecurePostHook(ZO_ComboBoxDropdown_Keyboard, "SetupEntryLabel", PostHook_ComboBoxDropdown_SetupEntryLabel_ItemFont)
+    SecurePostHook(ZO_ComboBox_Base, "ItemSelectedClickHelper", PostHook_ComboBox_Base_ItemSelectedClickHelper_ItemFont)
+end
+
+SetupDropdownItemFontHooks()
 
 local SORT_BY_VALUE         = { ["value"] = {} }
 local SORT_BY_VALUE_NUMERIC = { ["value"] = { isNumeric = true } }
@@ -104,6 +162,29 @@ local function CallMultiSelectSetFunc(control, values)
     data.setFunc(values)
 end
 
+-- Apply data.itemFont to the closed combo label (selection path sets text only; see ZO_ComboBox_Base:ItemSelectedClickHelper).
+local function ApplySelectedItemFont(control)
+    if not control or control.isMultiSelectionEnabled then
+        return
+    end
+    local fn = control.data and control.data.itemFont
+    if type(fn) ~= "function" then
+        return
+    end
+    local dropdown = control.dropdown
+    if not dropdown then
+        return
+    end
+    local value = control.data.getFunc()
+    local name = dropdown:GetSelectedItem()
+    local font = fn(value, name)
+    if font then
+        dropdown:SetSelectedItemFont(font)
+    else
+        dropdown:SetSelectedItemFont(dropdown:GetDropdownFont())
+    end
+end
+
 local function UpdateValue(control, forceDefault, value)
     local isMultiSelectionEnabled = control.isMultiSelectionEnabled
     if forceDefault then --if we are forcing defaults
@@ -136,6 +217,7 @@ local function UpdateValue(control, forceDefault, value)
             control.dropdown:SetSelectedItem(control.choices[value])
         end
     end
+    ApplySelectedItemFont(control)
 end
 
 local function DropdownCallback(control, choiceText, choice)
@@ -205,7 +287,15 @@ local function UpdateChoices(control, choices, choicesValues, choicesTooltips)
         if entryValue == nil then entryValue = entry.name end
         control.choices[entryValue] = entry.name
 
+        if type(control.data.itemFont) == "function" then
+            entry[LAM2_COMBO_ENTRY_ITEMFONT_KEY] = control.data.itemFont
+        end
+
         control.dropdown:AddItem(entry, not control.data.sort and ZO_COMBOBOX_SUPRESS_UPDATE) --if sort type/order isn't specified, then don't sort
+    end
+
+    if control.UpdateValue then
+        ApplySelectedItemFont(control)
     end
 end
 
