@@ -1531,11 +1531,22 @@ local function LamToHASDescriptionConverter(entry, controlTable)
 end
 
 local function LamToHASDividerConverter(entry, controlTable)
-    -- ST_SECTION starts a LHAS drill-down nest; use a flat label so rows below stay on the main list.
     addToControlTable(
         {
             type = LibHarvensAddonSettings.ST_LABEL,
-            label = "----------------",
+            label = string.format("|c%s%s|r", ZO_NORMAL_TEXT:ToHex(), string.rep("_", 16)),
+        },
+        controlTable
+    )
+end
+
+local function LamToHASHeaderConverter(entry, controlTable)
+    -- ST_SECTION starts a LHAS drill-down nest; use a flat label so rows below stay on the main list.
+    LamToHASDividerConverter(entry, controlTable)
+    addToControlTable(
+        {
+            type = LibHarvensAddonSettings.ST_LABEL,
+            label = entry.name,
         },
         controlTable
     )
@@ -1545,7 +1556,6 @@ function lam:convertLamOptionsToHasTable(optionsTable, controlTable)
     if not LibHarvensAddonSettings then return end
     local LAMtoHAS = {
         slider = LibHarvensAddonSettings.ST_SLIDER,
-        header = LibHarvensAddonSettings.ST_LABEL,
         checkbox = LibHarvensAddonSettings.ST_CHECKBOX,
         colorpicker = LibHarvensAddonSettings.ST_COLOR,
         button = LibHarvensAddonSettings.ST_BUTTON,
@@ -1556,6 +1566,7 @@ function lam:convertLamOptionsToHasTable(optionsTable, controlTable)
         submenu = LamtoHASSubmenuConverter,
         description = LamToHASDescriptionConverter,
         divider = LamToHASDividerConverter,
+        header = LamToHASHeaderConverter,
     }
     local controlTable = controlTable or {
         indexed = {},
